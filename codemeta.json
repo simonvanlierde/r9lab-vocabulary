@@ -1,0 +1,19 @@
+{
+  "@context": "https://w3id.org/codemeta/3.0",
+  "@type": "SoftwareSourceCode",
+  "name": "r9lab-vocabulary",
+  "description": "R9lab reference vocabulary: product types and component and material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, Wikidata and BAFU",
+  "author": [
+    {
+      "@type": "Person",
+      "@id": "https://orcid.org/0009-0006-6953-909X",
+      "givenName": "Simon",
+      "familyName": "van Lierde",
+      "email": "code@duinlab.nl"
+    }
+  ],
+  "codeRepository": "https://github.com/simonvanlierde/r9lab-vocabulary",
+  "issueTracker": "https://github.com/simonvanlierde/r9lab-vocabulary/issues",
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "programmingLanguage": "Python"
+}

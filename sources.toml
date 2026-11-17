@@ -1,0 +1,38 @@
+#:schema https://raw.githubusercontent.com/simonvanlierde/sourceledger/v0.5.0/src/sourceledger/sources.schema.json
+
+output_format = "parquet"
+
+# The reference files the vocabulary's crosswalks are checked against. `just fetch`
+# downloads each to data/raw/, `just build` turns it into data/processed/<id>.parquet,
+# and `just rdf` refuses a CPC code or PMDco IRI that is not in them.
+# Field reference: https://github.com/simonvanlierde/sourceledger (sources.toml).
+
+[[source]]
+id = "cpc21"
+name = "UN Central Product Classification (CPC) Version 2.1, structure file"
+status = "implemented"
+url = "https://unstats.un.org/unsd/classifications/Econ/Download/In%20Text/CPC_Ver_2_1_english_structure.txt"
+vintage = "CPC Ver. 2.1 (English)"
+sha256 = "1c3e88e5fa67b9ba0d27594cb3363f717321f58fe0308be60b326ebf927c1b92"
+terms = "United Nations website terms of use"
+terms_url = "https://www.un.org/en/about-us/terms-of-use"
+license = "LicenseRef-UN-Terms-of-Use"
+redistribute = false
+
+[[source]]
+id = "pmdco"
+name = "Platform MaterialDigital core ontology (PMDco) v3.1.2"
+status = "implemented"
+url = "https://raw.githubusercontent.com/materialdigital/core-ontology/v3.1.2/pmdco.ttl"
+vintage = "v3.1.2"
+sha256 = "bd5093e354c553b0fcca264c78d7048660ccd443637e1933cd7b6cffe779a862"
+terms = "Attribution 4.0 International"
+terms_url = "https://github.com/materialdigital/core-ontology/blob/v3.1.2/LICENSE.txt"
+license = "CC-BY-4.0"
+redistribute = true
+
+[[source]]
+id = "unu-keys-v2"
+name = "E-waste Statistics Guidelines, third edition (UNU-KEYs v2 and CPC 2.1 concordance)"
+status = "unimplemented"
+reason = "Tables are in a PDF under CC BY-NC-SA 4.0; codes are checked by hand until a reader exists. The scheme points to codes and copies no names."

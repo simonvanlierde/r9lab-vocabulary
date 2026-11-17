@@ -1,0 +1,59 @@
+# The ten material classes a photo-study pilot scores (frozen 5 November 2026), kept as
+# their own scheme and collection so pilot scoring is untouched. Each notation is the
+# pilot's class key. Mappings into the material and component axes: exact where the
+# class is one concept there, close where it nearly is, narrow where it spans several.
+scheme:
+  slug: pilot-classes
+  id_letter: s
+  title: R9lab pilot material classes (L1)
+  collection: Photo-study pilot L1 classes
+  description: >
+    The ten coarse material classes scored in a photo-study pilot, mapped to the material and
+    component classes.
+concepts:
+  s01:
+    label: ferrous
+    notation: ferrous
+    definition: Steel or iron.
+    mappings: {exact: ['materials:m0002']}
+  s02:
+    label: non-ferrous
+    notation: non_ferrous
+    definition: Aluminium, copper or brass.
+    mappings: {close: ['materials:m0006']}
+  s03:
+    label: plastic
+    notation: plastic
+    mappings: {close: ['materials:m0020']}
+  s04:
+    label: electronics
+    notation: electronics
+    definition: A printed circuit board or electronic component.
+    mappings: {narrow: ['components:c0005', 'components:c0006', 'components:c0007']}
+  s05:
+    label: battery
+    notation: battery
+    mappings: {exact: ['components:c0001']}
+  s06:
+    label: display or glass
+    notation: display_glass
+    definition: Glass or an LCD screen.
+    mappings: {narrow: ['materials:m0043', 'components:c0014']}
+  s07:
+    label: rubber
+    notation: rubber
+    mappings: {close: ['materials:m0038']}
+  s08:
+    label: cable
+    notation: cable
+    definition: An electric cable or wire.
+    mappings: {exact: ['components:c0017']}
+  s09:
+    label: magnet
+    notation: magnet
+    mappings: {exact: ['components:c0018']}
+  s10:
+    label: other
+    notation: other
+    definition: Paper, cardboard, wood or fabric.
+    mappings: {narrow: ['materials:m0055', 'materials:m0056', 'materials:m0057']}

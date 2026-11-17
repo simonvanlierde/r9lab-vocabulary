@@ -1,0 +1,28 @@
+# Managed by copier. Do not edit by hand. Run: copier update
+_commit: v0.16.1
+_src_path: gh:simonvanlierde/project-templates
+author_email: code@duinlab.nl
+author_name: Simon van Lierde
+author_orcid: 0009-0006-6953-909X
+copyright_year: '2026'
+customise: true
+data_license: CC0-1.0
+decision_records: true
+dependency_bot: dependabot
+extras:
+- cold_install
+github_user: simonvanlierde
+level: standard
+license: Apache-2.0
+module_name: r9lab_vocabulary
+project_description: 'R9lab reference vocabulary: product types and component and
+    material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, Wikidata and BAFU'
+project_name: r9lab-vocabulary
+public: true
+python_dir: .
+python_kind: data-pipeline
+python_layout: src
+python_version: '3.14'
+site: none
+stacks:
+- python

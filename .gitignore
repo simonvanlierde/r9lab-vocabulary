@@ -1,0 +1,45 @@
+# One ignore file for every stack in this repo.
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# pnpm settings live in pnpm-workspace.yaml, so an .npmrc here would hold a registry token.
+.npmrc
+
+# The rumdl hook's cache. An older rumdl left it without an ignore file of its own,
+# and Biome then formats its JSON.
+.rumdl_cache/
+
+# Build output
+build/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+htmlcov/
+.coverage
+coverage.xml
+
+# Never committed: `just pipeline` rebuilds both from sources.toml, so the repo
+# redistributes no source data.
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+# `just data-release` writes the folder to publish here.
+/release/

@@ -1,0 +1,13 @@
+# data
+
+`raw/` holds each source exactly as downloaded, beside a `<file>.fetch.json` record:
+the URL, retrieval time, SHA-256 and vintage. `processed/` holds what `just build`
+derives from it, plus `datapackage.json`, a Frictionless Data Package that lists
+each output with its columns, checksum, source URL and licence. Both are gitignored, so
+the repository never redistributes source data. `just pipeline` rebuilds them from
+`sources.toml`. Never edit a raw file in place: `just build` and `just validate` both
+reject one whose checksum no longer matches its fetch record.
+
+`fetches.jsonl` is committed. `just fetch` appends a source's fetch record to it each
+time the source serves bytes it hasn't served before. The file is the history of every
+version the pipeline has seen. Commit it after a fetch that changes it.

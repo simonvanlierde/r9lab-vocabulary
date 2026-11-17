@@ -1,0 +1,118 @@
+# Component classes: parts whose footprint is set by what they are rather than by one
+# material (ruling of 5 November 2026: battery, PCB, cable and magnet move here from
+# the material axis). Mappings and `bafu` patterns as in materials.yaml.
+scheme:
+  slug: components
+  id_letter: c
+  title: R9lab component classes
+  description: >
+    Component classes for parts recovered from disassembled products, with crosswalks to
+    CPC 2.1, Wikidata and BAFU activity names.
+concepts:
+  c0001:
+    label: battery
+    mappings: {exact: ['wd:Q267298'], close: ['cpc:464']}
+  c0002:
+    label: lithium-ion battery
+    note: BAFU has no LiCoO2 cell, the usual phone and tablet chemistry; NMC is the nearest.
+    broader: [c0001]
+    mappings: {exact: ['wd:Q2822895'], broad: ['cpc:46420']}
+    bafu: ['li-?ion|\blilo\b|\bnmc|\bnca\b|\blfp\b|\blto\b|\blmo\b']
+  c0003:
+    label: nickel-metal hydride battery
+    broader: [c0001]
+    mappings: {exact: ['wd:Q308567'], broad: ['cpc:46420']}
+    bafu: ['^battery, nimh']
+  c0004:
+    label: primary cell
+    note: Alkaline, zinc-carbon and coin cells. No BAFU dataset.
+    broader: [c0001]
+    mappings: {exact: ['wd:Q1378887'], close: ['cpc:46410']}
+  c0005:
+    label: bare printed circuit board
+    definition: Printed circuit board without mounted components.
+    mappings: {exact: ['wd:Q173350'], close: ['cpc:47130']}
+    bafu: ['^printed wiring board, (surface mount|through-hole), .*surface']
+  c0006:
+    label: populated printed circuit board
+    definition: Printed circuit board with its components mounted.
+    related: [c0005]
+    mappings: {exact: ['wd:Q3951866']}
+    bafu: ['^printed wiring board, (surface-mounted|through-hole mounted|mixed mounted)', 'mainboard', '^psu board']
+  c0007:
+    label: electronic component
+    definition: Discrete electronic part, mounted or loose.
+    mappings: {exact: ['wd:Q11653']}
+    bafu: ['^electronic component, (active|passive), unspecified']
+  c0008:
+    label: integrated circuit
+    broader: [c0007]
+    mappings: {exact: ['wd:Q80831'], close: ['cpc:47160']}
+    bafu: ['^integrated circuit']
+  c0009:
+    label: capacitor
+    broader: [c0007]
+    mappings: {exact: ['wd:Q5322'], close: ['cpc:47110']}
+    bafu: ['^capacitor']
+  c0010:
+    label: resistor
+    broader: [c0007]
+    mappings: {exact: ['wd:Q5321'], close: ['cpc:47120']}
+    bafu: ['^resistor']
+  c0011:
+    label: light-emitting diode
+    broader: [c0007]
+    mappings: {exact: ['wd:Q25504'], broad: ['cpc:47150']}
+    bafu: ['^light emitting diode', '^led\b(?! (module|screen))']
+  c0012:
+    label: inductor
+    broader: [c0007]
+    mappings: {exact: ['wd:Q5325'], broad: ['cpc:46122']}
+    bafu: ['^inductor']
+  c0013:
+    label: transformer
+    mappings: {exact: ['wd:Q11658'], close: ['cpc:46121']}
+  c0014:
+    label: display
+    definition: Electronic visual display panel or module.
+    mappings: {exact: ['wd:Q6021804']}
+  c0015:
+    label: liquid-crystal display
+    broader: [c0014]
+    mappings: {exact: ['wd:Q83341']}
+    bafu: ['^lcd (glass|module|screen|flat screen)', '^backlight, lcd']
+  c0016:
+    label: LED or OLED display
+    broader: [c0014]
+    mappings: {broad: ['wd:Q209593']}
+    bafu: ['^(led|oled) (module|screen)']
+  c0017:
+    label: cable
+    definition: Insulated wire or cable assembly, with or without plugs.
+    mappings: {exact: ['wd:Q188447'], close: ['cpc:463']}
+    bafu: ['^cable, ', 'connector cable', 'network cable', 'ribbon cable']
+  c0018:
+    label: magnet
+    mappings: {exact: ['wd:Q11421'], broad: ['cpc:4693']}
+  c0019:
+    label: permanent magnet
+    broader: [c0018]
+    mappings: {exact: ['wd:Q353743']}
+  c0020:
+    label: neodymium magnet
+    note: NdFeB. BAFU's only dataset comes from the electric-vehicle motor chain.
+    broader: [c0019]
+    mappings: {exact: ['wd:Q908880'], broad: ['cpc:46931']}
+    bafu: ['^permanent magnet']
+  c0021:
+    label: ferrite magnet
+    broader: [c0019]
+    mappings: {exact: ['wd:Q5105088'], close: ['cpc:46932'], related: ['materials:m0048']}
+  c0022:
+    label: electric motor
+    note: Small motors; BAFU has only electric-vehicle and scooter motors.
+    mappings: {exact: ['wd:Q72313'], broad: ['cpc:46111']}
+  c0023:
+    label: loudspeaker driver
+    note: No BAFU dataset.
+    mappings: {exact: ['wd:Q570'], broad: ['cpc:47330']}
