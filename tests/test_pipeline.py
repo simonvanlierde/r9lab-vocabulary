@@ -129,3 +129,17 @@ def test_rdf_reports_a_broken_pattern_instead_of_crashing(
     monkeypatch.setattr(pipeline, "bafu_names", lambda: {"2026-v1": ["Brass, at plant"]})
     assert pipeline.main(["rdf", "--out", str(tmp_path / "dist")]) == 1
     assert "t/t01: bafu pattern '(':" in capsys.readouterr().err
+
+
+def test_bafu_reports_a_broken_pattern_instead_of_crashing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    voc = tmp_path / "vocabulary"
+    voc.mkdir()
+    (voc / "t.yaml").write_text(
+        "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, bafu: ['(']}\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(pipeline, "bafu_names", lambda: {"2026-v1": ["Brass, at plant"]})
+    assert pipeline.main(["bafu"]) == 1
+    assert "t/t01: bafu pattern '(':" in capsys.readouterr().err

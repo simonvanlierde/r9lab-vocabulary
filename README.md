@@ -28,7 +28,8 @@ Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
 PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and R9lab CPV codes. Materials and components also
 carry candidate patterns for BAFU activity names, checked against BAFU:2025 v2 and BAFU:2026 v1
-and written out as `dist/bafu-candidates.csv` with a match count per release.
+and written out as `dist/bafu-candidates.csv` with a match count per release. A pattern is a Python regular
+expression matched case-insensitively anywhere in the name (`re.search`).
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code

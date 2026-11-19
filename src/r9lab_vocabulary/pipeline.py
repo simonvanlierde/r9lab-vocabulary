@@ -13,6 +13,7 @@ import argparse
 import csv
 import io
 import json
+import shutil
 import sqlite3
 import sys
 import tarfile
@@ -75,7 +76,8 @@ def parse_bafu(payload: bytes) -> list[dict[str, str]]:
             msg = f"expected one lci/databases.db in the Brightway project archive, found {len(members)}"
             raise ValueError(msg)
         db = Path(tmp) / "databases.db"
-        db.write_bytes(f.read())
+        with db.open("wb") as out:
+            shutil.copyfileobj(f, out)
         con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
         try:
             query = (
@@ -216,8 +218,12 @@ def bafu(release: str | None) -> int:
     if release is not None and release not in names:
         sys.stderr.write(f"error: no BAFU release {release!r}; known: {', '.join(names)}\n")
         return 2
+    schemes = scheme.load(VOCABULARY)
+    if errors := scheme.validate(schemes, set(names)):
+        sys.stderr.writelines(f"error: {e}\n" for e in errors)
+        return 1
     wanted = names if release is None else {release: names[release]}
-    for slug, cid, rel, pattern, hits in scheme.bafu_matches(scheme.load(VOCABULARY), wanted):
+    for slug, cid, rel, pattern, hits in scheme.bafu_matches(schemes, wanted):
         sys.stdout.writelines(f"{slug}/{cid}\t{rel}\t{pattern}\t{name}\n" for name in hits)
     return 0
 

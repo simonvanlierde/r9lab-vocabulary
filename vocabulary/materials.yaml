@@ -6,8 +6,9 @@
 # Mappings: cpc = CPC 2.1 subclass for the material in primary or semi-finished form
 # (close when the subclass is that material, broad when it covers more); pmdco = PMDco
 # v3.1.2; wd = Wikidata. `bafu` holds candidate regular expressions over BAFU activity
-# names, matched case-insensitively against every BAFU release in sources.toml (obsolete
-# "xx" datasets skipped); `just rdf` fails on a pattern that matches nothing. A name only
+# names, matched case-insensitively (Python `re.search`) against every BAFU release in sources.toml (obsolete
+# "xx" datasets skipped); `just rdf` fails on a pattern that matches nothing, and the
+# published tests on a branch of a (a|b) group that matches nothing. A name only
 # some releases use goes in as `{pattern: '...', releases: [2026-v1]}`. `just bafu` lists
 # what each pattern catches.
 # Ids are opaque and never reused: deprecate, never delete.
@@ -56,7 +57,7 @@ concepts:
     definition: Aluminium and its wrought and cast alloys.
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0020186', 'wd:Q447725'], close: ['cpc:41431']}
-    bafu: ['^aluminium, (primary|secondary|production mix|wrought alloy|cast alloy)', '^sheet rolling, aluminium']
+    bafu: ['^aluminium, (primary|secondary|production mix)', '^sheet rolling, aluminium']
   m0008:
     label: magnesium alloy
     definition: Alloys based on magnesium, usually die-cast.
@@ -135,7 +136,7 @@ concepts:
     note: Includes HDPE, LDPE and LLDPE.
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050005', 'wd:Q143429'], close: ['cpc:34710']}
-    bafu: ['^polyethylene, (hdpe|ldpe|lldpe|high density|low density|linear low density)']
+    bafu: ['^polyethylene, (hdpe|ldpe|lldpe)']
   m0023:
     label: polypropylene
     broader: [m0021]
