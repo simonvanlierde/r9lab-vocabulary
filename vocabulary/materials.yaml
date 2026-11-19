@@ -6,7 +6,10 @@
 # Mappings: cpc = CPC 2.1 subclass for the material in primary or semi-finished form
 # (close when the subclass is that material, broad when it covers more); pmdco = PMDco
 # v3.1.2; wd = Wikidata. `bafu` holds candidate regular expressions over BAFU activity
-# names, written against the 2025 v2 names and not yet run against BAFU:2026.
+# names, matched case-insensitively against every BAFU release in sources.toml (obsolete
+# "xx" datasets skipped); `just rdf` fails on a pattern that matches nothing. A name only
+# some releases use goes in as `{pattern: '...', releases: [2026-v1]}`. `just bafu` lists
+# what each pattern catches.
 # Ids are opaque and never reused: deprecate, never delete.
 scheme:
   slug: materials
@@ -87,7 +90,7 @@ concepts:
     label: tin
     broader: [m0006]
     mappings: {exact: ['wd:Q1096'], close: ['cpc:41443']}
-    bafu: ['^tin\b']
+    bafu: ['^tin, ']
   m0014:
     label: nickel
     broader: [m0006]
@@ -149,7 +152,7 @@ concepts:
     note: ABS.
     broader: [m0021]
     mappings: {exact: ['wd:Q143496'], broad: ['cpc:34720']}
-    bafu: ['^acrylonitrile-butadiene-styrene', '^abs\b']
+    bafu: ['^acrylonitrile-butadiene-styrene']
   m0026:
     label: polycarbonate
     broader: [m0021]
@@ -251,7 +254,7 @@ concepts:
     label: glass fibre
     broader: [m0043]
     mappings: {exact: ['wd:Q5861'], close: ['cpc:3712']}
-    bafu: ['^glass fibre$']
+    bafu: ['^glass fibre, at plant']
   m0046:
     label: ceramic
     definition: Inorganic non-metallic crystalline solid formed by heat.

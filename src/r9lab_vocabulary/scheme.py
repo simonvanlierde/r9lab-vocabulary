@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 
 import yaml
 from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Graph, Literal, Namespace, URIRef
+from yaml.constructor import ConstructorError
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -43,6 +44,8 @@ RELATIONS = {
     "related": SKOS.relatedMatch,
 }
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
+# BAFU marks a withdrawn dataset by prefixing its name with "xx" or "xxx"; patterns skip them.
+OBSOLETE = re.compile(r"^xx", re.IGNORECASE)
 LANG = "en"
 
 
@@ -60,11 +63,21 @@ class Scheme:
         return f"{BASE}{self.slug}/"
 
 
+class _UniqueKeyLoader(yaml.SafeLoader):
+    """SafeLoader that refuses a repeated mapping key, which PyYAML would let overwrite the first."""
+
+    def construct_mapping(self, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:  # noqa: FBT001, FBT002
+        keys = [self.construct_object(k, deep=deep) for k, _ in node.value]
+        if dupes := sorted({str(k) for k in keys if keys.count(k) > 1}):
+            raise ConstructorError(None, None, f"repeated key {', '.join(dupes)}", node.start_mark)
+        return super().construct_mapping(node, deep=deep)
+
+
 def load(directory: Path) -> dict[str, Scheme]:
-    """Every `*.yaml` scheme in `directory`, keyed by slug."""
+    """Every `*.yaml` scheme in `directory`, keyed by slug. A repeated key in a file is an error."""
     schemes = {}
     for path in sorted(directory.glob("*.yaml")):
-        doc = yaml.safe_load(path.read_text(encoding="utf-8"))
+        doc = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)  # noqa: S506
         slug = doc["scheme"]["slug"]
         if slug in schemes or slug in PREFIXES:
             msg = f"{path.name}: scheme slug {slug!r} is already taken"
@@ -81,15 +94,18 @@ def mappings(concept: dict[str, Any]) -> Iterable[tuple[str, str, str]]:
             yield relation, prefix, local
 
 
-def validate(schemes: dict[str, Scheme]) -> list[str]:
-    """Every rule the vocabulary breaks, as `scheme/id: message`; empty when it is sound."""
+def validate(schemes: dict[str, Scheme], releases: set[str]) -> list[str]:
+    """Every rule the vocabulary breaks, as `scheme/id: message`; empty when it is sound.
+
+    `releases` are the BAFU releases a scoped `bafu` pattern may name.
+    """
     errors: list[str] = []
     for scheme in schemes.values():
-        errors += _validate_scheme(scheme, schemes)
+        errors += _validate_scheme(scheme, schemes, releases)
     return errors
 
 
-def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme]) -> list[str]:
+def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], releases: set[str]) -> list[str]:
     errors = []
     letter = scheme.meta.get("id_letter")
     for cid, c in scheme.concepts.items():
@@ -100,7 +116,7 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme]) -> list[str]:
             errors.append(f"{where}: no label")
         errors += _validate_links(where, c, scheme)
         errors += _validate_mappings(where, c, schemes)
-        errors += _validate_patterns(where, c)
+        errors += _validate_patterns(where, c, releases)
     errors += _duplicates(
         scheme, "label", lambda c: None if c.get("deprecated") else str(c.get("label", "")).casefold()
     )
@@ -138,17 +154,78 @@ def _validate_links(where: str, c: dict[str, Any], scheme: Scheme) -> list[str]:
     return errors
 
 
-def _validate_patterns(where: str, c: dict[str, Any]) -> list[str]:
-    errors = []
-    for pattern in c.get("bafu") or []:
+def bafu_patterns(c: dict[str, Any]) -> list[tuple[str, list[str] | None]]:
+    """(pattern, releases) for each `bafu` entry; releases is None for one that applies to every release.
+
+    An entry is a pattern string, or `{pattern: ..., releases: [2026-v1, ...]}` for a name
+    that only some releases use.
+    """
+    out: list[tuple[str, list[str] | None]] = []
+    for entry in c.get("bafu") or []:
+        if isinstance(entry, dict):
+            out.append((str(entry.get("pattern", "")), [str(r) for r in entry.get("releases") or []]))
+        else:
+            out.append((str(entry), None))
+    return out
+
+
+def _bad_bafu_entry(entry: object) -> bool:
+    if isinstance(entry, dict):
+        scoped = entry.get("releases")
+        return (
+            set(entry) != {"pattern", "releases"}
+            or _bad_bafu_entry(entry["pattern"])
+            or not isinstance(scoped, list)
+            or not scoped
+            or not all(isinstance(r, str) for r in scoped)
+        )
+    return not isinstance(entry, str) or not entry.strip()
+
+
+def _validate_patterns(where: str, c: dict[str, Any], releases: set[str]) -> list[str]:
+    entries = c.get("bafu") or []
+    if not isinstance(entries, list):
+        return [f"{where}: bafu must be a list of patterns"]
+    errors = [
+        f"{where}: bafu entry {entry!r} must be a non-empty pattern or exactly a pattern and a non-empty releases list"
+        for entry in entries
+        if _bad_bafu_entry(entry)
+    ]
+    if errors:
+        return errors
+    for pattern, scoped in bafu_patterns(c):
         try:
             re.compile(pattern)
         except re.error as e:
             errors.append(f"{where}: bafu pattern {pattern!r}: {e}")
+        errors.extend(
+            f"{where}: bafu pattern {pattern!r} names unknown release {r!r}" for r in scoped or [] if r not in releases
+        )
     return errors
 
 
+def bafu_matches(schemes: dict[str, Scheme], names: dict[str, list[str]]) -> list[tuple[str, str, str, str, list[str]]]:
+    """(scheme, id, release, pattern, matched names) for each pattern and each release in `names` it applies to.
+
+    A pattern matches a name by case-insensitive search, over live activities only.
+    Deprecated concepts are skipped. Call it on a vocabulary `validate` passed.
+    """
+    live = {release: [n for n in names[release] if not OBSOLETE.match(n)] for release in sorted(names)}
+    return [
+        (scheme.slug, cid, release, pattern, [n for n in ns if re.search(pattern, n, re.IGNORECASE)])
+        for scheme in schemes.values()
+        for cid, c in scheme.concepts.items()
+        if not c.get("deprecated")
+        for pattern, scoped in bafu_patterns(c)
+        for release, ns in live.items()
+        if scoped is None or release in scoped
+    ]
+
+
 def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]) -> list[str]:
+    raw = c.get("mappings") or {}
+    if not isinstance(raw, dict) or not all(isinstance(v, list) for v in raw.values()):
+        return [f"{where}: mappings must map each relation to a list of CURIEs"]
     errors = []
     relation_of: dict[str, str] = {}
     for relation, prefix, local in mappings(c):
@@ -282,8 +359,13 @@ def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], version: str) 
         g.add((node, SKOS.prefLabel, Literal(code, lang=LANG)))
 
 
-def write(schemes: dict[str, Scheme], version: str, out: Path) -> list[Path]:
-    """Write `r9lab-vocabulary.ttl`, `.jsonld` and `bafu-candidates.csv` into `out`."""
+def write(
+    schemes: dict[str, Scheme], version: str, out: Path, matches: list[tuple[str, str, str, str, list[str]]]
+) -> list[Path]:
+    """Write `r9lab-vocabulary.ttl`, `.jsonld` and `bafu-candidates.csv` into `out`.
+
+    `matches` is `bafu_matches`: the CSV has one row per pattern and release, with its match count.
+    """
     out.mkdir(parents=True, exist_ok=True)
     g = to_graph(schemes, version)
     ttl, jsonld, bafu = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "bafu-candidates.csv"
@@ -291,9 +373,7 @@ def write(schemes: dict[str, Scheme], version: str, out: Path) -> list[Path]:
     g.serialize(jsonld, format="json-ld", auto_compact=True)
     with bafu.open("w", encoding="utf-8", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["concept", "label", "pattern"])
-        for scheme in schemes.values():
-            for cid, c in scheme.concepts.items():
-                for pattern in c.get("bafu") or []:
-                    w.writerow([scheme.iri + cid, c["label"], pattern])
+        w.writerow(["concept", "label", "release", "pattern", "matches"])
+        for slug, cid, release, pattern, hits in matches:
+            w.writerow([schemes[slug].iri + cid, schemes[slug].concepts[cid]["label"], release, pattern, len(hits)])
     return [ttl, jsonld, bafu]

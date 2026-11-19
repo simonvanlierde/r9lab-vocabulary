@@ -2,8 +2,9 @@
 
 The source stages come from sourceledger: each download gets a fetch record, and every
 output row names the bytes it came from (see https://github.com/simonvanlierde/sourceledger).
-What is this project's own is `parse`, which reads each raw file, and the `rdf` and
-`wikidata` commands, which turn `vocabulary/*.yaml` into SKOS and check its Wikidata links.
+What is this project's own is `parse`, which reads each raw file, and the `rdf`, `bafu` and
+`wikidata` commands, which turn `vocabulary/*.yaml` into SKOS, list what each BAFU pattern
+matches, and check its Wikidata links.
 """
 
 from __future__ import annotations
@@ -12,9 +13,14 @@ import argparse
 import csv
 import io
 import json
+import sqlite3
 import sys
+import tarfile
+import tempfile
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
+import zipfile
 from importlib.metadata import version
 from pathlib import Path
 from typing import NoReturn
@@ -30,6 +36,55 @@ DIST = Path("dist")
 PROCESSED = Path("data/processed")
 USER_AGENT = "r9lab-vocabulary (https://github.com/simonvanlierde/r9lab-vocabulary)"
 CPC_SOURCE, PMDCO_SOURCE, WIKIDATA = "cpc21", "pmdco", "wd"
+BAFU_SOURCE = "bafu-"  # id prefix: one source per release, `bafu-2026-v1`
+BAFU_COLUMNS = ["code", "name", "location"]
+IMPLEMENTED = "implemented"
+
+
+def parse_bafu(payload: bytes) -> list[dict[str, str]]:
+    """Each activity of a BAFU release as code, name and location. Amounts are never read.
+
+    Takes either packaging the release comes in: an EcoSpold1 zip (one process per XML
+    file, as FOEN publishes it) or a Brightway project archive (names in `lci/databases.db`).
+    """
+    if zipfile.is_zipfile(io.BytesIO(payload)):
+        rows = []
+        with zipfile.ZipFile(io.BytesIO(payload)) as z:
+            for member in sorted(z.namelist()):
+                if not member.endswith(".xml"):
+                    continue
+                # The archive is pinned by SHA-256, and expat since 2.6 caps entity expansion.
+                root = ET.fromstring(z.read(member))  # noqa: S314
+                ref, geo = root.find(".//{*}referenceFunction"), root.find(".//{*}geography")
+                if ref is None:
+                    msg = f"{member}: no referenceFunction"
+                    raise ValueError(msg)
+                code = Path(member).stem.removeprefix("process_")
+                rows.append(
+                    {
+                        "code": code,
+                        "name": ref.get("name", ""),
+                        "location": "" if geo is None else geo.get("location", ""),
+                    }
+                )
+        return rows
+    with tarfile.open(fileobj=io.BytesIO(payload)) as t, tempfile.TemporaryDirectory() as tmp:
+        members = [m for m in t.getmembers() if m.name.endswith("/lci/databases.db")]
+        f = t.extractfile(members[0]) if len(members) == 1 else None
+        if f is None:
+            msg = f"expected one lci/databases.db in the Brightway project archive, found {len(members)}"
+            raise ValueError(msg)
+        db = Path(tmp) / "databases.db"
+        db.write_bytes(f.read())
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        try:
+            query = (
+                "SELECT code, name, location FROM activitydataset"
+                " WHERE type IN ('process', 'processwithreferenceproduct') ORDER BY code"
+            )
+            return [dict(zip(BAFU_COLUMNS, (r or "" for r in row), strict=True)) for row in con.execute(query)]
+        finally:
+            con.close()
 
 
 def parse(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str]]]:
@@ -47,6 +102,8 @@ def parse(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str
             if str(s).startswith(prefix) and getattr(o, "language", None) in {"en", None}
         }
         return ["id", "label"], [{"id": s.removeprefix(prefix), "label": labels[s]} for s in sorted(labels)]
+    if source["id"].startswith(BAFU_SOURCE):
+        return BAFU_COLUMNS, parse_bafu(payload)
     return sourceledger.parse_source(source, payload)
 
 
@@ -62,18 +119,43 @@ def known_codes() -> dict[str, set[str]]:
     }
 
 
+def bafu_names() -> dict[str, list[str]]:
+    """The activity names of each BAFU release in sources.toml, keyed as the YAML keys them (`2026-v1`)."""
+    ids = [
+        s["id"]
+        for s in sourceledger.load_manifest()
+        if s["id"].startswith(BAFU_SOURCE) and s.get("status") == IMPLEMENTED
+    ]
+    paths = {i: PROCESSED / f"{i}.parquet" for i in ids}
+    if missing := [str(p) for p in paths.values() if not p.exists()]:
+        msg = f"{', '.join(missing)} missing; run `just fetch build` first"
+        raise FileNotFoundError(msg)
+    return {i.removeprefix(BAFU_SOURCE): [r["name"] for r in sourceledger.read_output(p)] for i, p in paths.items()}
+
+
 def rdf(out: Path) -> int:
     """Check the vocabulary against itself and the pinned sources, then write it to `out`."""
     schemes = scheme.load(VOCABULARY)
     try:
-        errors = scheme.validate(schemes) + scheme.check_codes(schemes, known_codes())
+        known = known_codes()
+        names = bafu_names()
+        errors = scheme.validate(schemes, set(names)) + scheme.check_codes(schemes, known)
     except FileNotFoundError as e:
         sys.stderr.write(f"error: {e}\n")
         return 3
+    if errors:  # a broken pattern would not compile below
+        sys.stderr.writelines(f"error: {e}\n" for e in errors)
+        return 1
+    matches = scheme.bafu_matches(schemes, names)
+    errors = [
+        f"{slug}/{cid}: bafu pattern {pattern!r} matches no live activity in BAFU {release}"
+        for slug, cid, release, pattern, hits in matches
+        if not hits
+    ]
     if errors:
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
-    for path in scheme.write(schemes, version("r9lab-vocabulary"), out):
+    for path in scheme.write(schemes, version("r9lab-vocabulary"), out, matches):
         sys.stdout.write(f"{path}\n")
     return 0
 
@@ -124,8 +206,24 @@ def wikidata() -> int:
     return 1 if bad else 0
 
 
+def bafu(release: str | None) -> int:
+    """Print every activity each `bafu` pattern matches, to review what a pattern catches."""
+    try:
+        names = bafu_names()
+    except FileNotFoundError as e:
+        sys.stderr.write(f"error: {e}\n")
+        return 3
+    if release is not None and release not in names:
+        sys.stderr.write(f"error: no BAFU release {release!r}; known: {', '.join(names)}\n")
+        return 2
+    wanted = names if release is None else {release: names[release]}
+    for slug, cid, rel, pattern, hits in scheme.bafu_matches(scheme.load(VOCABULARY), wanted):
+        sys.stdout.writelines(f"{slug}/{cid}\t{rel}\t{pattern}\t{name}\n" for name in hits)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
-    """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]` or `wikidata`."""
+    """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `bafu [--release R]` or `wikidata`."""
     args = sys.argv[1:] if argv is None else argv
     if args[:1] == ["rdf"]:
         p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
@@ -133,12 +231,16 @@ def main(argv: list[str] | None = None) -> int:
         return rdf(p.parse_args(args[1:]).out)
     if args[:1] == ["wikidata"]:
         return wikidata()
+    if args[:1] == ["bafu"]:
+        p = argparse.ArgumentParser(prog="r9lab-vocabulary bafu", description=bafu.__doc__)
+        p.add_argument("--release", help="one release, such as 2026-v1 (default: all)")
+        return bafu(p.parse_args(args[1:]).release)
     return sourceledger.main(args, parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
 
 
 def entry() -> NoReturn:
     """The `r9lab-vocabulary` command."""
-    if sys.argv[1:2] in (["rdf"], ["wikidata"]):
+    if sys.argv[1:2] in (["rdf"], ["wikidata"], ["bafu"]):
         sys.exit(main())
     sourceledger.entry(parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
 

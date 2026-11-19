@@ -33,7 +33,9 @@ well in review and carry comments; the build adds the inverse links (`narrower`,
 * UNU-KEY and R9lab CPV codes become code-only concept schemes minted here: UNU-KEY names are
   CC BY-NC-SA, so only codes are kept.
 * BAFU activities have no IRIs, so the BAFU link is a list of name patterns written out as a
-  CSV, not RDF.
+  CSV, not RDF. Each BAFU release is its own pinned source, read for activity names only, and
+  every pattern must match a live activity in each release it applies to. A pattern can be
+  scoped to some releases, so one file follows the annual releases without forking.
 
 ### Consequences
 

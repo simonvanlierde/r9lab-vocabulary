@@ -17,7 +17,7 @@ concepts:
     note: BAFU has no LiCoO2 cell, the usual phone and tablet chemistry; NMC is the nearest.
     broader: [c0001]
     mappings: {exact: ['wd:Q2822895'], broad: ['cpc:46420']}
-    bafu: ['li-?ion|\blilo\b|\bnmc|\bnca\b|\blfp\b|\blto\b|\blmo\b']
+    bafu: ['^battery( cell)?, (li-?ion|liio|lfp|lto|lmo|nca|nmc)']
   c0003:
     label: nickel-metal hydride battery
     broader: [c0001]
@@ -38,7 +38,7 @@ concepts:
     definition: Printed circuit board with its components mounted.
     related: [c0005]
     mappings: {exact: ['wd:Q3951866']}
-    bafu: ['^printed wiring board, (surface-mounted|through-hole mounted|mixed mounted)', 'mainboard', '^psu board']
+    bafu: ['^printed wiring board, (surface-mounted|through-hole mounted|mixed mounted)', 'mainboard', '^printed wiring board, power supply unit']
   c0007:
     label: electronic component
     definition: Discrete electronic part, mounted or loose.
@@ -63,7 +63,7 @@ concepts:
     label: light-emitting diode
     broader: [c0007]
     mappings: {exact: ['wd:Q25504'], broad: ['cpc:47150']}
-    bafu: ['^light emitting diode', '^led\b(?! (module|screen))']
+    bafu: ['^light emitting diode']
   c0012:
     label: inductor
     broader: [c0007]
@@ -90,7 +90,7 @@ concepts:
     label: cable
     definition: Insulated wire or cable assembly, with or without plugs.
     mappings: {exact: ['wd:Q188447'], close: ['cpc:463']}
-    bafu: ['^cable, ', 'connector cable', 'network cable', 'ribbon cable']
+    bafu: ['^cable, ', '^plugs, inlet and outlet']
   c0018:
     label: magnet
     mappings: {exact: ['wd:Q11421'], broad: ['cpc:4693']}
