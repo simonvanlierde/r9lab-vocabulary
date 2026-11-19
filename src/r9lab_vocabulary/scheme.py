@@ -44,8 +44,8 @@ RELATIONS = {
     "related": SKOS.relatedMatch,
 }
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
-# BAFU marks a withdrawn dataset by prefixing its name with "xx" or "xxx"; patterns skip them.
-OBSOLETE = re.compile(r"^xx", re.IGNORECASE)
+# A match: (scheme slug, concept id, family, version, pattern, matched names).
+Match = tuple[str, str, str, str, str, list[str]]
 LANG = "en"
 
 
@@ -94,18 +94,19 @@ def mappings(concept: dict[str, Any]) -> Iterable[tuple[str, str, str]]:
             yield relation, prefix, local
 
 
-def validate(schemes: dict[str, Scheme], releases: set[str]) -> list[str]:
+def validate(schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
     """Every rule the vocabulary breaks, as `scheme/id: message`; empty when it is sound.
 
-    `releases` are the BAFU releases a scoped `bafu` pattern may name.
+    `versions` maps each name-list family (`bafu`) to its pinned versions (`2026-v1`): a
+    `names` entry for another family, or scoped to another version, is an error.
     """
     errors: list[str] = []
     for scheme in schemes.values():
-        errors += _validate_scheme(scheme, schemes, releases)
+        errors += _validate_scheme(scheme, schemes, versions)
     return errors
 
 
-def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], releases: set[str]) -> list[str]:
+def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
     errors = []
     letter = scheme.meta.get("id_letter")
     for cid, c in scheme.concepts.items():
@@ -116,7 +117,7 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], releases: set[s
             errors.append(f"{where}: no label")
         errors += _validate_links(where, c, scheme)
         errors += _validate_mappings(where, c, schemes)
-        errors += _validate_patterns(where, c, releases)
+        errors += _validate_names(where, c, versions)
     errors += _duplicates(
         scheme, "label", lambda c: None if c.get("deprecated") else str(c.get("label", "")).casefold()
     )
@@ -154,72 +155,82 @@ def _validate_links(where: str, c: dict[str, Any], scheme: Scheme) -> list[str]:
     return errors
 
 
-def bafu_patterns(c: dict[str, Any]) -> list[tuple[str, list[str] | None]]:
-    """(pattern, releases) for each `bafu` entry; releases is None for one that applies to every release.
+def name_patterns(c: dict[str, Any]) -> list[tuple[str, str, list[str] | None]]:
+    """(family, pattern, versions) for each `names` entry; versions is None for one that applies to every version.
 
-    An entry is a pattern string, or `{pattern: ..., releases: [2026-v1, ...]}` for a name
-    that only some releases use.
+    `names` maps a family to its patterns. An entry is a pattern string, or
+    `{pattern: ..., versions: [2026-v1, ...]}` for a name that only some versions use.
     """
-    out: list[tuple[str, list[str] | None]] = []
-    for entry in c.get("bafu") or []:
-        if isinstance(entry, dict):
-            out.append((str(entry.get("pattern", "")), [str(r) for r in entry.get("releases") or []]))
-        else:
-            out.append((str(entry), None))
+    out: list[tuple[str, str, list[str] | None]] = []
+    for family, entries in (c.get("names") or {}).items():
+        for entry in entries:
+            if isinstance(entry, dict):
+                out.append((family, str(entry["pattern"]), [str(v) for v in entry["versions"]]))
+            else:
+                out.append((family, str(entry), None))
     return out
 
 
-def _bad_bafu_entry(entry: object) -> bool:
+def _bad_name_entry(entry: object) -> bool:
     if isinstance(entry, dict):
-        scoped = entry.get("releases")
+        scoped = entry.get("versions")
         return (
-            set(entry) != {"pattern", "releases"}
-            or _bad_bafu_entry(entry["pattern"])
+            set(entry) != {"pattern", "versions"}
+            or _bad_name_entry(entry["pattern"])
             or not isinstance(scoped, list)
             or not scoped
-            or not all(isinstance(r, str) for r in scoped)
+            or not all(isinstance(v, str) for v in scoped)
         )
     return not isinstance(entry, str) or not entry.strip()
 
 
-def _validate_patterns(where: str, c: dict[str, Any], releases: set[str]) -> list[str]:
-    entries = c.get("bafu") or []
-    if not isinstance(entries, list):
-        return [f"{where}: bafu must be a list of patterns"]
+def _validate_names(where: str, c: dict[str, Any], versions: dict[str, set[str]]) -> list[str]:
+    families = c.get("names") or {}
+    if not isinstance(families, dict) or not all(isinstance(v, list) for v in families.values()):
+        return [f"{where}: names must map each family to a list of patterns"]
     errors = [
-        f"{where}: bafu entry {entry!r} must be a non-empty pattern or exactly a pattern and a non-empty releases list"
+        f"{where}: names family {f!r} has no pinned source in sources.toml" for f in families if f not in versions
+    ]
+    errors += [
+        f"{where}: names entry {entry!r} must be a non-empty pattern or exactly a pattern and a non-empty versions list"
+        for entries in families.values()
         for entry in entries
-        if _bad_bafu_entry(entry)
+        if _bad_name_entry(entry)
     ]
     if errors:
         return errors
-    for pattern, scoped in bafu_patterns(c):
+    for family, pattern, scoped in name_patterns(c):
         try:
             re.compile(pattern)
         except re.error as e:
-            errors.append(f"{where}: bafu pattern {pattern!r}: {e}")
+            errors.append(f"{where}: {family} pattern {pattern!r}: {e}")
         errors.extend(
-            f"{where}: bafu pattern {pattern!r} names unknown release {r!r}" for r in scoped or [] if r not in releases
+            f"{where}: {family} pattern {pattern!r} names unknown version {v!r}"
+            for v in scoped or []
+            if v not in versions[family]
         )
     return errors
 
 
-def bafu_matches(schemes: dict[str, Scheme], names: dict[str, list[str]]) -> list[tuple[str, str, str, str, list[str]]]:
-    """(scheme, id, release, pattern, matched names) for each pattern and each release in `names` it applies to.
+def name_matches(schemes: dict[str, Scheme], lists: dict[str, dict[str, list[str]]]) -> list[Match]:
+    """Each pattern against each version of its family it applies to, with the names it matches.
 
-    A pattern matches a name by case-insensitive search, over live activities only.
-    Deprecated concepts are skipped. Call it on a vocabulary `validate` passed.
+    `lists` maps family -> version -> names, already stripped of entries the family marks
+    obsolete. A pattern matches a name by case-insensitive search. Deprecated concepts are
+    skipped. Call it on a vocabulary `validate` passed.
     """
-    live = {release: [n for n in names[release] if not OBSOLETE.match(n)] for release in sorted(names)}
-    return [
-        (scheme.slug, cid, release, pattern, [n for n in ns if re.search(pattern, n, re.IGNORECASE)])
-        for scheme in schemes.values()
-        for cid, c in scheme.concepts.items()
-        if not c.get("deprecated")
-        for pattern, scoped in bafu_patterns(c)
-        for release, ns in live.items()
-        if scoped is None or release in scoped
-    ]
+    out: list[Match] = []
+    for scheme in schemes.values():
+        for cid, c in scheme.concepts.items():
+            if c.get("deprecated"):
+                continue
+            for family, pattern, scoped in name_patterns(c):
+                rx = re.compile(pattern, re.IGNORECASE)
+                for version in sorted(lists.get(family, {})):
+                    if scoped is None or version in scoped:
+                        hits = [n for n in lists[family][version] if rx.search(n)]
+                        out.append((scheme.slug, cid, family, version, pattern, hits))
+    return out
 
 
 def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]) -> list[str]:
@@ -359,21 +370,20 @@ def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], version: str) 
         g.add((node, SKOS.prefLabel, Literal(code, lang=LANG)))
 
 
-def write(
-    schemes: dict[str, Scheme], version: str, out: Path, matches: list[tuple[str, str, str, str, list[str]]]
-) -> list[Path]:
-    """Write `r9lab-vocabulary.ttl`, `.jsonld` and `bafu-candidates.csv` into `out`.
+def write(schemes: dict[str, Scheme], version: str, out: Path, matches: list[Match]) -> list[Path]:
+    """Write `r9lab-vocabulary.ttl`, `.jsonld` and `name-matches.csv` into `out`.
 
-    `matches` is `bafu_matches`: the CSV has one row per pattern and release, with its match count.
+    `matches` is `name_matches`: the CSV has one row per pattern and source (`bafu-2026-v1`), with its match count.
     """
     out.mkdir(parents=True, exist_ok=True)
     g = to_graph(schemes, version)
-    ttl, jsonld, bafu = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "bafu-candidates.csv"
+    ttl, jsonld, names = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "name-matches.csv"
     g.serialize(ttl, format="turtle")
     g.serialize(jsonld, format="json-ld", auto_compact=True)
-    with bafu.open("w", encoding="utf-8", newline="") as f:
+    with names.open("w", encoding="utf-8", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
-        w.writerow(["concept", "label", "release", "pattern", "matches"])
-        for slug, cid, release, pattern, hits in matches:
-            w.writerow([schemes[slug].iri + cid, schemes[slug].concepts[cid]["label"], release, pattern, len(hits)])
-    return [ttl, jsonld, bafu]
+        w.writerow(["concept", "label", "source", "pattern", "matches"])
+        for slug, cid, family, ver, pattern, hits in matches:
+            label = schemes[slug].concepts[cid]["label"]
+            w.writerow([schemes[slug].iri + cid, label, f"{family}-{ver}", pattern, len(hits)])
+    return [ttl, jsonld, names]
