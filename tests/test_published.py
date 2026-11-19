@@ -7,6 +7,7 @@ PIPELINE_OUTPUT_REQUIRED=1, so there a missing output fails instead of skipping.
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -41,3 +42,40 @@ def test_every_cpc_code_and_pmdco_id_is_in_the_pinned_sources(known: dict[str, s
 def test_the_pinned_sources_are_the_expected_size(known: dict[str, set[str]]):
     assert len(known["cpc"]) == 4596
     assert {"PMD_0000852", "PMD_0010003"} <= known["pmdco"]
+
+
+@pytest.fixture(scope="module")
+def bafu() -> Iterator[dict[str, list[str]]]:
+    before = Path.cwd()
+    os.chdir(ROOT)
+    try:
+        yield pipeline.bafu_names()
+    except FileNotFoundError as e:
+        if os.environ.get("PIPELINE_OUTPUT_REQUIRED") == "1":
+            pytest.fail(str(e))
+        pytest.skip(str(e))
+    finally:
+        os.chdir(before)
+
+
+def test_the_pinned_bafu_releases_are_the_published_size(bafu: dict[str, list[str]]):
+    # Process counts as published: 11,747 in 2025 v2 (bw2io databases.json), 11,947 in 2026 v1 (sentier-brightway).
+    assert {r: len(n) for r, n in bafu.items()} == {"2025-v2": 11747, "2026-v1": 11947}
+
+
+def test_every_bafu_pattern_matches_a_live_activity_in_every_release(bafu: dict[str, list[str]]):
+    misses = [m[:4] for m in scheme.bafu_matches(scheme.load(ROOT / "vocabulary"), bafu) if not m[4]]
+    assert misses == []
+
+
+def test_every_branch_of_a_bafu_alternation_matches_something(bafu: dict[str, list[str]]):
+    # The first (a|b|...) group of each pattern, one branch at a time: a dead branch passes the
+    # whole-pattern check while hiding a misspelt name. Nested groups are not split.
+    dead = []
+    for slug, cid, _, pattern, hits in scheme.bafu_matches(scheme.load(ROOT / "vocabulary"), bafu):
+        if m := re.search(r"\(([^()]*\|[^()]*)\)", pattern):
+            for branch in m.group(1).split("|"):
+                one = f"{pattern[: m.start()]}({branch}){pattern[m.end() :]}"
+                if not any(re.search(one, n, re.IGNORECASE) for n in hits):
+                    dead.append((f"{slug}/{cid}", pattern, branch))
+    assert sorted(set(dead)) == []

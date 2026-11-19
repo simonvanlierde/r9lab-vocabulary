@@ -36,3 +36,33 @@ id = "unu-keys-v2"
 name = "E-waste Statistics Guidelines, third edition (UNU-KEYs v2 and CPC 2.1 concordance)"
 status = "unimplemented"
 reason = "Tables are in a PDF under CC BY-NC-SA 4.0; codes are checked by hand until a reader exists. The scheme points to codes and copies no names."
+
+# BAFU releases, one source each, read for activity names only: `just rdf` fails when a
+# `bafu` pattern matches no live activity in a release it applies to. Add the next
+# release as one more block (id `bafu-<year>-v<n>`); the YAML keys releases by the part
+# after `bafu-`. The terms bar redistributing the data, so `redistribute = false` keeps
+# both out of the data release. Mirrors on files.brightway.dev, the same bytes Brightway
+# installs; the official route is openLCA Nexus (https://nexus.openlca.org/database/BAFU).
+[[source]]
+id = "bafu-2025-v2"
+name = "Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 (Brightway project)"
+status = "implemented"
+url = "https://files.brightway.dev/bafu-2025-v2.tar.gz"
+vintage = "BAFU:2025 v2"
+sha256 = "54cb370abba22ad1f6a9f6f9ef65f9fbad5a496fdf785cd5ad9517701b47a38e"
+terms = "BAFU:20XY Terms of Use (FOEN, 23 June 2026)"
+terms_url = "https://www.bafu.admin.ch/dam/en/sd-web/-9ZObeMCZy8A/BAFU-20XY%20Terms%20of%20Use_EN.pdf"
+license = "LicenseRef-BAFU-Terms-of-Use"
+redistribute = false
+
+[[source]]
+id = "bafu-2026-v1"
+name = "Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2026 v1 (EcoSpold1)"
+status = "implemented"
+url = "https://files.brightway.dev/bafu-2026-v1-ecospold.zip"
+vintage = "BAFU:2026 v1"
+sha256 = "cbaeed4ae79c0be98709c854211cd72725d4f22f8b9b3fe334b7f343fca152f5"
+terms = "BAFU:20XY Terms of Use (FOEN, 23 June 2026)"
+terms_url = "https://www.bafu.admin.ch/dam/en/sd-web/-9ZObeMCZy8A/BAFU-20XY%20Terms%20of%20Use_EN.pdf"
+license = "LicenseRef-BAFU-Terms-of-Use"
+redistribute = false

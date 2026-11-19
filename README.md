@@ -27,7 +27,9 @@ graph:
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
 PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and R9lab CPV codes. Materials and components also
-carry candidate patterns for BAFU activity names, written out as `dist/bafu-candidates.csv`.
+carry candidate patterns for BAFU activity names, checked against BAFU:2025 v2 and BAFU:2026 v1
+and written out as `dist/bafu-candidates.csv` with a match count per release. A pattern is a Python regular
+expression matched case-insensitively anywhere in the name (`re.search`).
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
@@ -39,13 +41,16 @@ Get the built files from the [releases](https://github.com/simonvanlierde/r9lab-
 or build them:
 
 ```sh
-just vocab       # fetch the pinned CPC 2.1 and PMDco files, then write dist/
+just vocab       # fetch the pinned CPC 2.1, PMDco and BAFU files, then write dist/
+just bafu        # print every BAFU activity each pattern matches
 just wikidata    # print every Wikidata link beside the item's current label
 ```
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
-a duplicate label, an `exactMatch` that is also a `broadMatch`, or a CPC code or PMDco id
-missing from the pinned files. It writes `dist/r9lab-vocabulary.ttl`, the same graph as
+a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
+missing from the pinned files, or a BAFU pattern that matches no live activity in a release.
+To follow a new BAFU release, add it to `sources.toml` as `bafu-<year>-v<n>`; a pattern for a
+name only some releases use is written `{pattern: '...', releases: [2026-v1]}`. It writes `dist/r9lab-vocabulary.ttl`, the same graph as
 JSON-LD, and `dist/bafu-candidates.csv`.
 
 ## Development

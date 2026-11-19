@@ -16,7 +16,7 @@ the identifiers, except where a concept's own label is the common name of the th
 | PMDco term IRIs | [materialdigital/core-ontology](https://github.com/materialdigital/core-ontology) v3.1.2 | CC BY 4.0 | `pmdco:` mappings |
 | Wikidata item ids | [Wikidata](https://www.wikidata.org) | CC0 1.0 | `wd:` mappings |
 | UNU-KEY v1 codes (codes only) | Forti et al., *E-waste Statistics: Guidelines on Classification, Reporting and Indicators*, 2nd ed., UNU, 2018 | CC BY-NC-SA 3.0 IGO; names not copied | `unu1:` mappings |
-| BAFU activity names, as regular expressions | Swiss FOEN LCA database (BAFU), names as of 2025 v2 | Patterns only, no data | `bafu` fields |
+| BAFU activity names, as regular expressions | Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 and BAFU:2026 v1 | Patterns only, no data | `bafu` fields |
 
 ## Source data
 
@@ -39,3 +39,5 @@ version of each source the pipeline has fetched, by checksum, and holds no value
 | --- | --- |
 | UN Central Product Classification (CPC) Version 2.1, structure file | [United Nations website terms of use](https://www.un.org/en/about-us/terms-of-use) |
 | Platform MaterialDigital core ontology (PMDco) v3.1.2 | [Attribution 4.0 International](https://github.com/materialdigital/core-ontology/blob/v3.1.2/LICENSE.txt) |
+| Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 (Brightway project) | [BAFU:20XY Terms of Use (FOEN, 23 June 2026)](https://www.bafu.admin.ch/dam/en/sd-web/-9ZObeMCZy8A/BAFU-20XY%20Terms%20of%20Use_EN.pdf) |
+| Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2026 v1 (EcoSpold1) | [BAFU:20XY Terms of Use (FOEN, 23 June 2026)](https://www.bafu.admin.ch/dam/en/sd-web/-9ZObeMCZy8A/BAFU-20XY%20Terms%20of%20Use_EN.pdf) |

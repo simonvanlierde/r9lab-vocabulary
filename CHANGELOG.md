@@ -11,7 +11,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Material classes topped by Ashby's six families, component classes, a first cut of product types, and the ten pilot material classes as a collection.
 - Crosswalks to CPC 2.1, PMDco v3.1.2, Wikidata, UNU-KEY v1 codes and R9lab CPV codes, plus candidate BAFU activity-name patterns.
-- `just rdf` checks the vocabulary and its CPC and PMDco links against pinned source files, then writes Turtle, JSON-LD and the BAFU candidates.
+- `just rdf` checks the vocabulary and its CPC and PMDco links against pinned source files, then writes Turtle, JSON-LD and the BAFU candidates. Each BAFU pattern must match an activity in every pinned release it applies to (BAFU:2025 v2 and BAFU:2026 v1).
+- `just bafu` prints every BAFU activity each pattern matches.
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD
