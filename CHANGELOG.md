@@ -14,5 +14,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just rdf` checks the vocabulary and its CPC and PMDco links against pinned source files, then writes Turtle, JSON-LD and the BAFU candidates. Each BAFU pattern must match an activity in every pinned release it applies to (BAFU:2025 v2 and BAFU:2026 v1).
 - `just bafu` prints every BAFU activity each pattern matches.
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
+- The weekly CI run checks every Wikidata link against the live API, so a merged or deleted item fails it.
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD
