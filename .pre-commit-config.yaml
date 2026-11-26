@@ -154,7 +154,7 @@ repos:
   # Misspelt words in code, comments and docs. It fixes the ones it is sure of and
   # fails, so you review the fix. List a word it must leave alone in _typos.toml.
   - repo: https://github.com/crate-ci/typos
-    rev: 2611abd15acb0c2e317fb9e45855aabb8b35a414 # frozen: v1.52.1
+    rev: 276087d9a4f06398b3e04825487805e2d7375888 # frozen: v1.52.2
     hooks:
       - id: typos
         # Copier writes the template's commit id here, and a hex id can spell a word

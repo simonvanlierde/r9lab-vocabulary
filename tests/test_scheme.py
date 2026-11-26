@@ -4,10 +4,12 @@ from pathlib import Path
 
 import pytest
 from rdflib import OWL, RDF, SKOS, XSD, Graph, Literal, URIRef
+from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
 
 Schemes = dict[str, scheme.Scheme]
+VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
 ROOT = Path(__file__).resolve().parent.parent
 # The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
 PILOT_KEYS = {
@@ -34,7 +36,7 @@ def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
 
 
 def test_the_vocabulary_breaks_no_rule(schemes: Schemes):
-    assert scheme.validate(schemes) == []
+    assert scheme.validate(schemes, VERSIONS) == []
 
 
 def test_the_pilot_collection_keeps_the_frozen_keys(schemes: Schemes):
@@ -59,7 +61,7 @@ def test_the_material_axis_is_topped_by_ashbys_six_families(schemes: Schemes):
 # rdflib's JSON-LD parser builds a ConjunctiveGraph internally whatever the caller passes.
 @pytest.mark.filterwarnings("ignore:ConjunctiveGraph is deprecated:DeprecationWarning")
 def test_every_concept_is_in_its_scheme_and_round_trips_through_turtle(schemes: Schemes, tmp_path: Path):
-    scheme.write(schemes, "test", tmp_path)
+    scheme.write(schemes, "test", tmp_path, [])
     g = Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
     for s in schemes.values():
         for cid in s.concepts:
@@ -98,18 +100,75 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "broader": ["t01"]}},
             "broader t01 is deprecated",
         ),
-        ({"t01": {"label": "a", "bafu": ["("]}}, "bafu pattern"),
+        ({"t01": {"label": "a", "names": {"bafu": ["("]}}}, "bafu pattern '('"),
+        ({"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x"}]}}}, "non-empty versions list"),
+        (
+            {"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x", "versions": ["2026-v1"], "since": 1}]}}},
+            "exactly a pattern",
+        ),
+        (
+            {"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x", "versions": ["2031-v1"]}]}}},
+            "unknown version '2031-v1'",
+        ),
+        ({"t01": {"label": "a", "names": {"ecoinvent": ["^x"]}}}, "family 'ecoinvent' has no pinned source"),
+        ({"t01": {"label": "a", "names": ["^ab"]}}, "names must map each family to a list"),
+        ({"t01": {"label": "a", "names": {"bafu": "^ab"}}}, "names must map each family to a list"),
+        ({"t01": {"label": "a", "names": {"bafu": [""]}}}, "must be a non-empty pattern"),
+        ({"t01": {"label": "a", "names": {"bafu": [None]}}}, "must be a non-empty pattern"),
+        (
+            {"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x", "versions": "2026-v1"}]}}},
+            "must be a non-empty pattern",
+        ),
+        ({"t01": {"label": "a", "mappings": {"exact": "wd:Q1"}}}, "mappings must map each relation to a list"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
-    errors = scheme.validate(one(concepts))
+    errors = scheme.validate(one(concepts), VERSIONS)
     assert any(message in e for e in errors), errors
 
 
 def test_a_deprecated_concept_is_marked_and_not_a_top_concept():
     schemes = one({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]}, "t02": {"label": "b"}})
-    assert scheme.validate(schemes) == []
+    assert scheme.validate(schemes, VERSIONS) == []
     g = scheme.to_graph(schemes, "test")
     old = URIRef(schemes["t"].iri + "t01")
     assert (old, OWL.deprecated, Literal("true", datatype=XSD.boolean)) in g
     assert (old, SKOS.topConceptOf, URIRef(schemes["t"].iri)) not in g
+
+
+def test_name_patterns_search_the_versions_they_apply_to():
+    schemes = one(
+        {
+            "t01": {
+                "label": "a",
+                "names": {"bafu": ["^steel sheet", {"pattern": "^tin\\b", "versions": ["2026-v1"]}]},
+            },
+            "t02": {"label": "b", "deprecated": True, "names": {"bafu": ["^steel"]}},
+        }
+    )
+    lists = {
+        "bafu": {
+            "2025-v2": ["Steel sheet, uncoated, at plant", "Tin, at plant"],
+            "2026-v1": ["STEEL SHEET, zinc-coated", "Tin, at regional storage", "Tinplate"],
+        }
+    }
+    assert scheme.name_matches(schemes, lists) == [
+        ("t", "t01", "bafu", "2025-v2", "^steel sheet", ["Steel sheet, uncoated, at plant"]),
+        ("t", "t01", "bafu", "2026-v1", "^steel sheet", ["STEEL SHEET, zinc-coated"]),
+        ("t", "t01", "bafu", "2026-v1", "^tin\\b", ["Tin, at regional storage"]),
+    ]
+
+
+def test_name_matches_has_one_row_per_pattern_and_source(tmp_path: Path):
+    schemes = one({"t01": {"label": "a", "names": {"bafu": ["^x"]}}})
+    scheme.write(schemes, "test", tmp_path, [("t", "t01", "bafu", "2026-v1", "^x", ["X, at plant", "x2"])])
+    assert (tmp_path / "name-matches.csv").read_text(encoding="utf-8").splitlines() == [
+        "concept,label,source,pattern,matches",
+        f"{schemes['t'].iri}t01,a,bafu-2026-v1,^x,2",
+    ]
+
+
+def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
+    (tmp_path / "t.yaml").write_text("scheme: {slug: t, title: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
+    with pytest.raises(ConstructorError, match="repeated key t01"):
+        scheme.load(tmp_path)

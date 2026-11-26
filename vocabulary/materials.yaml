@@ -5,8 +5,12 @@
 #
 # Mappings: cpc = CPC 2.1 subclass for the material in primary or semi-finished form
 # (close when the subclass is that material, broad when it covers more); pmdco = PMDco
-# v3.1.2; wd = Wikidata. `bafu` holds candidate regular expressions over BAFU activity
-# names, written against the 2025 v2 names and not yet run against BAFU:2026.
+# v3.1.2; wd = Wikidata. `names` holds candidate regular expressions per name list
+# (`bafu`: BAFU activity names), matched case-insensitively (Python `re.search`) against
+# every version of that list in sources.toml (withdrawn "xx" BAFU datasets skipped).
+# `just rdf` fails on a pattern that matches nothing, and the published tests on a branch
+# of a (a|b) group that matches nothing. A name only some versions use goes in as
+# `{pattern: '...', versions: [2026-v1]}`. `just names` lists what each pattern catches.
 # Ids are opaque and never reused: deprecate, never delete.
 scheme:
   slug: materials
@@ -30,19 +34,22 @@ concepts:
     definition: Steel without the chromium content of stainless steel, including galvanised sheet.
     broader: [m0002]
     mappings: {broad: ['pmdco:PMD_0020096', 'wd:Q11427'], close: ['cpc:41121']}
-    bafu: ['^steel, (converter|electric), (unalloyed|low-alloyed)', '^steel sheet', '^sheet rolling, steel']
+    names:
+      bafu: ['^steel, (converter|electric), (unalloyed|low-alloyed)', '^steel sheet', '^sheet rolling, steel']
   m0004:
     label: stainless steel
     definition: Chromium-bearing steel that resists corrosion.
     broader: [m0002]
     mappings: {exact: ['pmdco:PMD_0010003', 'wd:Q172587'], broad: ['cpc:41122']}
-    bafu: ['^chromium steel 18/8', '^sheet rolling, chromium steel']
+    names:
+      bafu: ['^chromium steel 18/8', '^sheet rolling, chromium steel']
   m0005:
     label: cast iron
     definition: Iron-carbon alloy shaped by casting.
     broader: [m0002]
     mappings: {exact: ['pmdco:PMD_0010002', 'wd:Q483269']}
-    bafu: ['^cast iron']
+    names:
+      bafu: ['^cast iron']
   m0006:
     label: non-ferrous metal
     definition: Metals and alloys not based on iron.
@@ -53,52 +60,61 @@ concepts:
     definition: Aluminium and its wrought and cast alloys.
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0020186', 'wd:Q447725'], close: ['cpc:41431']}
-    bafu: ['^aluminium, (primary|secondary|production mix|wrought alloy|cast alloy)', '^sheet rolling, aluminium']
+    names:
+      bafu: ['^aluminium, (primary|secondary|production mix)', '^sheet rolling, aluminium']
   m0008:
     label: magnesium alloy
     definition: Alloys based on magnesium, usually die-cast.
     broader: [m0006]
     mappings: {exact: ['wd:Q2180288']}
-    bafu: ['^magnesium-alloy']
+    names:
+      bafu: ['^magnesium-alloy']
   m0009:
     label: copper
     definition: Unalloyed copper, as in wire and foil.
     broader: [m0006]
     mappings: {exact: ['wd:Q753'], broad: ['cpc:41413']}
-    bafu: ['^copper, (primary|secondary|at regional storage)', '^copper sheet', '^wire drawing, copper']
+    names:
+      bafu: ['^copper, (primary|secondary|at regional storage)', '^copper sheet', '^wire drawing, copper']
   m0010:
     label: copper alloy
     definition: Alloys based on copper, such as brass and bronze.
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0020187'], broad: ['cpc:41413']}
-    bafu: ['^bronze']
+    names:
+      bafu: ['^bronze']
   m0011:
     label: brass
     definition: Copper-zinc alloy.
     broader: [m0010]
     mappings: {exact: ['wd:Q39782']}
-    bafu: ['^brass']
+    names:
+      bafu: ['^brass']
   m0012:
     label: zinc
     broader: [m0006]
     mappings: {exact: ['wd:Q758'], close: ['cpc:41442']}
-    bafu: ['^zinc, primary']
+    names:
+      bafu: ['^zinc, primary']
   m0013:
     label: tin
     broader: [m0006]
     mappings: {exact: ['wd:Q1096'], close: ['cpc:41443']}
-    bafu: ['^tin\b']
+    names:
+      bafu: ['^tin, ']
   m0014:
     label: nickel
     broader: [m0006]
     mappings: {exact: ['wd:Q744'], broad: ['cpc:4142']}
-    bafu: ['^nickel, 99\.5%']
+    names:
+      bafu: ['^nickel, 99\.5%']
   m0015:
     label: solder
     definition: Low-melting tin-based alloy joining electronic components.
     broader: [m0006]
     mappings: {exact: ['wd:Q866612'], broad: ['cpc:4154']}
-    bafu: ['^solder, (bar|paste)']
+    names:
+      bafu: ['^solder, (bar|paste)']
   m0016:
     label: precious metal
     broader: [m0006]
@@ -107,17 +123,20 @@ concepts:
     label: gold
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010015', 'wd:Q897'], close: ['cpc:4132']}
-    bafu: ['^gold\b']
+    names:
+      bafu: ['^gold\b']
   m0018:
     label: silver
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010016', 'wd:Q1090'], close: ['cpc:4131']}
-    bafu: ['^silver\b']
+    names:
+      bafu: ['^silver\b']
   m0019:
     label: palladium
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010018', 'wd:Q1089']}
-    bafu: ['^palladium']
+    names:
+      bafu: ['^palladium']
   m0020:
     label: polymer
     definition: Plastics, thermoplastic or thermosetting (Ashby's polymer family; elastomers are their own family).
@@ -132,29 +151,34 @@ concepts:
     note: Includes HDPE, LDPE and LLDPE.
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050005', 'wd:Q143429'], close: ['cpc:34710']}
-    bafu: ['^polyethylene, (hdpe|ldpe|lldpe|high density|low density|linear low density)']
+    names:
+      bafu: ['^polyethylene, (hdpe|ldpe|lldpe)']
   m0023:
     label: polypropylene
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050009', 'wd:Q146174'], broad: ['cpc:34790']}
-    bafu: ['^polypropylene']
+    names:
+      bafu: ['^polypropylene']
   m0024:
     label: polystyrene
     note: Includes GPPS, HIPS and EPS.
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050016', 'wd:Q146243'], broad: ['cpc:34720']}
-    bafu: ['^polystyrene']
+    names:
+      bafu: ['^polystyrene']
   m0025:
     label: acrylonitrile butadiene styrene
     note: ABS.
     broader: [m0021]
     mappings: {exact: ['wd:Q143496'], broad: ['cpc:34720']}
-    bafu: ['^acrylonitrile-butadiene-styrene', '^abs\b']
+    names:
+      bafu: ['^acrylonitrile-butadiene-styrene']
   m0026:
     label: polycarbonate
     broader: [m0021]
     mappings: {exact: ['wd:Q62246'], broad: ['cpc:34740']}
-    bafu: ['^polycarbonate']
+    names:
+      bafu: ['^polycarbonate, ']
   m0027:
     label: polycarbonate/ABS blend
     definition: Blend of polycarbonate and ABS, common in device housings.
@@ -165,25 +189,29 @@ concepts:
     note: PMMA, acrylic.
     broader: [m0021]
     mappings: {exact: ['wd:Q146123'], broad: ['cpc:34790']}
-    bafu: ['^polymethyl methacrylate']
+    names:
+      bafu: ['^polymethyl methacrylate']
   m0029:
     label: polyvinyl chloride
     note: PVC.
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050013', 'wd:Q146368'], broad: ['cpc:34730']}
-    bafu: ['^polyvinylchloride']
+    names:
+      bafu: ['^polyvinylchloride, ']
   m0030:
     label: polyethylene terephthalate
     note: PET.
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050019', 'wd:Q145863'], broad: ['cpc:34740']}
-    bafu: ['^polyethylene terephthalate']
+    names:
+      bafu: ['^polyethylene terephthalate']
   m0031:
     label: polyamide
     note: PA6, PA66 and other nylons.
     broader: [m0021]
     mappings: {exact: ['wd:Q145273'], broad: ['cpc:34790']}
-    bafu: ['^nylon 6']
+    names:
+      bafu: ['^nylon 6']
   m0032:
     label: polyoxymethylene
     note: POM, acetal. No BAFU dataset; needs a proxy.
@@ -203,7 +231,8 @@ concepts:
     label: epoxy resin
     broader: [m0034]
     mappings: {exact: ['pmdco:PMD_0050023', 'wd:Q143983'], broad: ['cpc:34740']}
-    bafu: ['^epoxy resin']
+    names:
+      bafu: ['^epoxy resin, ']
   m0036:
     label: phenolic resin
     note: Phenol formaldehyde (PF), Bakelite.
@@ -214,7 +243,8 @@ concepts:
     note: Rigid and flexible PUR, as foam or solid.
     broader: [m0020]
     mappings: {exact: ['wd:Q146322'], broad: ['cpc:34790']}
-    bafu: ['^polyurethane, (flexible|rigid) foam']
+    names:
+      bafu: ['^polyurethane, (flexible|rigid) foam']
   m0038:
     label: elastomer
     definition: Rubbery polymer that recovers its shape after large strain.
@@ -227,12 +257,14 @@ concepts:
     label: synthetic rubber
     broader: [m0038]
     mappings: {exact: ['pmdco:PMD_0050032', 'wd:Q6714735'], close: ['cpc:34800']}
-    bafu: ['^synthetic rubber']
+    names:
+      bafu: ['^synthetic rubber']
   m0041:
     label: silicone rubber
     broader: [m0038]
     mappings: {exact: ['pmdco:PMD_0090052', 'wd:Q4115245']}
-    bafu: ['^silicone product']
+    names:
+      bafu: ['^silicone product']
   m0042:
     label: thermoplastic elastomer
     note: TPE.
@@ -246,12 +278,14 @@ concepts:
     label: soda-lime glass
     broader: [m0043]
     mappings: {exact: ['pmdco:PMD_0050102', 'wd:Q745127'], broad: ['cpc:3711']}
-    bafu: ['^flat glass']
+    names:
+      bafu: ['^flat glass, ']
   m0045:
     label: glass fibre
     broader: [m0043]
     mappings: {exact: ['wd:Q5861'], close: ['cpc:3712']}
-    bafu: ['^glass fibre$']
+    names:
+      bafu: ['^glass fibre, at plant']
   m0046:
     label: ceramic
     definition: Inorganic non-metallic crystalline solid formed by heat.
@@ -266,7 +300,8 @@ concepts:
     definition: Ceramic iron oxide compound, as in ferrite cores and magnets.
     broader: [m0046]
     mappings: {exact: ['wd:Q114047906']}
-    bafu: ['^ferrite']
+    names:
+      bafu: ['^ferrite']
   m0049:
     label: hybrid material
     definition: Ashby's hybrid family; composites, foams and natural materials.
@@ -278,7 +313,8 @@ concepts:
     label: glass-fibre reinforced polymer
     broader: [m0050]
     mappings: {exact: ['pmdco:PMD_0090008', 'wd:Q7224880']}
-    bafu: ['^glass fibre reinforced plastic']
+    names:
+      bafu: ['^glass fibre reinforced plastic']
   m0052:
     label: FR-4 laminate
     definition: Flame-retardant glass-fibre epoxy laminate, the usual circuit board substrate.
@@ -297,12 +333,14 @@ concepts:
     note: Includes fibreboard and particle board.
     broader: [m0054]
     mappings: {exact: ['wd:Q287'], broad: ['cpc:31']}
-    bafu: ['^(fibreboard|particle board)']
+    names:
+      bafu: ['^(fibreboard|particle board)']
   m0056:
     label: paper and board
     broader: [m0054]
     mappings: {close: ['wd:Q11472', 'cpc:321']}
-    bafu: ['^corrugated board', '^kraft paper']
+    names:
+      bafu: ['^corrugated board', '^kraft paper']
   m0057:
     label: textile
     broader: [m0049]
