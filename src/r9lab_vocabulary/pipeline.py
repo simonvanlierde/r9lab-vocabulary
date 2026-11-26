@@ -32,7 +32,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NoReturn, cast
+from typing import TYPE_CHECKING, NoReturn, cast
 
 import rdflib
 import sourceledger
@@ -211,17 +211,18 @@ def commit_date() -> date | None:
     return date.fromisoformat(out.strip()) if out.strip() else None
 
 
-def _citation() -> dict[str, Any]:
-    """CITATION.cff, which must name at least one author by ORCID iD; ValueError if not."""
+def citation(path: Path = CITATION) -> tuple[list[str], str | None]:
+    """The authors' ORCID iDs, in order, and `repository-code` from CITATION.cff; ValueError if no author has an iD."""
     try:
-        citation = yaml.safe_load(CITATION.read_text(encoding="utf-8"))
+        cff = yaml.safe_load(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
-        citation = None
-    authors = citation.get("authors") if isinstance(citation, dict) else None
-    orcid = isinstance(authors, list) and any(isinstance(a, dict) and a.get("orcid") for a in authors)
-    if isinstance(citation, dict) and orcid:
-        return citation
-    msg = f"{CITATION} must list at least one author with an orcid"
+        cff = None
+    cff = cff if isinstance(cff, dict) else {}
+    authors = cff.get("authors")
+    orcids = [a["orcid"] for a in authors or [] if isinstance(a, dict) and a.get("orcid")]
+    if orcids:
+        return orcids, cff.get("repository-code")
+    msg = f"{path} must list at least one author with an orcid"
     raise ValueError(msg)
 
 
@@ -252,16 +253,15 @@ def rdf(out: Path) -> int:
         sys.stderr.write(f"error: no commit date for dct:modified: {hint}\n")
         return 1
     try:
-        citation = _citation()
+        orcids, repo = citation()
     except ValueError as e:
         sys.stderr.write(f"error: {e}\n")
         return 1
     ver = version("r9lab-vocabulary")
-    curator = next(a["orcid"] for a in citation["authors"] if a.get("orcid"))  # the publisher, as in to_graph
     paths = [
-        *scheme.write(schemes, ver, out, matches, citation=citation, modified=modified),
+        *scheme.write(schemes, ver, out, matches, orcids=orcids, landing=repo, modified=modified),
         Path(shutil.copy(SHAPES, out)),
-        scheme.write_sssom(schemes, ver, out, curator),
+        scheme.write_sssom(schemes, ver, out, orcids[0]),  # the publisher, as in to_graph
         *scheme.write_labels(schemes, ver, out),
     ]
     sys.stdout.writelines(f"{path}\n" for path in paths)

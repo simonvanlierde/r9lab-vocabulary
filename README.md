@@ -40,15 +40,10 @@ with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are li
 only; none of their names is copied.
 
 Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`, a
-`dcat:Dataset` made of the schemes), carries `dct:title`, `dct:creator` (the ORCID iDs in
-[`CITATION.cff`](CITATION.cff)) and `dct:publisher` (its first author), `dct:created` (the
-scheme's `created`), `dct:modified` (the date of the commit built, or `SOURCE_DATE_EPOCH`),
-`dct:language`, `dcat:landingPage` and `owl:versionIRI`. For PyST, each scheme also has a
-`skos:definition` (its description) and every scheme and concept `bibo:status` accepted. A version IRI is the base, the version, then the scheme's path:
-`https://w3id.org/r9lab/vocabulary/0.1.0/materials/`
-([why](docs/decisions/0004-versioned-iris-and-scheme-dates.md)). Schemes are also typed
-`schema:DefinedTermSet`, with their title as `schema:name`, and concepts `schema:DefinedTerm`,
-for dataset search.
+`dcat:Dataset` made of the schemes), says who made it, when, and which release it is, with a
+version IRI such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`.
+[ADR 0004](docs/decisions/0004-versioned-iris-and-scheme-dates.md) lists the fields and where
+each comes from.
 
 ## Usage
 
@@ -84,9 +79,8 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
 
 The shapes require an English `prefLabel` and an `inScheme` on every concept, IRIs as mapping
 targets, a replacement in use for a deprecated concept, and the release metadata above on every
-scheme. `just check` runs them, with [skohub-shapes](https://github.com/skohub-io/skohub-shapes)'
-SKOS rules (`shapes/skohub-skos.shacl.ttl`), over `dist/r9lab-vocabulary.ttl` when it exists, and
-the tests run them on the graph `vocabulary/` builds.
+scheme. The tests run them, with [skohub-shapes](https://github.com/skohub-io/skohub-shapes)'
+SKOS rules (`shapes/skohub-skos.shacl.ttl`), on the graph `vocabulary/` builds.
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id

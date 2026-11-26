@@ -9,11 +9,10 @@ from datetime import date
 from pathlib import Path
 
 import pytest
-import yaml
 from rdflib import Graph
 from rdflib.compare import graph_diff, to_isomorphic
 
-from r9lab_vocabulary import scheme
+from r9lab_vocabulary import pipeline, scheme
 
 ROOT = Path(__file__).resolve().parent.parent
 GOLDEN = ROOT / "tests" / "fixtures" / "golden"
@@ -29,8 +28,9 @@ def _same(a: Graph, b: Graph) -> None:
 
 
 def test_the_build_matches_the_golden_turtle():
-    citation = yaml.safe_load((GOLDEN / "CITATION.cff").read_text(encoding="utf-8"))
-    g = scheme.to_graph(scheme.load(GOLDEN / "vocabulary"), "1.0.0", citation=citation, modified=date(2026, 2, 1))
+    orcids, landing = pipeline.citation(GOLDEN / "CITATION.cff")
+    schemes = scheme.load(GOLDEN / "vocabulary")
+    g = scheme.to_graph(schemes, "1.0.0", orcids=orcids, landing=landing, modified=date(2026, 2, 1))
     if os.environ.get("UPDATE_GOLDEN") == "1":
         g.serialize(EXPECTED, format="turtle")
     _same(g, Graph().parse(EXPECTED))
@@ -39,9 +39,10 @@ def test_the_build_matches_the_golden_turtle():
 # rdflib's JSON-LD parser builds a ConjunctiveGraph internally whatever the caller passes.
 @pytest.mark.filterwarnings("ignore:ConjunctiveGraph is deprecated:DeprecationWarning")
 def test_the_real_build_round_trips_through_turtle_and_json_ld(tmp_path: Path):
-    citation = yaml.safe_load((ROOT / "CITATION.cff").read_text(encoding="utf-8"))
+    orcids, landing = pipeline.citation(ROOT / "CITATION.cff")
+    about = {"orcids": orcids, "landing": landing, "modified": date(2026, 2, 1)}
     schemes = scheme.load(ROOT / "vocabulary")
-    scheme.write(schemes, "test", tmp_path, [], citation=citation, modified=date(2026, 2, 1))
+    scheme.write(schemes, "test", tmp_path, [], **about)
     ttl = Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
-    _same(ttl, scheme.to_graph(schemes, "test", citation=citation, modified=date(2026, 2, 1)))
+    _same(ttl, scheme.to_graph(schemes, "test", **about))
     _same(Graph().parse(tmp_path / "r9lab-vocabulary.jsonld"), ttl)

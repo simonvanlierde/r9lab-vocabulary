@@ -5,10 +5,8 @@ reused: a concept that goes away is marked `deprecated`, never deleted. A mappin
 CURIE whose prefix names either an outside scheme (`PREFIXES`) or another scheme of
 this vocabulary (its `slug`).
 
-Every scheme, and the vocabulary as a whole (`BASE`, a `dcat:Dataset`), says who made and
-publishes it (the ORCID iDs in CITATION.cff), when it was created (the scheme's `created`)
-and modified, and which release it is: `owl:versionIRI` is `BASE<version>/<path>`, so one
-redirect rule per release can send every versioned IRI to that release's files.
+Every scheme, and the vocabulary as a whole (`BASE`, a `dcat:Dataset`), carries release
+metadata: docs/decisions/0004-versioned-iris-and-scheme-dates.md says which, and why.
 """
 
 from __future__ import annotations
@@ -393,10 +391,11 @@ def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:
 
 @dataclass(frozen=True)
 class About:
-    """What every scheme says about its release: version, CITATION.cff, and the date the build stands for."""
+    """What every scheme says about its release: version, the authors' ORCID iDs, landing page, and build date."""
 
     version: str
-    citation: dict[str, Any]
+    orcids: list[str]
+    landing: str | None
     modified: date | None
 
     def describe(self, g: Graph, node: URIRef, title: str, created: date | None) -> None:
@@ -411,22 +410,26 @@ class About:
         for prop, value in ((DCTERMS.created, created), (DCTERMS.modified, self.modified)):
             if value is not None:
                 g.add((node, prop, Literal(value)))
-        orcids = [URIRef(a["orcid"]) for a in self.citation.get("authors") or [] if a.get("orcid")]
-        for orcid in orcids:
-            g.add((node, DCTERMS.creator, orcid))
-        if orcids:
-            g.add((node, DCTERMS.publisher, orcids[0]))
-        if repo := self.citation.get("repository-code"):
-            g.add((node, DCAT.landingPage, URIRef(repo)))
+        for orcid in self.orcids:
+            g.add((node, DCTERMS.creator, URIRef(orcid)))
+        if self.orcids:
+            g.add((node, DCTERMS.publisher, URIRef(self.orcids[0])))
+        if self.landing:
+            g.add((node, DCAT.landingPage, URIRef(self.landing)))
 
 
 def to_graph(
-    schemes: dict[str, Scheme], version: str, *, citation: dict[str, Any] | None = None, modified: date | None = None
+    schemes: dict[str, Scheme],
+    version: str,
+    *,
+    orcids: list[str] | None = None,
+    landing: str | None = None,
+    modified: date | None = None,
 ) -> Graph:
     """The whole vocabulary as one SKOS graph, its schemes the parts of one `dcat:Dataset`.
 
-    `citation` is CITATION.cff, read for the authors' ORCID iDs and `repository-code`; `modified` is
-    `dct:modified`. Without them those triples are left out.
+    `orcids` and `landing` are what `pipeline.citation` reads from CITATION.cff, the first iD the
+    publisher; `modified` is `dct:modified`. Without them those triples are left out.
     """
     g = Graph()
     namespaces = (("skos", SKOS), ("dcterms", DCTERMS), ("dcat", DCAT), ("schema", SDO), ("owl", OWL), ("bibo", BIBO))
@@ -434,7 +437,7 @@ def to_graph(
         g.bind(prefix, ns)
     for slug, scheme in schemes.items():
         g.bind(f"r9-{slug}", Namespace(scheme.iri))
-    about = About(version, citation or {}, modified)
+    about = About(version, orcids or [], landing, modified)
     # The code-only schemes and the whole are as old as the oldest scheme written here.
     created = min(filter(None, (s.meta.get("created") for s in schemes.values())), default=None)
     vocab = URIRef(BASE)
@@ -527,16 +530,17 @@ def write(
     out: Path,
     matches: list[Match],
     *,
-    citation: dict[str, Any] | None = None,
+    orcids: list[str] | None = None,
+    landing: str | None = None,
     modified: date | None = None,
 ) -> list[Path]:
     """Write `r9lab-vocabulary.ttl`, `.jsonld` and `name-matches.csv` into `out`.
 
     `matches` is `name_matches`: the CSV has one row per pattern and source (`bafu-2026-v1`), with its match count.
-    `citation` and `modified` are as in `to_graph`.
+    `orcids`, `landing` and `modified` are as in `to_graph`.
     """
     out.mkdir(parents=True, exist_ok=True)
-    g = to_graph(schemes, version, citation=citation, modified=modified)
+    g = to_graph(schemes, version, orcids=orcids, landing=landing, modified=modified)
     ttl, jsonld, names = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "name-matches.csv"
     g.serialize(ttl, format="turtle")
     g.serialize(jsonld, format="json-ld", auto_compact=True)

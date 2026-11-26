@@ -3,19 +3,21 @@
 from __future__ import annotations
 
 import io
-import os
 import sqlite3
-import subprocess
 import tarfile
 import zipfile
 from datetime import date
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 import rdflib
 from rdflib import DCTERMS
 
 from r9lab_vocabulary import pipeline, scheme
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 CPC = '"CPC21code","CPC21title"\r\n"4112","Crude steel"\r\n"4131","Silver, caf\xe9"\r\n'.encode("latin-1")
 PMDCO = b"""@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -57,21 +59,12 @@ def test_commit_date_takes_source_date_epoch_first(monkeypatch: pytest.MonkeyPat
     assert pipeline.commit_date() == date(2026, 1, 1)
 
 
-def _commit_on(repo: Path, day: str) -> None:
-    env = {"GIT_COMMITTER_DATE": f"{day}T12:00:00Z", "GIT_AUTHOR_DATE": f"{day}T12:00:00Z", "PATH": os.environ["PATH"]}
-    for args in (["init", "-q"], ["commit", "-q", "--allow-empty", "-m", "x"]):
-        subprocess.run(  # noqa: S603
-            ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false", *args],  # noqa: S607
-            cwd=repo,
-            env=env,
-            check=True,
-            capture_output=True,
-        )
-
-
-def test_commit_date_reads_the_package_checkout_not_one_around_it(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+def test_commit_date_reads_the_package_checkout_not_one_around_it(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, git: Callable[..., None]
+):
     monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
-    _commit_on(tmp_path, "2026-03-04")
+    git(tmp_path, "init", "-q")
+    git(tmp_path, "commit", "-q", "--allow-empty", "-m", "x", day="2026-03-04")
     monkeypatch.setattr(pipeline, "ROOT", tmp_path)
     assert pipeline.commit_date() == date(2026, 3, 4)
     (tmp_path / "unpacked").mkdir()

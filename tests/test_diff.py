@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import shutil
-import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from r9lab_vocabulary import pipeline, scheme
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import pytest
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -52,26 +53,19 @@ def test_a_concept_id_that_vanished_fails_the_diff():
     assert "- `tools/t03` old screwdriver: deprecate it with `replaced_by` instead of deleting it" in lines
 
 
-def _git(cwd: Path, *args: str) -> None:
-    subprocess.run(  # noqa: S603
-        ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false", *args],  # noqa: S607
-        cwd=cwd,
-        check=True,
-        capture_output=True,
-    )
-
-
 def test_just_diff_reads_the_vocabulary_at_a_tag(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str], git: Callable[..., None]
 ):
     shutil.copytree(OLD, tmp_path / "vocabulary")
-    _git(tmp_path, "init", "-q")
-    _git(tmp_path, "add", "vocabulary")
-    _git(tmp_path, "commit", "-q", "-m", "old")
-    _git(tmp_path, "tag", "v1.0.0")
+    for args in (["init", "-q"], ["add", "vocabulary"], ["commit", "-q", "-m", "old"], ["tag", "v1.0.0"]):
+        git(tmp_path, *args)
+    monkeypatch.chdir(tmp_path)
+    assert pipeline.main(["diff", "v1.0.0"]) == 0
+    assert capsys.readouterr().out.endswith("No concept added, deprecated, removed, remapped or relabelled.\n")
+    assert pipeline.diff(f"--output={tmp_path / 'out.tar'}") == 2
+    assert "not a valid object name: --output=" in capsys.readouterr().err
     shutil.rmtree(tmp_path / "vocabulary")
     shutil.copytree(NEW, tmp_path / "vocabulary")
-    monkeypatch.chdir(tmp_path)
     assert pipeline.main(["diff", "v1.0.0"]) == 0
     out = capsys.readouterr().out
     assert out.startswith("## Vocabulary changes since v1.0.0\n")
@@ -92,31 +86,15 @@ def test_the_diff_reports_an_undeprecation_and_a_deprecation_with_no_replacement
     assert "- `t/t01` a: no longer deprecated" in lines
 
 
-def _tagged(tmp_path: Path, yaml_text: str) -> None:
-    (tmp_path / "vocabulary").mkdir()
-    (tmp_path / "vocabulary" / "t.yaml").write_text(yaml_text)
-    _git(tmp_path, "init", "-q")
-    _git(tmp_path, "add", "vocabulary")
-    _git(tmp_path, "commit", "-q", "-m", "old")
-    _git(tmp_path, "tag", "v1.0.0")
-
-
 def test_just_diff_of_an_unloadable_ref_is_an_error_not_a_traceback(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str], git: Callable[..., None]
 ):
-    _tagged(tmp_path, "scheme: {slug: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
+    (tmp_path / "vocabulary").mkdir()
+    repeated = "scheme: {slug: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n"
+    (tmp_path / "vocabulary" / "t.yaml").write_text(repeated)
+    for args in (["init", "-q"], ["add", "vocabulary"], ["commit", "-q", "-m", "old"], ["tag", "v1.0.0"]):
+        git(tmp_path, *args)
     (tmp_path / "vocabulary" / "t.yaml").write_text("scheme: {slug: t}\nconcepts: {}\n")
     monkeypatch.chdir(tmp_path)
     assert pipeline.main(["diff", "v1.0.0"]) == 2
     assert "error: cannot load vocabulary/ at v1.0.0: " in capsys.readouterr().err
-
-
-def test_just_diff_reads_a_ref_that_looks_like_an_option_as_a_ref(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-):
-    _tagged(tmp_path, "scheme: {slug: t}\nconcepts:\n  t01: {label: a}\n")
-    monkeypatch.chdir(tmp_path)
-    assert pipeline.diff(f"--output={tmp_path / 'out.tar'}") == 2
-    assert "not a valid object name: --output=" in capsys.readouterr().err
-    assert pipeline.main(["diff", "v1.0.0"]) == 0
-    assert capsys.readouterr().out.endswith("No concept added, deprecated, removed, remapped or relabelled.\n")

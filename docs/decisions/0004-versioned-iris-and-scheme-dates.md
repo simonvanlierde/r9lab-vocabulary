@@ -39,6 +39,9 @@ per-release rule is a follow-up once the first release is tagged.
 * `dct:creator` and `dct:publisher` are the ORCID iDs of the authors in `CITATION.cff`, and
   `dcat:landingPage` its `repository-code`, so the build repeats no fact `CITATION.cff` holds.
   The publisher is the first author only.
+* Each also carries `dct:title` and `dct:language`, is typed `schema:DefinedTermSet` with its
+  title as `schema:name` for dataset search, and, for PyST, has a `skos:definition` and
+  `bibo:status` accepted, as every concept does.
 
 ### PyST and releases
 
@@ -57,5 +60,5 @@ releases into PyST is open, and left to the PyST round-trip task.
 
 ### Confirmation
 
-`tests/test_scheme.py` checks the metadata on the built graph, and the SHACL shapes in
-`shapes/r9lab.shacl.ttl` on every scheme of every build.
+`tests/test_golden.py` pins the metadata a fixture builds to, and `tests/test_shacl.py` runs the
+shapes in `shapes/r9lab.shacl.ttl` on every scheme of the real build.
