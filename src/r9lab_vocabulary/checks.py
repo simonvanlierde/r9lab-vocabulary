@@ -34,14 +34,16 @@ if TYPE_CHECKING:
 
     from r9lab_vocabulary.scheme import Scheme
 
+LINKS = ("broader", "related", "replaced_by")  # each a list of concept ids in the same scheme
 # Every field a concept may carry; validate rejects any other, so a misspelt one is not lost.
-FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, "broader", "related", "mappings", "names"}
+FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, *LINKS, "mappings", "names", "deprecated"}
 # A concept in use carries all three, so a model prompt never gets a bare label.
 REQUIRED_TEXTS = ("definition", "example", "note")
-FIELDS |= {"deprecated", "replaced_by"}
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A version path segment (`0.1.0`) starts with a digit, so it never collides with a scheme slug.
 SLUG = re.compile(r"^[a-z]")
+# Path segments under the base that the tag IRIs and the code-only schemes already use.
+RESERVED_SLUGS = {"tags", "external"}
 
 
 def validate(schemes: dict[str, Scheme], versions: Mapping[str, Collection[str]]) -> list[str]:
@@ -61,26 +63,61 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: Mappi
     errors = []
     if not SLUG.match(scheme.slug):
         errors.append(f"{scheme.slug}: slug must start with a lower-case letter")
+    if scheme.slug in RESERVED_SLUGS:
+        errors.append(f"{scheme.slug}: slug {scheme.slug!r} is reserved for other IRIs under the base")
+    errors += [
+        f"{scheme.slug}: {field} must be non-empty text"
+        for field in ("title", "description")
+        if not _is_text(scheme.meta.get(field))
+    ]
     created = scheme.meta.get("created")
     if created is not None and (not isinstance(created, date) or isinstance(created, datetime)):
         errors.append(f"{scheme.slug}: created must be a date (YYYY-MM-DD, unquoted), not {created!r}")
     letter = scheme.meta.get("id_letter")
+    malformed = False
     for cid, c in scheme.concepts.items():
         where = f"{scheme.slug}/{cid}"
         if not ID.match(cid) or (letter and not cid.startswith(letter)):
             errors.append(f"{where}: id must be {letter or 'a letter'} plus 2-4 digits")
-        if not c.get("label"):
-            errors.append(f"{where}: no label")
         errors += [f"{where}: unknown field {k!r}" for k in sorted(set(c) - FIELDS)]
+        if shape := _validate_shape(where, c):
+            # The checks below, and the export, assume these types.
+            errors += shape
+            malformed = True
+            continue
         errors += _validate_text(where, c)
         errors += _validate_links(where, c, scheme)
         errors += _validate_mappings(where, c, schemes)
         errors += _validate_names(where, c, versions)
+    if malformed:
+        return errors
     errors += _duplicates(
         scheme, "label", lambda c: None if c.get("deprecated") else str(c.get("label", "")).casefold()
     )
     errors += _duplicates(scheme, "notation", lambda c: None if c.get("notation") is None else str(c["notation"]))
     errors += _cycles(scheme)
+    return errors
+
+
+def _is_text(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _validate_shape(where: str, c: dict[str, Any]) -> list[str]:
+    """A label that is text, links that are lists of ids, and a true or false `deprecated`."""
+    if c.get("label") is None:
+        errors = [f"{where}: no label"]
+    elif not _is_text(c["label"]):
+        errors = [f"{where}: label must be non-empty text, not {c['label']!r}"]
+    else:
+        errors = []
+    errors += [
+        f"{where}: {field} must be a list of ids, not {c[field]!r}"
+        for field in LINKS
+        if c.get(field) is not None and not (isinstance(c[field], list) and all(isinstance(r, str) for r in c[field]))
+    ]
+    if not isinstance(c.get("deprecated", False), bool):
+        errors.append(f"{where}: deprecated must be true or false, not {c['deprecated']!r}")
     return errors
 
 

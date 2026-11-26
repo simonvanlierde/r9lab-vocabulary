@@ -4,6 +4,8 @@ scheme:
   id_letter: t
   title: Workshop tools
   created: 2026-01-01
+  description: >
+    Hand tools, to pin what the build writes.
 concepts:
   t01:
     label: hand tool

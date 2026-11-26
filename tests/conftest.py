@@ -32,14 +32,14 @@ TEXT = {"definition": "d", "example": "e", "note": "n"}
 
 
 def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
-    """One scheme `t` (or `meta`'s slug) holding `concepts`, with `meta` over a title and id letter `t`.
+    """One scheme `t` (or `meta`'s slug) holding `concepts`, with `meta` over a title, description and id letter.
 
     Each concept in use gets placeholder text, so a test checks only its own rule.
     """
     concepts = {
         cid: {**TEXT, **c} if isinstance(c, dict) and not c.get("deprecated") else c for cid, c in concepts.items()
     }
-    meta = {"title": "t", "id_letter": "t", **(meta or {})}
+    meta = {"title": "t", "description": "d", "id_letter": "t", **(meta or {})}
     return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 
 
@@ -90,7 +90,7 @@ def stub_sources(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Callable[..
             monkeypatch.chdir(ROOT)
             return
         (tmp_path / "vocabulary").mkdir()
-        text = f"scheme: {{slug: t, title: t, id_letter: t}}\nconcepts:\n  {concepts}\n"
+        text = f"scheme: {{slug: t, title: t, description: d, id_letter: t}}\nconcepts:\n  {concepts}\n"
         (tmp_path / "vocabulary" / "t.yaml").write_text(text)
         (tmp_path / "mappings").mkdir()
         (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text("\t".join(checks.TAG_COLUMNS) + "\n")
