@@ -49,5 +49,9 @@ def test_each_own_rule_catches_its_break(shapes: Graph):
         "A scheme has an owl:versionIRI.",
         "A scheme names its language by IRI.",
         "A scheme has a dcat:landingPage.",
+        "A concept has one bibo:status PyST accepts.",
+        "A concept scheme has one bibo:status PyST accepts.",
+        "A concept scheme has a skos:definition.",
+        "A concept scheme has exactly one owl:versionInfo.",
     ):
         assert expected in messages, messages

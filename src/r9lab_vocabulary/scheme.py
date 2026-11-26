@@ -16,6 +16,7 @@ from __future__ import annotations
 import csv
 import re
 from dataclasses import dataclass
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
 import yaml
@@ -24,7 +25,6 @@ from yaml.constructor import ConstructorError
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
-    from datetime import date
     from pathlib import Path
 
 # NOTE: w3id.org/r9lab is not registered yet; the redirect is a PR to perma-id/w3id.org.
@@ -50,12 +50,17 @@ RELATIONS = {
     "related": SKOS.relatedMatch,
 }
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
+# A version path segment (`0.1.0`) starts with a digit, so it never collides with a scheme slug.
+SLUG = re.compile(r"^[a-z]")
 # A match: (scheme slug, concept id, family, version, pattern, matched names).
 Match = tuple[str, str, str, str, str, list[str]]
 LANG = "en"
 LANGUAGE = URIRef("http://id.loc.gov/vocabulary/iso639-1/en")
 CC0 = URIRef("https://creativecommons.org/publicdomain/zero/1.0/")
 TITLE = "R9lab reference vocabulary"
+BIBO = Namespace("http://purl.org/ontology/bibo/")
+# PyST accepts only draft, accepted and rejected; deprecation is owl:deprecated, so a deprecated concept stays accepted.
+ACCEPTED = URIRef("http://purl.org/ontology/bibo/status/accepted")
 
 
 @dataclass(frozen=True)
@@ -117,6 +122,11 @@ def validate(schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[
 
 def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
     errors = []
+    if not SLUG.match(scheme.slug):
+        errors.append(f"{scheme.slug}: slug must start with a lower-case letter")
+    created = scheme.meta.get("created")
+    if created is not None and (not isinstance(created, date) or isinstance(created, datetime)):
+        errors.append(f"{scheme.slug}: created must be a date (YYYY-MM-DD, unquoted), not {created!r}")
     letter = scheme.meta.get("id_letter")
     for cid, c in scheme.concepts.items():
         where = f"{scheme.slug}/{cid}"
@@ -289,24 +299,28 @@ def diff(old: dict[str, Scheme], new: dict[str, Scheme]) -> tuple[list[str], boo
     sections: dict[str, list[str]] = {t: [] for t in ("Added", "Deprecated", "Removed", "Mappings", "Labels")}
     for key in sorted(before.keys() | after.keys()):
         a, b = before.get(key), after.get(key)
-        if a is None:
-            sections["Added"].append(f"- `{key}` {after[key]['label']}")
-            continue
         if b is None:
             sections["Removed"].append(
-                f"- `{key}` {a.get('label')}: deprecate it with `replaced_by` instead of deleting it"
+                f"- `{key}` {a and a.get('label')}: deprecate it with `replaced_by` instead of deleting it"
             )
+            continue
+        if a is None:
+            sections["Added"].append(f"- `{key}` {b['label']}")
             continue
         if b.get("deprecated") and not a.get("deprecated"):
             slug = key.partition("/")[0]
             by = ", ".join(f"`{slug}/{ref}`" for ref in b.get("replaced_by") or [])
-            sections["Deprecated"].append(f"- `{key}` {b['label']}" + (f", replaced by {by}" if by else ""))
-        was, now = ({f"{rel} {prefix}:{local}" for rel, prefix, local in mappings(c)} for c in (a, b))
-        if was != now:
-            changes = [f"added {m}" for m in sorted(now - was)] + [f"dropped {m}" for m in sorted(was - now)]
+            how = f"replaced by {by}" if by else "with no `replaced_by`"
+            sections["Deprecated"].append(f"- `{key}` {b['label']}, {how}")
+        if a.get("deprecated") and not b.get("deprecated"):
+            sections["Deprecated"].append(f"- `{key}` {b['label']}: no longer deprecated")
+        maps_a, maps_b = ({f"{rel} {prefix}:{local}" for rel, prefix, local in mappings(c)} for c in (a, b))
+        if maps_a != maps_b:
+            changes = [f"added {m}" for m in sorted(maps_b - maps_a)]
+            changes += [f"dropped {m}" for m in sorted(maps_a - maps_b)]
             sections["Mappings"].append(f"- `{key}` {b['label']}: {'; '.join(changes)}")
         if a.get("label") != b.get("label"):
-            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b.get('label')}")
+            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b['label']}")
     lines = []
     for title, items in sections.items():
         if items:
@@ -345,6 +359,7 @@ class About:
     def describe(self, g: Graph, node: URIRef, title: str, created: date | None) -> None:
         """Type `node` as a schema.org term set and add its title, version, dates, creators and landing page."""
         g.add((node, RDF.type, SDO.DefinedTermSet))
+        g.add((node, SDO.name, Literal(title, lang=LANG)))
         g.add((node, DCTERMS.title, Literal(title, lang=LANG)))
         g.add((node, OWL.versionInfo, Literal(self.version)))
         g.add((node, OWL.versionIRI, URIRef(f"{BASE}{self.version}/{str(node).removeprefix(BASE)}")))
@@ -353,10 +368,11 @@ class About:
         for prop, value in ((DCTERMS.created, created), (DCTERMS.modified, self.modified)):
             if value is not None:
                 g.add((node, prop, Literal(value)))
-        for author in self.citation.get("authors") or []:
-            if orcid := author.get("orcid"):
-                g.add((node, DCTERMS.creator, URIRef(orcid)))
-                g.add((node, DCTERMS.publisher, URIRef(orcid)))
+        orcids = [URIRef(a["orcid"]) for a in self.citation.get("authors") or [] if a.get("orcid")]
+        for orcid in orcids:
+            g.add((node, DCTERMS.creator, orcid))
+        if orcids:
+            g.add((node, DCTERMS.publisher, orcids[0]))
         if repo := self.citation.get("repository-code"):
             g.add((node, DCAT.landingPage, URIRef(repo)))
 
@@ -370,7 +386,8 @@ def to_graph(
     `dct:modified`. Without them those triples are left out.
     """
     g = Graph()
-    for prefix, ns in (("skos", SKOS), ("dcterms", DCTERMS), ("dcat", DCAT), ("schema", SDO), ("owl", OWL)):
+    namespaces = (("skos", SKOS), ("dcterms", DCTERMS), ("dcat", DCAT), ("schema", SDO), ("owl", OWL), ("bibo", BIBO))
+    for prefix, ns in namespaces:
         g.bind(prefix, ns)
     for slug, scheme in schemes.items():
         g.bind(f"r9-{slug}", Namespace(scheme.iri))
@@ -396,8 +413,10 @@ def _add_scheme(
     s = URIRef(scheme.iri)
     g.add((s, RDF.type, SKOS.ConceptScheme))
     g.add((s, SKOS.prefLabel, Literal(scheme.meta["title"], lang=LANG)))
+    g.add((s, BIBO.status, ACCEPTED))
     if desc := scheme.meta.get("description"):
         g.add((s, DCTERMS.description, Literal(desc.strip(), lang=LANG)))
+        g.add((s, SKOS.definition, Literal(desc.strip(), lang=LANG)))
     about.describe(g, s, scheme.meta["title"], scheme.meta.get("created"))
     collection = scheme.meta.get("collection")
     if collection:
@@ -420,6 +439,7 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
     g.add((node, RDF.type, SKOS.Concept))
     g.add((node, RDF.type, SDO.DefinedTerm))
     g.add((node, SKOS.inScheme, s))
+    g.add((node, BIBO.status, ACCEPTED))
     g.add((node, SKOS.prefLabel, Literal(c["label"], lang=LANG)))
     for field, prop in (("definition", SKOS.definition), ("note", SKOS.scopeNote)):
         if text := c.get(field):
@@ -445,12 +465,15 @@ def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], about: About, 
     s = URIRef(PREFIXES[prefix])
     g.add((s, RDF.type, SKOS.ConceptScheme))
     g.add((s, SKOS.prefLabel, Literal(CODE_ONLY[prefix], lang=LANG)))
+    g.add((s, SKOS.definition, Literal(CODE_ONLY[prefix], lang=LANG)))
+    g.add((s, BIBO.status, ACCEPTED))
     about.describe(g, s, CODE_ONLY[prefix], created)
     for code in sorted(codes):
         node = URIRef(PREFIXES[prefix] + code)
         g.add((node, RDF.type, SKOS.Concept))
         g.add((node, RDF.type, SDO.DefinedTerm))
         g.add((node, SKOS.inScheme, s))
+        g.add((node, BIBO.status, ACCEPTED))
         g.add((node, SKOS.notation, Literal(code)))
         g.add((node, SKOS.prefLabel, Literal(code, lang=LANG)))
 

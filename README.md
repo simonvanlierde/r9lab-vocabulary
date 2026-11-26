@@ -38,13 +38,15 @@ with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are li
 only; none of their names is copied.
 
 Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`, a
-`dcat:Dataset` made of the schemes), carries `dct:title`, `dct:creator` and `dct:publisher`
-(the ORCID iDs in [`CITATION.cff`](CITATION.cff)), `dct:created` (the scheme's `created`),
-`dct:modified` (the date of the commit built), `dct:language`, `dcat:landingPage` and
-`owl:versionIRI`. A version IRI is the base, the version, then the scheme's path:
+`dcat:Dataset` made of the schemes), carries `dct:title`, `dct:creator` (the ORCID iDs in
+[`CITATION.cff`](CITATION.cff)) and `dct:publisher` (its first author), `dct:created` (the
+scheme's `created`), `dct:modified` (the date of the commit built, or `SOURCE_DATE_EPOCH`),
+`dct:language`, `dcat:landingPage` and `owl:versionIRI`. For PyST, each scheme also has a
+`skos:definition` (its description) and every scheme and concept `bibo:status` accepted. A version IRI is the base, the version, then the scheme's path:
 `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`
 ([why](docs/decisions/0004-versioned-iris-and-scheme-dates.md)). Schemes are also typed
-`schema:DefinedTermSet` and concepts `schema:DefinedTerm`, for dataset search.
+`schema:DefinedTermSet`, with their title as `schema:name`, and concepts `schema:DefinedTerm`,
+for dataset search.
 
 ## Usage
 

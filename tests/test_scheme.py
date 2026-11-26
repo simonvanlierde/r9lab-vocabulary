@@ -1,10 +1,10 @@
 """The vocabulary's own rules, on the real files and on small broken copies."""
 
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
-from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Literal, URIRef
+from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Literal, Namespace, URIRef
 from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
@@ -12,6 +12,7 @@ from r9lab_vocabulary import scheme
 Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
 ROOT = Path(__file__).resolve().parent.parent
+BIBO = Namespace("http://purl.org/ontology/bibo/")
 # The ORCID iD ORCID itself publishes for tests.
 CITATION = {
     "authors": [{"orcid": "https://orcid.org/0000-0002-1825-0097"}],
@@ -38,7 +39,8 @@ def schemes() -> dict[str, scheme.Scheme]:
 
 
 def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
-    return {"t": scheme.Scheme("t", meta or {"title": "t", "id_letter": "t"}, concepts)}
+    meta = {"title": "t", "id_letter": "t", **(meta or {})}
+    return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 
 
 def test_the_vocabulary_breaks_no_rule(schemes: Schemes):
@@ -121,10 +123,15 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             "must be a non-empty pattern",
         ),
         ({"t01": {"label": "a", "mappings": {"exact": "wd:Q1"}}}, "mappings must map each relation to a list"),
+        ({"scheme": {"slug": "0-1"}}, "slug must start with a lower-case letter"),
+        ({"scheme": {"created": "2026-11-17"}}, "created must be a date"),
+        ({"scheme": {"created": datetime(2026, 11, 17, tzinfo=UTC)}}, "created must be a date"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
-    errors = scheme.validate(one(concepts), VERSIONS)
+    # A row's "scheme" entry, never a concept id, sets the scheme's own fields.
+    meta = concepts.get("scheme")
+    errors = scheme.validate(one({k: v for k, v in concepts.items() if k != "scheme"}, meta), VERSIONS)
     assert any(message in e for e in errors), errors
 
 
@@ -189,6 +196,11 @@ def test_each_scheme_says_who_made_it_when_and_which_version(schemes: Schemes):
         assert g.value(s, DCTERMS.language) == scheme.LANGUAGE, s
         assert g.value(s, DCAT.landingPage) == URIRef("https://example.org/r9lab-vocabulary"), s
         assert (s, RDF.type, SDO.DefinedTermSet) in g, s
+        assert g.value(s, SDO.name) == g.value(s, DCTERMS.title), s
+        assert g.value(s, SKOS.definition) is not None, s
+        assert g.value(s, BIBO.status) == scheme.ACCEPTED, s
+    for c in g.subjects(RDF.type, SKOS.Concept):
+        assert g.value(c, BIBO.status) == scheme.ACCEPTED, c
     assert g.value(URIRef(schemes["materials"].iri), OWL.versionIRI) == URIRef(f"{scheme.BASE}1.2.3/materials/")
 
 
@@ -199,3 +211,12 @@ def test_the_vocabulary_is_one_dataset_of_its_schemes(schemes: Schemes):
     assert set(g.objects(vocab, DCTERMS.hasPart)) == set(g.subjects(RDF.type, SKOS.ConceptScheme))
     assert g.value(vocab, OWL.versionIRI) == URIRef(f"{scheme.BASE}1.2.3/")
     assert set(g.subjects(RDF.type, SKOS.Concept)) == set(g.subjects(RDF.type, SDO.DefinedTerm))
+
+
+def test_the_first_author_alone_publishes():
+    second = {"orcid": "https://orcid.org/0000-0001-5109-3700"}
+    citation = {**CITATION, "authors": [*CITATION["authors"], {"family-names": "x"}, second]}
+    g = scheme.to_graph(one({"t01": {"label": "a"}}), "1.2.3", citation=citation)
+    s = URIRef(scheme.BASE + "t/")
+    assert set(g.objects(s, DCTERMS.publisher)) == {URIRef("https://orcid.org/0000-0002-1825-0097")}
+    assert len(set(g.objects(s, DCTERMS.creator))) == 2

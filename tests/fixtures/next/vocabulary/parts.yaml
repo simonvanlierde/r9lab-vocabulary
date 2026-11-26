@@ -4,6 +4,7 @@ scheme:
   id_letter: p
   title: Fasteners
   created: 2026-01-02
+  description: Fasteners, to pin what the build writes.
 concepts:
   p01:
     label: screw

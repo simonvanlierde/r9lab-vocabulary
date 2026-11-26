@@ -3,6 +3,7 @@ scheme:
   id_letter: p
   title: Fasteners
   created: 2026-01-02
+  description: Fasteners, to pin what the build writes.
   collection: Fasteners a pilot counts
 concepts:
   p01:
