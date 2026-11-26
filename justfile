@@ -145,7 +145,7 @@ repo-settings:
     if [ -f .github/first-release.md ]; then echo "First-release checklist: gh issue create --title 'First release' --body-file .github/first-release.md"; fi
 # Set the GitHub About box from your answers: description and a topic per stack. Adds topics, never removes yours. Safe to rerun.
 repo-about:
-    gh repo edit --description 'R9lab reference vocabulary: product types and component and material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, Wikidata and BAFU' --add-topic python
+    gh repo edit --description 'R9lab reference vocabulary: product types and component and material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, WEEE, PMDco, Wikidata and BAFU' --add-topic python,skos,controlled-vocabulary,sssom,linked-data,life-cycle-assessment,e-waste,repair
 
 # A repo's own recipes that copier updates never touch. A `local-check` recipe there runs
 # at the end of `just check`.
