@@ -175,7 +175,7 @@ concepts:
     definition: Thermoplastic polymer of styrene, solid or expanded into foam, as in housings, trays and packaging.
     source: https://www.wikidata.org/wiki/Q146243
     example: [HIPS, a refrigerator inner liner, an EPS packaging block, a clear GPPS crisper tray]
-    note: 'Includes GPPS, HIPS and EPS. Not acrylonitrile butadiene styrene: ABS also holds styrene but is its own class.'
+    note: 'Not acrylonitrile butadiene styrene: ABS also holds styrene but is its own class. Includes general-purpose (GPPS), high-impact (HIPS) and expanded (EPS) polystyrene.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050016', 'wd:Q146243'], broad: ['cpc:34720']}
     names:
@@ -204,7 +204,8 @@ concepts:
     label: polycarbonate/ABS blend
     definition: Blend of polycarbonate and ABS, common in device housings.
     example: [PC/ABS, a laptop base marked PC+ABS, a charger case, a monitor bezel]
-    note: 'Not polycarbonate or acrylonitrile butadiene styrene: a part marked with only one of the two goes to that class. Wikidata has no item for this blend.'
+    note: 'Not polycarbonate or acrylonitrile butadiene styrene: a part marked with only one of the two goes to that class.'
+    editorial_note: Wikidata has no item for this blend.
     broader: [m0021]
     related: [m0025, m0026]
   m0028:
@@ -239,10 +240,10 @@ concepts:
       bafu: ['^polyethylene terephthalate']
   m0031:
     label: polyamide
-    definition: Thermoplastic whose chain is linked by amide bonds, the nylons such as PA6 and PA66, as in gears, cable ties and connectors.
+    definition: Thermoplastic with amide links in its chain, known as nylon, as in gears, cable ties and connectors.
     source: https://www.wikidata.org/wiki/Q177941
     example: [PA66, a nylon gear, a cable tie, a connector housing]
-    note: 'PA6, PA66 and other nylons. Not textile: a nylon strap or fabric is textile. Wikidata''s polyamide is wider and also covers proteins and aramids; here it means the moulded nylons.'
+    note: 'PA6, PA66 and other nylons, including glass-filled grades such as PA66-GF30. Not textile: a nylon strap or fabric is textile. Wikidata''s polyamide also covers proteins and aramids.'
     broader: [m0021]
     mappings: {exact: ['wd:Q177941'], broad: ['cpc:34790', 'wd:Q145273']}
     names:
