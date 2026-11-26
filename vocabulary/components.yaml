@@ -1,6 +1,5 @@
 # Component classes: parts whose footprint is set by what they are rather than by one
-# material (ruling of 5 November 2026: battery, PCB, cable and magnet move here from
-# the material axis). Mappings and `names` patterns as in materials.yaml.
+# material. Battery, PCB, cable and magnet moved here from the material axis. Mappings and `names` patterns as in materials.yaml.
 scheme:
   slug: components
   id_letter: c
@@ -14,6 +13,7 @@ concepts:
     mappings: {exact: ['wd:Q267298'], close: ['cpc:464']}
   c0002:
     label: lithium-ion battery
+    definition: A pack of one or more lithium-ion cells with casing and connections, as removed from a product.
     note: BAFU has no LiCoO2 battery, the usual phone and tablet chemistry; NMC is the nearest.
     broader: [c0001]
     mappings: {exact: ['wd:Q2822895'], broad: ['cpc:46420']}

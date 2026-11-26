@@ -78,13 +78,15 @@ def test_every_concept_is_in_its_scheme_and_round_trips_through_turtle(schemes: 
     assert len(Graph().parse(tmp_path / "r9lab-vocabulary.jsonld")) == len(g)
 
 
-def test_licensed_schemes_keep_codes_only(schemes: Schemes):
+@pytest.mark.parametrize("prefix", sorted(scheme.CODE_ONLY))
+def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
     g = scheme.to_graph(schemes, "test")
-    base = scheme.PREFIXES["unu1"]
+    base = scheme.PREFIXES[prefix]
     nodes = {s for s in g.subjects(RDF.type, SKOS.Concept) if str(s).startswith(base)}
     assert nodes
     for node in nodes:
-        assert str(g.value(node, SKOS.prefLabel)) == str(node).removeprefix(base)
+        # Every literal, not one prefLabel: a second label could carry a licensed name.
+        assert {str(o) for o in g.objects(node) if isinstance(o, Literal)} == {str(node).removeprefix(base)}
 
 
 def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Schemes):
@@ -109,6 +111,8 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:7"]}}}, "weee6:7 is not a weee6 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["unu1:0310"]}}}, "unu1:0310 is not a unu1 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["unu2:0406"]}}}, "unu2:0406 is not a unu2 code"),
+        ({"t01": {"label": "a", "mappings": {"broad": ["weee6:0"]}}}, "weee6:0 is not a weee6 code"),
+        ({"t01": {"label": "a", "mappings": {"broad": ["weee6:06"]}}}, "weee6:06 is not a weee6 code"),
         ({"t01": {"label": "a", "replaced_by": ["t02"]}, "t02": {"label": "b"}}, "needs deprecated"),
         (
             {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "broader": ["t01"]}},
