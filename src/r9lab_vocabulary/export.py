@@ -267,20 +267,27 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
 
     The path follows the first `broader` only. `pilot` holds the key of each pilot class that
     maps onto the concept, or as `exact` or `narrow` onto any of its ancestors through every
-    `broader` parent; a `close` mapping marks its target alone.
+    `broader` parent; a `close` mapping marks its target alone. `pilot_any` adds the keys of
+    every live concept below it, so a coarse answer such as "metal" can be scored as consistent
+    with ferrous or non-ferrous rather than as wrong.
     """
     inherited, own = _pilot_keys(schemes)
     out = []
     for slug, s in schemes.items():
+        live = sorted(cid for cid, c in s.concepts.items() if not c.get("deprecated"))
+        above = {cid: {cid, *ancestors(s, cid)} for cid in live}
+        pilot = {
+            cid: own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in above[cid]))
+            for cid in live
+        }
         concepts = []
-        for cid in sorted(cid for cid, c in s.concepts.items() if not c.get("deprecated")):
+        for cid in live:
             chain, node = [cid], s.concepts[cid]
             while node.get("broader"):
                 chain.insert(0, node["broader"][0])
                 node = s.concepts[chain[0]]
             c = s.concepts[cid]
-            above = {cid, *ancestors(s, cid)}
-            pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in above))
+            below = (d for d in live if cid in above[d])
             concepts.append(
                 {
                     "id": cid,
@@ -290,7 +297,8 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
                     "definition": c["definition"].strip() if c.get("definition") else None,
                     "note": c["note"].strip() if c.get("note") else None,
                     "example": [e.strip() for e in texts(c, "example")],
-                    "pilot": sorted(pilot),
+                    "pilot": sorted(pilot[cid]),
+                    "pilot_any": sorted(set().union(*(pilot[d] for d in below))),
                 }
             )
         out.append({"slug": slug, "title": s.meta["title"], "iri": s.iri, "concepts": concepts})
