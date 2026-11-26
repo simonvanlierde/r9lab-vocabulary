@@ -1,9 +1,12 @@
 """The vocabulary's own rules, on the real files and on small broken copies."""
 
+import csv
+import json
 from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
+import yaml
 from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Literal, Namespace, URIRef
 from yaml.constructor import ConstructorError
 
@@ -140,6 +143,16 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             {"t01": {"label": "a", "notation": "x"}, "t02": {"label": "b", "notation": "x"}},
             "notation 'x' is also t01's",
         ),
+        ({"t01": {"label": "a", "notation": 1}, "t02": {"label": "b", "notation": "1"}}, "notation '1' is also t01's"),
+        ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t01"]}}, "replaced_by t01 is itself"),
+        (
+            {
+                "t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]},
+                "t02": {"label": "b", "deprecated": True},
+            },
+            "replaced_by t02 is deprecated",
+        ),
+        ({"t01": None}, "t01: no label"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
@@ -242,6 +255,125 @@ def test_the_first_author_alone_publishes():
     s = URIRef(scheme.BASE + "t/")
     assert set(g.objects(s, DCTERMS.publisher)) == {URIRef("https://orcid.org/0000-0002-1825-0097")}
     assert len(set(g.objects(s, DCTERMS.creator))) == 2
+
+
+ORCID = "https://orcid.org/0009-0006-6953-909X"
+
+
+def read_sssom(path: Path) -> tuple[dict, list[dict[str, str]]]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    header = [line[1:] for line in lines if line.startswith("#")]
+    rows = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
+    return yaml.safe_load("\n".join(header)), list(rows)
+
+
+def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tmp_path: Path):
+    meta, rows = read_sssom(scheme.write_sssom(schemes, "0.1.0", tmp_path, ORCID))
+    assert meta["mapping_set_id"] == f"{scheme.BASE}r9lab-vocabulary.sssom.tsv"
+    assert meta["mapping_set_version"] == "0.1.0"
+    assert meta["license"] == "https://creativecommons.org/publicdomain/zero/1.0/"
+    assert meta["curie_map"]["materials"] == schemes["materials"].iri
+    assert meta["curie_map"]["cpc"] == scheme.PREFIXES["cpc"]
+    assert len(rows) == sum(1 for s in schemes.values() for c in s.concepts.values() for _ in scheme.mappings(c))
+    assert {
+        "subject_id": "materials:m0001",
+        "subject_label": "metal",
+        "predicate_id": "skos:exactMatch",
+        "object_id": "wd:Q11426",
+        "mapping_justification": "semapv:ManualMappingCuration",
+        "author_id": "orcid:0009-0006-6953-909X",
+    } in rows
+    keys = [(r["subject_id"], r["predicate_id"], r["object_id"]) for r in rows]
+    assert keys == sorted(keys)
+
+
+def test_sssom_leaves_out_mappings_from_or_to_a_deprecated_concept(tmp_path: Path):
+    schemes = one(
+        {
+            "t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"], "mappings": {"exact": ["wd:Q1"]}},
+            "t02": {"label": "b", "mappings": {"exact": ["wd:Q2"], "related": ["t:t01"]}},
+        }
+    )
+    _, rows = read_sssom(scheme.write_sssom(schemes, "test", tmp_path, ORCID))
+    assert [(r["subject_id"], r["object_id"]) for r in rows] == [("t:t02", "wd:Q2")]
+
+
+def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_path: Path):
+    json_path, md_path = scheme.write_labels(schemes, "0.1.0", tmp_path)
+    doc = json.loads(json_path.read_text(encoding="utf-8"))
+    assert doc["version"] == "0.1.0"
+    assert [s["slug"] for s in doc["schemes"]] == list(schemes)
+    for s in doc["schemes"]:
+        ids = [c["id"] for c in s["concepts"]]
+        assert ids == sorted(cid for cid, c in schemes[s["slug"]].concepts.items() if not c.get("deprecated"))
+    concepts = {c["id"]: c for s in doc["schemes"] for c in s["concepts"]}
+    assert concepts["m0003"] == {
+        "id": "m0003",
+        "iri": f"{schemes['materials'].iri}m0003",
+        "label": "carbon and low-alloy steel",
+        "path": ["metal", "ferrous metal", "carbon and low-alloy steel"],
+        "definition": "Steel without the chromium content of stainless steel, including galvanised sheet.",
+        "pilot": ["ferrous"],
+    }
+    assert concepts["s01"]["pilot"] == ["ferrous"]
+    assert concepts["c0006"]["pilot"] == ["electronics"]
+    md = md_path.read_text(encoding="utf-8")
+    assert "## R9lab material classes" in md
+    assert "| m0003 | carbon and low-alloy steel | metal > ferrous metal > carbon and low-alloy steel |" in md
+
+
+def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
+    schemes = one({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]}, "t02": {"label": "b"}})
+    json_path, md_path = scheme.write_labels(schemes, "test", tmp_path)
+    doc = json.loads(json_path.read_text(encoding="utf-8"))
+    assert doc["schemes"][0]["concepts"] == [
+        {"id": "t02", "iri": f"{schemes['t'].iri}t02", "label": "b", "path": ["b"], "definition": None, "pilot": []}
+    ]
+    assert "t01" not in md_path.read_text(encoding="utf-8")
+
+
+def test_a_close_pilot_mapping_marks_its_target_but_not_the_targets_descendants(schemes: Schemes):
+    concepts = {c["id"]: c for s in scheme.labels(schemes) for c in s["concepts"]}
+    assert "non_ferrous" in concepts["m0006"]["pilot"]
+    assert "non_ferrous" not in concepts["m0017"]["pilot"]
+    assert "non_ferrous" not in concepts["m0012"]["pilot"]
+
+
+def pilot_fixture(materials: dict, pilot_mappings: dict) -> Schemes:
+    return {
+        "m": scheme.Scheme("m", {"title": "m", "id_letter": "m"}, materials),
+        "p": scheme.Scheme(
+            "p",
+            {"title": "p", "id_letter": "p", "collection": "p"},
+            {"p01": {"label": "x", "notation": "x", "mappings": pilot_mappings}},
+        ),
+    }
+
+
+def test_broad_and_related_pilot_mappings_give_no_pilot_key():
+    schemes = pilot_fixture({"m01": {"label": "a"}}, {"broad": ["m:m01"], "related": ["m:m01"]})
+    assert scheme.labels(schemes)[0]["concepts"][0]["pilot"] == []
+
+
+def test_pilot_keys_come_from_every_broader_parent():
+    schemes = pilot_fixture(
+        {"m01": {"label": "a"}, "m02": {"label": "b"}, "m03": {"label": "c", "broader": ["m01", "m02"]}},
+        {"exact": ["m:m01"], "narrow": ["m:m02"]},
+    )
+    schemes["q"] = scheme.Scheme(
+        "q",
+        {"title": "q", "id_letter": "q", "collection": "q"},
+        {"q01": {"label": "y", "notation": "y", "mappings": {"exact": ["m:m02"]}}},
+    )
+    m03 = {c["id"]: c for c in scheme.labels(schemes)[0]["concepts"]}["m03"]
+    assert m03["pilot"] == ["x", "y"]
+    assert m03["path"] == ["a", "c"]
+
+
+def test_labels_md_escapes_a_pipe_in_any_cell(tmp_path: Path):
+    schemes = one({"t01": {"label": "a|b", "definition": "c | d"}})
+    _, md_path = scheme.write_labels(schemes, "test", tmp_path)
+    assert "| t01 | a\\|b | a\\|b | c \\| d |  |" in md_path.read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("slug", ["t", "wd"])

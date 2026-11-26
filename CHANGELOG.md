@@ -19,6 +19,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just diff <tag>` lists the concepts added, deprecated, removed, remapped and relabelled since a release, as Markdown, and fails when a concept id was deleted instead of deprecated. It also lists a concept that was deprecated with no replacement or is no longer deprecated.
 - Each scheme and the vocabulary as a whole say who made and publishes them (ORCID), when they were created and last changed, their language and landing page, and a version IRI per release, such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`. The vocabulary is a `dcat:Dataset` and `schema:DefinedTermSet` of its schemes. For PyST, each scheme has a `skos:definition`, and every scheme and concept the `bibo:status` accepted. `just rdf` takes the date from `SOURCE_DATE_EPOCH` when set.
 - SHACL shapes, published as `r9lab.shacl.ttl` beside the graph: every concept has an English label and a scheme, mappings point at IRIs, a deprecated concept is replaced by one in use, and every scheme carries its release metadata. `just check` runs them with skohub-shapes' SKOS rules.
+- `just rdf` also writes `r9lab-vocabulary.sssom.tsv`, every curated mapping as an SSSOM row with its curator's ORCID; `just sssom-validate` and CI check it with sssom-py. Mappings a tool suggests stay in a separate file until a person promotes them.
+- `just rdf` also writes `labels.json` and `labels.md`: each non-deprecated concept with its label, ancestor path, definition and pilot classes, as text for model prompts.
 - Each product type links (`broadMatch`) to its WEEE Directive category, `weee6:1` to `weee6:6`, derived from its UNU-KEY. `just rdf` refuses any other `weee6` code.
 - Each product type with a UNU-KEY v1 code also links to its UNU-KEY v2 code (`unu2:`), from the 2026 E-waste Statistics Guidelines. `just rdf` refuses a `unu1` or `unu2` code that is not in that edition's key list.
 - A `lithium-ion cell` component (c0024), related to `lithium-ion battery`, takes the BAFU "Battery cell, ..." datasets.
@@ -29,5 +31,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The BAFU patterns for wood, polystyrene and liquid-crystal display no longer match cement-bonded particle board, polystyrene scrap or the 17-inch LCD monitor.
 - GPS navigation device is UNU-KEY 0402 (WEEE category 5), not 0305 (category 6), and radio is 0402 (v2: 0403), not 0201, as the guidelines' key descriptions and HS tables place them.
 - Steel, stainless steel, aluminium and copper no longer match the BAFU sheet-rolling and wire-drawing services.
+
+### Fixed
+
+- `just check` now rejects a notation written as `1` and as `"1"`, a `replaced_by` that points at the concept itself or at a deprecated concept, and a concept with an empty body (reported as "no label" instead of crashing).
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD

@@ -256,10 +256,15 @@ def rdf(out: Path) -> int:
     except ValueError as e:
         sys.stderr.write(f"error: {e}\n")
         return 1
-    written = scheme.write(schemes, version("r9lab-vocabulary"), out, matches, citation=citation, modified=modified)
-    written.append(Path(shutil.copy(SHAPES, out)))
-    for path in written:
-        sys.stdout.write(f"{path}\n")
+    ver = version("r9lab-vocabulary")
+    curator = next(a["orcid"] for a in citation["authors"] if a.get("orcid"))  # the publisher, as in to_graph
+    paths = [
+        *scheme.write(schemes, ver, out, matches, citation=citation, modified=modified),
+        Path(shutil.copy(SHAPES, out)),
+        scheme.write_sssom(schemes, ver, out, curator),
+        *scheme.write_labels(schemes, ver, out),
+    ]
+    sys.stdout.writelines(f"{path}\n" for path in paths)
     return 0
 
 
