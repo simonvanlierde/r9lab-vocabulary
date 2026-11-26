@@ -36,6 +36,8 @@ if TYPE_CHECKING:
 
 # Every field a concept may carry; validate rejects any other, so a misspelt one is not lost.
 FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, "broader", "related", "mappings", "names"}
+# A concept in use carries all three, so a model prompt never gets a bare label.
+REQUIRED_TEXTS = ("definition", "example", "note")
 FIELDS |= {"deprecated", "replaced_by"}
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A version path segment (`0.1.0`) starts with a digit, so it never collides with a scheme slug.
@@ -90,6 +92,8 @@ def _validate_text(where: str, c: dict[str, Any]) -> list[str]:
     ]
     if SOURCE in c and not c.get("definition"):
         errors.append(f"{where}: {SOURCE} needs a definition to cite")
+    if not c.get("deprecated") and (missing := [f for f in REQUIRED_TEXTS if not c.get(f)]):
+        errors.append(f"{where}: missing {', '.join(missing)}")
     return errors
 
 

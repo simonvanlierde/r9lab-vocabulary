@@ -8,6 +8,9 @@ scheme:
 concepts:
   p01:
     label: screw
+    definition: Threaded fastener turned into a hole or a nut.
+    example: [a wood screw]
+    note: 'Not nut: a nut is the part a screw turns into.'
   p02:
     label: nut
     deprecated: true

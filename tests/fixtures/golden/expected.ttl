@@ -66,10 +66,12 @@ r9-tools:t01 a skos:Concept,
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
     skos:definition "A tool worked by hand."@en ;
     skos:exactMatch <http://www.wikidata.org/entity/Q1> ;
+    skos:example "a hammer"@en ;
     skos:inScheme r9-tools: ;
     skos:narrower r9-tools:t02 ;
     skos:prefLabel "hand tool"@en ;
     skos:relatedMatch <https://w3id.org/r9lab/vocabulary/external/unu-key-v1/0001> ;
+    skos:scopeNote "Not power tool: a hand tool has no motor."@en ;
     skos:topConceptOf r9-tools: .
 
 r9-tools:t02 a skos:Concept,
@@ -77,13 +79,18 @@ r9-tools:t02 a skos:Concept,
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
     skos:broader r9-tools:t01 ;
     skos:closeMatch r9-parts:p01 ;
+    skos:definition "Hand tool that turns screws."@en ;
+    skos:example "a flat-blade screwdriver"@en ;
     skos:inScheme r9-tools: ;
     skos:notation "driver" ;
-    skos:prefLabel "screwdriver"@en .
+    skos:prefLabel "screwdriver"@en ;
+    skos:scopeNote "Not hand tool in general: it only turns screws."@en .
 
 r9-parts:p01 a skos:Concept,
         schema:DefinedTerm ;
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    skos:definition "Threaded fastener turned into a hole or a nut."@en ;
+    skos:example "a wood screw"@en ;
     skos:inScheme r9-parts: ;
     skos:prefLabel "screw"@en ;
     skos:related r9-parts:p02 ;
@@ -93,8 +100,11 @@ r9-parts:p01 a skos:Concept,
 r9-parts:p02 a skos:Concept,
         schema:DefinedTerm ;
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    skos:definition "Block with a threaded hole that a screw or bolt turns into."@en ;
+    skos:example "a hex nut"@en ;
     skos:inScheme r9-parts: ;
     skos:prefLabel "nut"@en ;
+    skos:scopeNote "Not screw: a nut has no shaft."@en ;
     skos:topConceptOf r9-parts: .
 
 r9-parts: a skos:ConceptScheme,

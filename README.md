@@ -124,7 +124,7 @@ Each concept in `vocabulary/*.yaml` carries:
 
 The vocabulary is CC0, so a definition is written in our own words: Ashby and IEC 60050
 are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they are.
-The tests fail on any concept in use that lacks one of the three texts.
+`just rdf` refuses a concept in use that lacks one of the three texts.
 
 ### Sort a part
 

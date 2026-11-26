@@ -28,8 +28,17 @@ def schemes() -> dict[str, scheme.Scheme]:
     return scheme.load(ROOT / "vocabulary")
 
 
+TEXT = {"definition": "d", "example": "e", "note": "n"}
+
+
 def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
-    """One scheme `t` (or `meta`'s slug) holding `concepts`, with `meta` over a title and id letter `t`."""
+    """One scheme `t` (or `meta`'s slug) holding `concepts`, with `meta` over a title and id letter `t`.
+
+    Each concept in use gets placeholder text, so a test checks only its own rule.
+    """
+    concepts = {
+        cid: {**TEXT, **c} if isinstance(c, dict) and not c.get("deprecated") else c for cid, c in concepts.items()
+    }
     meta = {"title": "t", "id_letter": "t", **(meta or {})}
     return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 

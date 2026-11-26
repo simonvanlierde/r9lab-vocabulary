@@ -55,13 +55,6 @@ def test_the_tag_mappings_break_no_rule(schemes: Schemes):
     assert checks.check_tag_mappings(schemes, ROOT / "mappings" / "r9lab-tags.sssom.tsv") == []
 
 
-def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Schemes):
-    concepts = {cid: c for s in schemes.values() for cid, c in s.concepts.items() if not c.get("deprecated")}
-    done = {cid for cid, c in concepts.items() if all(c.get(f) for f in ("definition", "example", "note"))}
-    missing = set(concepts) - done
-    assert not missing, f"no definition, example or note: {sorted(missing)}"
-
-
 def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
     (tmp_path / "t.yaml").write_text("scheme: {slug: t, title: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
     with pytest.raises(ConstructorError, match="repeated key t01"):

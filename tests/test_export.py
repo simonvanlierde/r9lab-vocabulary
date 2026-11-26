@@ -177,9 +177,9 @@ def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
             "iri": f"{schemes['t'].iri}t02",
             "label": "b",
             "path": ["b"],
-            "definition": None,
-            "note": None,
-            "example": [],
+            "definition": "d",
+            "note": "n",
+            "example": ["e"],
             "pilot": [],
         }
     ]

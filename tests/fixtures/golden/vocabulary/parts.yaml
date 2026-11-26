@@ -8,7 +8,12 @@ scheme:
 concepts:
   p01:
     label: screw
+    definition: Threaded fastener turned into a hole or a nut.
+    example: [a wood screw]
     note: Any threaded fastener.
     related: [p02]
   p02:
     label: nut
+    definition: Block with a threaded hole that a screw or bolt turns into.
+    example: [a hex nut]
+    note: 'Not screw: a nut has no shaft.'
