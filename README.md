@@ -37,6 +37,10 @@ Concept ids are opaque and never reused: a concept that goes away is marked `dep
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
 only; none of their names is copied.
 
+The rules this vocabulary shares with the [AI4IE tag vocabulary](https://github.com/simonvanlierde/awesome-ai4ie)
+(permanent ids, mapping strength, live-checked outside ids, w3id IRIs) are written down in its
+[vocabulary/CONVENTIONS.md](https://github.com/simonvanlierde/awesome-ai4ie/blob/main/vocabulary/CONVENTIONS.md).
+
 ## Usage
 
 Get the built files from the [releases](https://github.com/simonvanlierde/r9lab-vocabulary/releases),
