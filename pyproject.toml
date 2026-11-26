@@ -1,21 +1,21 @@
 [project]
-name = "r9lab-vocabulary"
-version = "0.1.0"
-description = "R9lab reference vocabulary: product types and component and material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, Wikidata and BAFU"
-readme = "README.md"
+name            = "r9lab-vocabulary"
+version         = "0.1.0"
+description     = "R9lab reference vocabulary: product types and component and material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, Wikidata and BAFU"
+readme          = "README.md"
 requires-python = ">=3.14"
-authors = [{ name = "Simon van Lierde", email = "code@duinlab.nl" }]
-license = "Apache-2.0"
-license-files = ["LICENSE"]
+authors         = [{ name = "Simon van Lierde", email = "code@duinlab.nl" }]
+license         = "Apache-2.0"
+license-files   = ["LICENSE"]
 # Parquet outputs. Add the `xlsx` extra to read Excel sources.
-dependencies = [
+dependencies    = [
   "pyyaml>=6.0.3",
   "rdflib>=7.6.0",
   "sourceledger[parquet]>=0.5.0",
 ]
 # PyPI rejects unknown classifiers, so this one blocks an accidental upload.
 # Delete it (and set publish_to_pypi) to publish.
-classifiers = ["Private :: Do Not Upload"]
+classifiers     = ["Private :: Do Not Upload"]
 
 # `r9lab-vocabulary fetch|build|validate`, what the `just` recipes of the same names run.
 [project.scripts]
@@ -23,10 +23,10 @@ classifiers = ["Private :: Do Not Upload"]
 
 [project.optional-dependencies]
 review = [
-    "fastapi>=0.165.0",
-    "jinja2>=3.1.6",
-    "python-multipart>=0.0.34",
-    "uvicorn>=0.54.0",
+  "fastapi>=0.165.0",
+  "jinja2>=3.1.6",
+  "python-multipart>=0.0.34",
+  "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
@@ -43,7 +43,7 @@ dev = [
 # Packaged, so the `r9lab-vocabulary` script and the tests import `r9lab_vocabulary`
 # without sys.path edits.
 [build-system]
-requires = ["uv_build>=0.12.19,<0.14.0"]
+requires      = ["uv_build>=0.12.19,<0.14.0"]
 build-backend = "uv_build"
 
 # Resolve only releases at least a week old: a compromised release is usually
@@ -51,7 +51,7 @@ build-backend = "uv_build"
 # the author's own packages.
 # Set here, not user-wide, so every machine writes the same uv.lock.
 [tool.uv]
-exclude-newer = "1 week"
+exclude-newer         = "1 week"
 # The template requires a sourceledger release that may be under a week old, so sourceledger
 # skips the wait here: a template release can need its newest version on the day it ships.
 exclude-newer-package = { sourceledger = false }
@@ -75,11 +75,11 @@ docstring-code-format = true
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-  "ANN204", # missing-return-type-special-method
-  "COM812", # trailing-comma-missing: conflicts with the formatter
-  "CPY001", # missing copyright notice
-  "D105",   # undocumented-magic-method
-  "D107",   # undocumented-public-init
+  "ANN204",  # missing-return-type-special-method
+  "COM812",  # trailing-comma-missing: conflicts with the formatter
+  "CPY001",  # missing copyright notice
+  "D105",  # undocumented-magic-method
+  "D107",  # undocumented-public-init
   "TD002",  # missing-todo-author: a plain `# TODO:` is enough
   "TD003",  # missing-todo-link
 ]
@@ -94,7 +94,7 @@ convention = "google"
 
 [tool.ruff.lint.pylint]
 allow-magic-value-types = ["int"]
-max-args = 10
+max-args                = 10
 
 # A rule set to "warn" reports without failing: ty otherwise exits 1 on warnings too.
 [tool.ty.terminal]
@@ -104,14 +104,14 @@ error-on-warning = false
 # an xfail test that passes into errors, and filterwarnings turns warnings into
 # failures, so a deprecation shows up in CI, not after the upgrade that removes it.
 [tool.pytest]
-minversion = "9.0"
-addopts = ["-ra", "--import-mode=importlib"]
-testpaths = ["tests"]
+minversion     = "9.0"
+addopts        = ["-ra", "--import-mode=importlib"]
+testpaths      = ["tests"]
 # The test modules import ROOT and shared helpers from tests/conftest.py.
-pythonpath = ["tests"]
-strict = true
+pythonpath     = ["tests"]
+strict         = true
 filterwarnings = ["error"]
-log_level = "INFO"
+log_level      = "INFO"
 
 # Coverage is opt-in via `pytest --cov` (`just py-cov`), not addopts, because it
 # slows every plain test run. No fail_under until there is a suite worth setting
@@ -136,3 +136,9 @@ PC901 = "the hooks run in CI's checks workflow, not on pre-commit.ci"
 PC902 = "the hooks run in CI's checks workflow, not on pre-commit.ci"
 PC903 = "the hooks run in CI's checks workflow, not on pre-commit.ci"
 GH212 = "dependabot.yml groups the actions with the hook revs under multi-ecosystem-groups, which this check does not read"
+
+# .zenodo.json is left out on purpose: the Zenodo record is mostly the vocabulary, so it
+# carries CC0 1.0 where CITATION.cff carries the code's Apache-2.0. Keep its title,
+# description and keywords in step with CITATION.cff by hand.
+[tool.citesync]
+files = ["codemeta.json"]

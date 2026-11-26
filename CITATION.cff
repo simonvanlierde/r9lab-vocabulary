@@ -1,11 +1,12 @@
-# GitHub reads this for its "Cite this repository" button, and Zenodo when it
-# archives a release. Software indexes read codemeta.json. Edit this file only, then
+# GitHub reads this for its "Cite this repository" button. Zenodo reads .zenodo.json
+# instead, kept in step by hand (pyproject.toml's [tool.citesync] says why). Software
+# indexes read codemeta.json. Edit this file only, then
 # run `just citation` to bring codemeta.json in line; the citesync git hook fails while they or the package manifests disagree. Check the name split below:
 # the first word becomes the given name.
 cff-version: 1.2.0
 message: If you use this software, please cite it as below.
 title: "r9lab-vocabulary"
-abstract: "R9lab reference vocabulary: product types and component and material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, Wikidata and BAFU"
+abstract: "A SKOS vocabulary of product types and of component and material classes for repair and disassembly records, with typed crosswalks to CPC 2.1, UNU-KEYs, WEEE categories, PMDco, Wikidata and BAFU activity names, and a reviewed SSSOM mapping of the R9lab lab tags."
 authors:
   - given-names: "Simon"
     family-names: "van Lierde"
@@ -13,3 +14,12 @@ authors:
     email: "code@duinlab.nl"
 repository-code: "https://github.com/simonvanlierde/r9lab-vocabulary"
 license: Apache-2.0
+keywords:
+  - SKOS
+  - controlled vocabulary
+  - SSSOM
+  - linked data
+  - life cycle assessment
+  - e-waste
+  - repair
+  - materials
