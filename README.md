@@ -41,6 +41,9 @@ tag with no concept maps to `sssom:NoTermFound`. Joined on `concept` with
 `dist/name-matches.csv`, it gives each tag its BAFU activity names. sssom-py 0.4.23 validates
 the file but does not load literal mappings yet.
 
+An agent proposed every row (`semapv:AgentBasedMatching`). A person who checks a row puts their
+ORCID CURIE in its `reviewer_id`; a row with no reviewer is a proposal, not a curated mapping.
+
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
 only; none of their names is copied.
