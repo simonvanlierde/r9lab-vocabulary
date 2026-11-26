@@ -43,6 +43,17 @@ RELATIONS = {
     "narrow": SKOS.narrowMatch,
     "related": SKOS.relatedMatch,
 }
+# A concept's text fields. `note` is the scope note: what the concept leaves out and the
+# concept it is told apart from. `editorial_note` is for maintainers (a missing dataset, a proxy).
+TEXT_FIELDS = {
+    "definition": SKOS.definition,
+    "example": SKOS.example,
+    "note": SKOS.scopeNote,
+    "editorial_note": SKOS.editorialNote,
+}
+MANY_TEXTS = {"example"}
+# Where the definition comes from: a URL (written as an IRI) or a citation such as "Ashby 2017, sec. 2.2".
+SOURCE = "source"
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A match: (scheme slug, concept id, family, version, pattern, matched names).
 Match = tuple[str, str, str, str, str, list[str]]
@@ -115,6 +126,7 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[
             errors.append(f"{where}: id must be {letter or 'a letter'} plus 2-4 digits")
         if not c.get("label"):
             errors.append(f"{where}: no label")
+        errors += _validate_text(where, c)
         errors += _validate_links(where, c, scheme)
         errors += _validate_mappings(where, c, schemes)
         errors += _validate_names(where, c, versions)
@@ -123,6 +135,25 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[
     )
     errors += _duplicates(scheme, "notation", lambda c: c.get("notation"))
     errors += _cycles(scheme)
+    return errors
+
+
+def _texts(c: dict[str, Any], field: str) -> list[Any]:
+    """A text field's values: `example` may be one string or a list, every other field is one string."""
+    value = c.get(field)
+    if value is None:
+        return []
+    return value if field in MANY_TEXTS and isinstance(value, list) else [value]
+
+
+def _validate_text(where: str, c: dict[str, Any]) -> list[str]:
+    errors = [
+        f"{where}: {field} must be non-empty text"
+        for field in (*TEXT_FIELDS, SOURCE)
+        if field in c and not (_texts(c, field) and all(isinstance(t, str) and t.strip() for t in _texts(c, field)))
+    ]
+    if SOURCE in c and not c.get("definition"):
+        errors.append(f"{where}: {SOURCE} needs a definition to cite")
     return errors
 
 
@@ -337,9 +368,11 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
     g.add((node, RDF.type, SKOS.Concept))
     g.add((node, SKOS.inScheme, s))
     g.add((node, SKOS.prefLabel, Literal(c["label"], lang=LANG)))
-    for field, prop in (("definition", SKOS.definition), ("note", SKOS.scopeNote)):
-        if text := c.get(field):
+    for field, prop in TEXT_FIELDS.items():
+        for text in _texts(c, field):
             g.add((node, prop, Literal(text.strip(), lang=LANG)))
+    if source := c.get(SOURCE):
+        g.add((node, DCTERMS.source, URIRef(source) if source.startswith("https://") else Literal(source)))
     if (notation := c.get("notation")) is not None:
         g.add((node, SKOS.notation, Literal(str(notation))))
     broader = c.get("broader") or []

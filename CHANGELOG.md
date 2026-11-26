@@ -15,6 +15,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just names` prints every name each pattern matches, or with `--summary` the count per version.
 - `just update` fetches, builds and checks everything and prints how the match counts changed; `just test-full` runs the tests as CI does.
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
+- Concepts take an `example` (`skos:example`), an `editorial_note` (`skos:editorialNote`) and a `source` for the definition (`dcterms:source`); `note` stays the scope note. The tests fail on a concept without a definition, an example and a scope note, except those still listed in `tests/pending-text.txt`.
 - The weekly CI run checks every Wikidata link against the live API, so a merged or deleted item fails it.
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD

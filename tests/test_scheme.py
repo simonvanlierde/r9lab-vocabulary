@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from rdflib import OWL, RDF, SKOS, XSD, Graph, Literal, URIRef
+from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Graph, Literal, URIRef
 from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
@@ -24,6 +24,10 @@ PILOT_KEYS = {
     "magnet",
     "other",
 }
+
+# Concepts still waiting for a definition, example and scope note, written in batches of
+# about ten. The list only shrinks; once it is empty, validate requires the three on every concept.
+PENDING_TEXT = set((ROOT / "tests" / "pending-text.txt").read_text(encoding="utf-8").split())
 
 
 @pytest.fixture(scope="module")
@@ -120,11 +124,43 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             "must be a non-empty pattern",
         ),
         ({"t01": {"label": "a", "mappings": {"exact": "wd:Q1"}}}, "mappings must map each relation to a list"),
+        ({"t01": {"label": "a", "definition": " "}}, "definition must be non-empty text"),
+        ({"t01": {"label": "a", "note": ["x"]}}, "note must be non-empty text"),
+        ({"t01": {"label": "a", "example": []}}, "example must be non-empty text"),
+        ({"t01": {"label": "a", "example": ["x", 3]}}, "example must be non-empty text"),
+        ({"t01": {"label": "a", "source": "Ashby 2017"}}, "source needs a definition"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
     errors = scheme.validate(one(concepts), VERSIONS)
     assert any(message in e for e in errors), errors
+
+
+def test_text_fields_are_written_as_skos_notes():
+    concept = {
+        "label": "a",
+        "definition": "An a.",
+        "example": ["x", "y"],
+        "note": "Not a b.",
+        "editorial_note": "No BAFU dataset.",
+        "source": "https://www.wikidata.org/wiki/Q1",
+    }
+    schemes = one({"t01": concept, "t02": {"label": "b", "definition": "A b.", "source": "Ashby 2017, sec. 2.2"}})
+    assert scheme.validate(schemes, VERSIONS) == []
+    g = scheme.to_graph(schemes, "test")
+    a, b = URIRef(schemes["t"].iri + "t01"), URIRef(schemes["t"].iri + "t02")
+    assert set(g.objects(a, SKOS.example)) == {Literal("x", lang="en"), Literal("y", lang="en")}
+    assert g.value(a, SKOS.scopeNote) == Literal("Not a b.", lang="en")
+    assert g.value(a, SKOS.editorialNote) == Literal("No BAFU dataset.", lang="en")
+    assert g.value(a, DCTERMS.source) == URIRef("https://www.wikidata.org/wiki/Q1")
+    assert g.value(b, DCTERMS.source) == Literal("Ashby 2017, sec. 2.2")
+
+
+def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Schemes):
+    concepts = {cid: c for s in schemes.values() for cid, c in s.concepts.items() if not c.get("deprecated")}
+    done = {cid for cid, c in concepts.items() if all(c.get(f) for f in ("definition", "example", "note"))}
+    assert set(concepts) - done <= PENDING_TEXT, "missing a definition, example or note"
+    assert not done & PENDING_TEXT, "done: take these out of PENDING_TEXT"
 
 
 def test_a_deprecated_concept_is_marked_and_not_a_top_concept():

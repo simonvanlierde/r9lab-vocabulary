@@ -56,6 +56,23 @@ just wikidata    # print every Wikidata link beside the item's current label
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
 missing from the pinned files, or a name pattern that matches no live name in a version.
 
+### Write a concept's text
+
+Each concept in `vocabulary/*.yaml` carries:
+
+- `definition`: one sentence (`skos:definition`), with `source` naming where it comes from,
+  as a URL or a citation such as `Ashby 2017, sec. 2.2` (`dcterms:source`).
+- `example`: one string or a list (`skos:example`), things a record would name.
+- `note`: what the concept leaves out and the nearest concept it is told apart from
+  (`skos:scopeNote`).
+- `editorial_note`: remarks for maintainers, such as a missing BAFU dataset
+  (`skos:editorialNote`).
+
+The vocabulary is CC0, so a definition is written in our own words: Ashby and IEC 60050
+are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they are.
+Concepts still without the three texts are listed in `tests/pending-text.txt`, and the tests
+fail on any other concept that lacks one.
+
 ### Add a version of a name list
 
 A source whose id is `<family>-<version>` is one version of a name list, such as
