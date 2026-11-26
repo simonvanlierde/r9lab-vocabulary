@@ -71,9 +71,15 @@ jobs:
       - id: fetch
         run: uv run r9lab-vocabulary fetch
       # The sources whose bytes changed since the committed log. Weekly only: on a pull
-      # request, a revision is noise.
+      # request, a revision is noise. The text form prints "no revisions" when none changed,
+      # so the JSON list decides whether there is a report at all.
       - if: github.event_name == 'schedule'
-        run: uv run r9lab-vocabulary revisions "$RUNNER_TEMP/fetches-before.jsonl" >"$RUNNER_TEMP/revisions.md"
+        run: |-
+          before="$RUNNER_TEMP/fetches-before.jsonl"
+          uv run r9lab-vocabulary revisions --json "$before" >"$RUNNER_TEMP/revisions.json"
+          if jq -e '.revisions | length > 0' "$RUNNER_TEMP/revisions.json" >/dev/null; then
+            uv run r9lab-vocabulary revisions "$before" >"$RUNNER_TEMP/revisions.md"
+          fi
       - run: uv run r9lab-vocabulary build
       - run: uv run r9lab-vocabulary validate
 
@@ -108,10 +114,12 @@ jobs:
         with:
           name: revisions
           path: ${{ runner.temp }}/revisions.md
+          # No file when no source changed: then there is nothing to report.
+          if-no-files-found: ignore
 
   revisions:
     # Weekly only. Comments on one open issue when a publisher served new bytes for a
-    # source the committed fetch log already had. The only job that may write issues.
+    # source the committed fetch log already had.
     name: report revised sources
     needs: check
     if: ${{ !cancelled() && github.event_name == 'schedule' }}
@@ -120,7 +128,7 @@ jobs:
     permissions:
       issues: write
     steps:
-      # Missing when fetch failed: the check job already reports that.
+      # Missing when fetch failed or no source changed.
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         continue-on-error: true
         with:
@@ -147,3 +155,16 @@ jobs:
           else
             gh issue create --title "$title" --body-file "$RUNNER_TEMP/body.md"
           fi
+
+  notify:
+    # Scheduled runs only. A tripwire failure is the weekly run's signal, so it opens one
+    # issue, or comments on the open one.
+    name: "python: report failure"
+    needs: [check, revisions]
+    # A job that runs past timeout-minutes ends cancelled, not failed.
+    if: always() && github.event_name == 'schedule' && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
+    permissions:
+      issues: write # opens or comments on the failure issue
+    uses: $/.github/workflows/report-failure.yml
+    with:
+      title: Weekly pipeline run failed
