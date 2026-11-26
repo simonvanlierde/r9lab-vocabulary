@@ -82,7 +82,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q11421
     example: [a loudspeaker magnet, a hard-drive voice-coil magnet, a motor rotor magnet, a magnetic catch]
     note: 'Not ferrous: a steel part a magnet sticks to is ferrous. A motor or an electromagnet is not a magnet; it takes its main material''s class.'
-    mappings: {exact: ['components:c0018']}
+    mappings: {exact: ['components:c0019']}
   s10:
     label: other
     notation: other
