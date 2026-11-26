@@ -1,7 +1,7 @@
 # Product types, first cut: the 27 types proposed for the 46 R9lab lab products in the
 # 5 November 2026 data check, grouped under six families. Not yet adjudicated, and the
-# workshop products and outside uploads are not counted yet. If the corpus needs fewer
-# than about 40 classes, a UNU-KEY label plus direct linking replaces this facet.
+# workshop products and outside uploads are not counted yet. How the families and any
+# facets grow is set in docs/decisions/0006-product-families-and-facets.md.
 #
 # cpc: CPC 2.1 subclass, broad unless the subclass is the type itself. unu1 and unu2:
 # UNU-KEY v1 and v2 codes, checked against the key descriptions and the HS and CPC tables
