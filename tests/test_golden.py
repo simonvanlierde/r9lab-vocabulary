@@ -6,15 +6,18 @@ After a deliberate change to the output, rewrite the expected file and read its 
 
 import os
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from conftest import ROOT
 from rdflib import Graph
 from rdflib.compare import graph_diff, to_isomorphic
 
 from r9lab_vocabulary import pipeline, scheme
 
-ROOT = Path(__file__).resolve().parent.parent
+if TYPE_CHECKING:
+    from pathlib import Path
+
 GOLDEN = ROOT / "tests" / "fixtures" / "golden"
 EXPECTED = GOLDEN / "expected.ttl"
 

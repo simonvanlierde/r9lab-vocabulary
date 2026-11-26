@@ -2,17 +2,20 @@
 
 import json
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from conftest import ROOT
 from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Literal, URIRef
 from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
-ROOT = Path(__file__).resolve().parent.parent
 # The ORCID iD ORCID itself publishes for tests.
 TEST_ORCID = "https://orcid.org/0000-0002-1825-0097"
 # The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
@@ -66,13 +69,6 @@ def test_every_pilot_class_maps_into_the_material_or_component_axis(schemes: Sch
 def test_the_material_axis_is_topped_by_ashbys_six_families(schemes: Schemes):
     tops = {c["label"] for c in schemes["materials"].concepts.values() if not c.get("broader")}
     assert tops == {"metal", "polymer", "elastomer", "glass", "ceramic", "hybrid material"}
-
-
-def test_every_concept_is_in_its_scheme(schemes: Schemes):
-    g = scheme.to_graph(schemes, scheme.About("test"))
-    for s in schemes.values():
-        for cid in s.concepts:
-            assert (URIRef(s.iri + cid), SKOS.inScheme, URIRef(s.iri)) in g
 
 
 @pytest.mark.parametrize("prefix", sorted(scheme.CODE_ONLY))

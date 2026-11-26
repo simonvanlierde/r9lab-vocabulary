@@ -7,13 +7,11 @@ later. The weekly run fails on it instead of a pull request.
 from __future__ import annotations
 
 import os
-from pathlib import Path
 
 import pytest
+from conftest import ROOT
 
 from r9lab_vocabulary import pipeline
-
-ROOT = Path(__file__).resolve().parent.parent
 
 pytestmark = pytest.mark.skipif(
     os.environ.get("TRIPWIRE") != "1", reason="live network; the weekly run sets TRIPWIRE=1"

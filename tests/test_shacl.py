@@ -1,16 +1,19 @@
 """The SHACL shapes: skohub-shapes' SKOS rules and this vocabulary's own, on the real build and a broken graph."""
 
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from conftest import ROOT
 from pyshacl import validate
 from rdflib import SH, Graph
 
 from r9lab_vocabulary import pipeline, scheme
 
-ROOT = Path(__file__).resolve().parent.parent
-OWN, SKOHUB = ROOT / "shapes" / "r9lab.shacl.ttl", ROOT / "shapes" / "skohub-skos.shacl.ttl"
+if TYPE_CHECKING:
+    from pathlib import Path
+
+OWN, SKOHUB = ROOT / "shapes" / "r9lab.shacl.ttl", ROOT / "tests" / "fixtures" / "skohub-skos.shacl.ttl"
 
 
 @pytest.fixture(scope="module")

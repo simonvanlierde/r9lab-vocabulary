@@ -1,4 +1,4 @@
-# r9lab-vocabulary's own rules, run with skohub-shapes' SKOS rules (skohub-skos.shacl.ttl).
+# r9lab-vocabulary's own rules, run with skohub-shapes' SKOS rules (tests/fixtures/skohub-skos.shacl.ttl).
 # Check a copy: pyshacl -s r9lab.shacl.ttl r9lab-vocabulary.ttl
 @prefix : <https://w3id.org/r9lab/vocabulary/shapes#> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
