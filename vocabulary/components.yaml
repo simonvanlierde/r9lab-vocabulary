@@ -14,6 +14,7 @@ concepts:
     mappings: {exact: ['wd:Q267298'], close: ['cpc:464']}
   c0002:
     label: lithium-ion battery
+    definition: A pack of one or more lithium-ion cells with casing and connections, as removed from a product.
     note: BAFU has no LiCoO2 battery, the usual phone and tablet chemistry; NMC is the nearest.
     broader: [c0001]
     mappings: {exact: ['wd:Q2822895'], broad: ['cpc:46420']}

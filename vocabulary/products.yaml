@@ -88,7 +88,7 @@ concepts:
   p0018:
     label: GPS navigation device
     broader: [p0002]
-    mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0305', 'weee6:6'], close: ['r9lab-cpv:381121']}
+    mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0402', 'weee6:5'], close: ['r9lab-cpv:381121']}
   p0019:
     label: headphones
     broader: [p0003]
@@ -102,7 +102,7 @@ concepts:
     label: radio
     note: Includes clock radios.
     broader: [p0003]
-    mappings: {broad: ['cpc:47311', 'unu1:0201', 'weee6:5'], close: ['r9lab-cpv:323442']}
+    mappings: {broad: ['cpc:47311', 'unu1:0403', 'weee6:5'], close: ['r9lab-cpv:323442']}
   p0022:
     label: remote control
     broader: [p0003]
