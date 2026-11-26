@@ -124,6 +124,24 @@ are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they a
 Concepts still without the three texts are listed in `tests/pending-text.txt`, and the tests
 fail on any other concept that lacks one.
 
+### Sort a part
+
+The notes follow these rules, and a new note must not break them:
+
+- A part goes by the material that makes up most of its mass. That holds for filled grades
+  too: PA66-GF30 is polyamide, but a silicone thermal pad that is mostly ceramic filler goes by the ceramic.
+- A foam goes by its polymer when the record names it, and a metal foam goes by its metal.
+- Glass-fibre reinforced polymer is for laminates and continuous-fibre or resin parts. Woven
+  glass fabric is glass fibre, not textile.
+- A plated part goes by its base metal, unless the record lists the plating on its own.
+- Enamelled winding wire in a coil, motor or transformer goes by its metal, not cable.
+- Ferrous means iron-based (Ashby). Stainless steel has at least 10.5 % chromium.
+- Elastomers are their own family. "Polymer" means plastics.
+- A battery is one or more cells fitted for use (IEC 60050-482). A bare cell cut from a pack
+  is a lithium-ion cell. The pilot's battery class takes both.
+- In the pilot, a ceramic part is "other", and a fabric that is mostly plastic by mass is
+  "plastic".
+
 ### Suggested mappings
 
 Every entry under `mappings:` is curated by a person, and the SSSOM file says so

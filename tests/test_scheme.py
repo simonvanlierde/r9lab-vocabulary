@@ -32,9 +32,9 @@ PILOT_KEYS = {
     "other",
 }
 
-# Concepts still waiting for a definition, example and scope note, written in batches of
-# about ten. A new concept must come with all three. The list only shrinks; once it is
-# empty, the rule moves into validate.
+# Concepts that may still lack a definition, example and scope note while the batches land.
+# A concept not listed must have all three. Once every listed one is done, the file goes
+# and the rule moves into validate.
 PENDING_TEXT = set((ROOT / "tests" / "pending-text.txt").read_text(encoding="utf-8").split())
 
 
@@ -254,8 +254,9 @@ def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Sch
     done = {cid for cid, c in concepts.items() if all(c.get(f) for f in ("definition", "example", "note"))}
     missing = set(concepts) - done - PENDING_TEXT
     assert not missing, f"no definition, example or note: {sorted(missing)}"
-    stale = PENDING_TEXT - (set(concepts) - done)
-    assert not stale, f"done or gone, take out of tests/pending-text.txt: {sorted(stale)}"
+    # A done concept may stay listed, so parallel batches need not edit the list; the file goes once all are done.
+    gone = PENDING_TEXT - set(concepts)
+    assert not gone, f"deprecated or gone, take out of tests/pending-text.txt: {sorted(gone)}"
 
 
 def test_a_weee_category_link_points_into_annex_iii_of_the_directive():
@@ -376,7 +377,7 @@ def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_p
         "iri": f"{schemes['materials'].iri}m0003",
         "label": "carbon and low-alloy steel",
         "path": ["metal", "ferrous metal", "carbon and low-alloy steel"],
-        "definition": "Steel without the chromium content of stainless steel, including galvanised sheet.",
+        "definition": schemes["materials"].concepts["m0003"]["definition"],
         "pilot": ["ferrous"],
     }
     assert concepts["s01"]["pilot"] == ["ferrous"]
