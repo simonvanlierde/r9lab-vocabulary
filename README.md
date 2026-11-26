@@ -51,8 +51,18 @@ just wikidata    # print every Wikidata link beside the item's current label
 ```
 
 `just update` runs `just pipeline` and then `just rdf`, and prints how the match counts in
-`dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes
-`dist/r9lab-vocabulary.ttl`, the same graph as JSON-LD, and `dist/name-matches.csv`.
+`dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes:
+
+- `dist/r9lab-vocabulary.ttl` and `dist/r9lab-vocabulary.jsonld`: the SKOS graph.
+- `dist/name-matches.csv`: each name pattern with its match count per version.
+- `dist/r9lab-vocabulary.sssom.tsv`: every mapping as an [SSSOM](https://mapping-commons.github.io/sssom/)
+  row, for tools that read crosswalks without parsing SKOS. `just sssom-validate` checks it
+  with sssom-py. Mappings from or to a deprecated concept are left out; the SKOS graph keeps
+  them. The file has no `mapping_date` column, because the YAML records no date per mapping.
+- `dist/labels.json` and `dist/labels.md`: per scheme, each non-deprecated concept by id with
+  its IRI, label, label path from its top concept, definition, and the keys of the pilot
+  classes it falls under (`pilot`). A model prompt can quote them. Evaluation answers are
+  not kept in this repository.
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
@@ -74,6 +84,14 @@ The vocabulary is CC0, so a definition is written in our own words: Ashby and IE
 are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they are.
 Concepts still without the three texts are listed in `tests/pending-text.txt`, and the tests
 fail on any other concept that lacks one.
+
+### Suggested mappings
+
+Every entry under `mappings:` is curated by a person, and the SSSOM file says so
+(`semapv:ManualMappingCuration`, with the curator's ORCID). A mapping a model or matching tool
+suggests never goes there. It goes in a separate SSSOM file under `suggestions/`, with the
+tool's own justification (such as `semapv:LLMBasedMatching`), which the build does not read. A
+person promotes a suggestion by checking it and copying it into `mappings:`.
 
 ### Add a version of a name list
 

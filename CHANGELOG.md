@@ -17,6 +17,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
 - Concepts take an `example` (`skos:example`), an `editorial_note` (`skos:editorialNote`) and a `source` for the definition (`dcterms:source`); `note` stays the scope note. The tests fail on a concept without a definition, an example and a scope note, except those still listed in `tests/pending-text.txt`.
 - The weekly CI run checks every Wikidata link against the live API, so a merged or deleted item fails it.
+- `just rdf` also writes `r9lab-vocabulary.sssom.tsv`, every curated mapping as an SSSOM row with its curator's ORCID; `just sssom-validate` and CI check it with sssom-py. Mappings a tool suggests stay in a separate file until a person promotes them.
+- `just rdf` also writes `labels.json` and `labels.md`: each non-deprecated concept with its label, ancestor path, definition and pilot classes, as text for model prompts.
 - Each product type links (`broadMatch`) to its WEEE Directive category, `weee6:1` to `weee6:6`, derived from its UNU-KEY. `just rdf` refuses any other `weee6` code.
 - Each product type with a UNU-KEY v1 code also links to its UNU-KEY v2 code (`unu2:`), from the 2026 E-waste Statistics Guidelines. `just rdf` refuses a `unu1` or `unu2` code that is not in that edition's key list.
 - A `lithium-ion cell` component (c0024), related to `lithium-ion battery`, takes the BAFU "Battery cell, ..." datasets.
@@ -27,5 +29,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The BAFU patterns for wood, polystyrene and liquid-crystal display no longer match cement-bonded particle board, polystyrene scrap or the 17-inch LCD monitor.
 - GPS navigation device is UNU-KEY 0402 (WEEE category 5), not 0305 (category 6), and radio is 0402 (v2: 0403), not 0201, as the guidelines' key descriptions and HS tables place them.
 - Steel, stainless steel, aluminium and copper no longer match the BAFU sheet-rolling and wire-drawing services.
+
+### Fixed
+
+- `just check` now rejects a notation written as `1` and as `"1"`, a `replaced_by` that points at the concept itself or at a deprecated concept, and a concept with an empty body (reported as "no label" instead of crashing).
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD
