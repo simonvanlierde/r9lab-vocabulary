@@ -20,13 +20,15 @@ graph:
 | Scheme | Concepts | Top level |
 | --- | --- | --- |
 | [Material classes](vocabulary/materials.yaml) | 58 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
-| [Component classes](vocabulary/components.yaml) | 23 | Battery, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
+| [Component classes](vocabulary/components.yaml) | 24 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
 | [Pilot classes](vocabulary/pilot-classes.yaml) | 10 | The ten coarse material classes a photo study scores, kept as a `skos:Collection` |
 
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
-PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and R9lab CPV codes. Materials and components also
+PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and v2 and R9lab CPV codes. Each product type also has a
+`broadMatch` to its category in Annex III to the WEEE Directive 2012/19/EU (`weee6:1` to
+`weee6:6`), a fragment on the directive's ELI. Materials and components also
 carry candidate patterns for names in outside lists that have no ids, such as BAFU activity
 names (`names: {bafu: [...]}`). Each pattern is checked against every pinned version of its list,
 today BAFU:2025 v2 and BAFU:2026 v1, and written out as `dist/name-matches.csv` with a match
@@ -64,7 +66,7 @@ just wikidata    # print every Wikidata link beside the item's current label
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
-missing from the pinned files, or a name pattern that matches no live name in a version.
+missing from the pinned files, a WEEE category other than 1 to 6, or a name pattern that matches no live name in a version.
 
 ### Suggested mappings
 

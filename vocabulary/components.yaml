@@ -14,11 +14,11 @@ concepts:
     mappings: {exact: ['wd:Q267298'], close: ['cpc:464']}
   c0002:
     label: lithium-ion battery
-    note: BAFU has no LiCoO2 cell, the usual phone and tablet chemistry; NMC is the nearest.
+    note: BAFU has no LiCoO2 battery, the usual phone and tablet chemistry; NMC is the nearest.
     broader: [c0001]
     mappings: {exact: ['wd:Q2822895'], broad: ['cpc:46420']}
     names:
-      bafu: ['^battery( cell)?, (li-?ion|liio|lfp|lto|nca|nmc)']
+      bafu: ['^battery, (li-?ion|liio)', '^battery, rechargeable, prismatic, lincm']
   c0003:
     label: nickel-metal hydride battery
     broader: [c0001]
@@ -88,10 +88,11 @@ concepts:
     mappings: {exact: ['wd:Q6021804']}
   c0015:
     label: liquid-crystal display
+    note: BAFU's "LCD flat screen, 17 inches" is a whole computer monitor (housing, circuit board and LCD module), so it is left out.
     broader: [c0014]
     mappings: {exact: ['wd:Q83341']}
     names:
-      bafu: ['^lcd (glass|module|screen|flat screen)', '^backlight, lcd']
+      bafu: ['^lcd (glass|module|screen)', '^backlight, lcd']
   c0016:
     label: LED or OLED display
     broader: [c0014]
@@ -130,3 +131,11 @@ concepts:
     label: loudspeaker driver
     note: No BAFU dataset.
     mappings: {exact: ['wd:Q570'], broad: ['cpc:47330']}
+  c0024:
+    label: lithium-ion cell
+    definition: Single lithium-ion electrochemical cell, the unit a lithium-ion battery is built from.
+    note: Part of a battery, not a kind of battery, so it has no broader concept.
+    related: [c0002]
+    mappings: {broad: ['wd:Q80097', 'cpc:46420']}
+    names:
+      bafu: ['^battery cell, ']
