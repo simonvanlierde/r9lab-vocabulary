@@ -312,7 +312,7 @@ concepts:
     mappings: {exact: ['pmdco:PMD_0000546', 'wd:Q45621']}
   m0047:
     label: technical ceramic
-    definition: Ceramic engineered for high-performance uses, such as alumina, zirconia or silicon carbide in substrates, insulators and heating elements.
+    definition: Ceramic of refined oxides, carbides or nitrides, such as alumina, zirconia or silicon carbide, made for technical parts.
     source: https://w3id.org/pmd/co/PMD_0050054
     example: [an alumina substrate, a ceramic fuse body, a zirconia oxygen sensor, a silicon carbide heating element]
     note: 'Not ferrite: magnetic iron oxide ceramics have their own class. Clay ceramics such as stoneware and tableware stay at ceramic.'
@@ -322,7 +322,7 @@ concepts:
     label: ferrite
     definition: Ceramic of iron oxide combined with other metal oxides, often magnetic, as in ferrite cores and magnets.
     source: https://www.wikidata.org/wiki/Q114047906
-    example: [a ferrite toroid core, a ferrite bead on a cable, a ferrite loudspeaker magnet, a transformer core of ferrite]
+    example: [a ferrite toroid core, a ferrite bead on a cable, a ferrite loudspeaker magnet, a ferrite rod from a radio antenna]
     note: 'Not ferrous metal: ferrite is an oxide, not an alloy, and the ferrite phase of steel is steel. Not technical ceramic, though ferrites are engineered ceramics too.'
     broader: [m0046]
     mappings: {exact: ['wd:Q114047906']}
@@ -330,24 +330,24 @@ concepts:
       bafu: ['^ferrite']
   m0049:
     label: hybrid material
-    definition: Combination of two or more materials, or of a material and space, with properties neither has alone, Ashby's hybrid family.
+    definition: 'Two or more materials, or a material and empty space, combined to give properties that none has alone: Ashby''s hybrid family.'
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [FR-4, a carbon-fibre panel, plywood, a foam gasket]
-    note: Covers composites, foams, natural materials and textiles. A part of separate materials that can be taken apart is recorded by each material, not as a hybrid.
+    note: 'Not a part of separate materials: a part that can be taken apart is recorded by each material. Covers composites, foams, natural materials and textiles.'
   m0050:
     label: composite
     definition: Two or more unlike materials bonded together, usually fibres or particles in a matrix, that stay distinct in the finished part.
     source: https://www.wikidata.org/wiki/Q181790
-    example: [glass-fibre reinforced polymer, carbon-fibre reinforced polymer, FR-2 paper-phenolic board, a mica-filled insulator]
-    note: 'Not textile: fibres without a matrix are textile. Paper or foil laminated with plastic goes by its main material.'
+    example: [glass-fibre reinforced polymer, carbon-fibre reinforced polymer, FR-2 paper-phenolic board, cement-bonded particle board]
+    note: 'Not textile: fibres without a matrix are textile, except glass fibres, which are glass fibre. Paper or foil laminated with plastic goes by its main material.'
     broader: [m0049]
     mappings: {exact: ['pmdco:PMD_0000577', 'wd:Q181790']}
   m0051:
     label: glass-fibre reinforced polymer
-    definition: Polymer reinforced with glass fibre, as in fibreglass sheet and glass-fibre resin mouldings.
+    definition: Composite of glass fibre set in a polymer resin, as in fibreglass sheet, laminates and moulded resin parts.
     source: https://www.wikidata.org/wiki/Q7224880
     example: [a fibreglass enclosure, a GRP panel, a glass-fibre epoxy sheet, FR-4]
-    note: 'GFRP, GRP, fibreglass. Not glass fibre: bare fibre without resin is glass fibre. Short-fibre glass-filled moulding grades, such as PA66-GF30, go by their polymer; this concept is for laminates and continuous-fibre or resin parts.'
+    note: 'GFRP, GRP, fibreglass. Not glass fibre: bare fibre without resin is glass fibre. Not glass-filled plastic: short-fibre moulding grades such as PA66-GF30 go by their polymer.'
     broader: [m0050]
     mappings: {exact: ['pmdco:PMD_0090008', 'wd:Q7224880']}
     names:
@@ -357,15 +357,15 @@ concepts:
     definition: Flame-retardant glass-fibre epoxy laminate, the usual circuit board substrate.
     source: https://www.wikidata.org/wiki/Q2466079
     example: [a plain FR-4 sheet, an FR-4 insulating spacer, a copper-clad FR-4 offcut]
-    note: 'Not printed circuit board: the board with its components is a component; this is the laminate. Other board laminates such as FR-2 paper-phenolic are composite.'
+    note: 'Not printed circuit board: a board, bare or populated, is a component, and FR-4 is its material. Other board laminates such as FR-2 paper-phenolic are composite.'
     broader: [m0051]
     mappings: {exact: ['wd:Q2466079']}
   m0053:
     label: foam
     definition: Solid with gas-filled cells throughout, as in packaging, padding and insulation.
     source: https://www.wikidata.org/wiki/Q215414
-    example: [a polyethylene foam sheet, an acoustic foam pad, a foam gasket, aluminium foam]
-    note: 'Not polyurethane, polystyrene or polyethylene: a foam whose polymer is known goes by that polymer, as PU foam and EPS do. Wikidata''s foam also covers liquid foams; here only solid foams.'
+    example: [an unmarked packaging foam sheet, an acoustic foam pad, a foam gasket, aluminium foam]
+    note: 'Not polyurethane, polystyrene or polyethylene: a foam whose polymer is known goes by that polymer, such as PUR foam or EPS. Wikidata''s foam also counts liquid foams.'
     broader: [m0049]
     mappings: {exact: ['pmdco:PMD_0020126'], close: ['wd:Q215414']}
   m0054:
@@ -373,7 +373,7 @@ concepts:
     definition: Material from plants or animals used with its natural structure kept, such as wood, paper, leather and cork.
     source: https://www.wikidata.org/wiki/Q2451477
     example: [wood, cardboard, leather, cork]
-    note: 'Not polymer: biobased plastics such as PLA are polymers. Wikidata''s natural material leaves out processed matter; here processed forms such as paper, board and tanned leather are included.'
+    note: 'Not polymer: biobased plastics such as PLA are polymers. Wikidata''s natural material leaves out processed forms; here paper, board and tanned leather count.'
     broader: [m0049]
     mappings: {close: ['wd:Q2451477']}
   m0055:
