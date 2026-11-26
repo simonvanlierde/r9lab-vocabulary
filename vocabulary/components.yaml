@@ -32,7 +32,7 @@ concepts:
     definition: Rechargeable battery of one or more nickel-metal hydride cells with its casing and connections.
     source: https://www.wikidata.org/wiki/Q308567
     example: [a rechargeable AA cell, a cordless-phone battery pack, an older shaver battery, a toothbrush battery]
-    note: 'Not primary cell: a NiMH cell is made to be recharged, even when it has the same size as an alkaline AA. Not nickel-cadmium battery, which has a different chemistry.'
+    note: 'Not primary cell: a NiMH cell is made to be recharged, even when it has the same size as an alkaline AA. Not nickel-cadmium: a NiCd battery goes to battery.'
     broader: [c0001]
     mappings: {exact: ['wd:Q308567'], broad: ['cpc:46420']}
     names:
@@ -79,9 +79,10 @@ concepts:
     definition: Electronic circuit formed on a small piece of semiconductor, sealed in a package with pins or pads, such as a processor or memory chip.
     source: https://www.wikidata.org/wiki/Q80831
     example: [a CPU, a DRAM chip, a flash memory chip, a microcontroller]
-    note: 'Not populated printed circuit board: a chip still soldered on stays part of the board, and a memory module is a board. Wikidata''s item is the circuit itself; here it means the packaged chip.'
+    note: 'Not populated printed circuit board: a chip still soldered on stays part of the board, and a memory module is a board. Here it means the packaged chip.'
+    editorial_note: Wikidata's item is the circuit itself.
     broader: [c0007]
-    mappings: {exact: ['wd:Q80831'], close: ['cpc:47160']}
+    mappings: {close: ['cpc:47160', 'wd:Q80831']}
     names:
       bafu: ['^integrated circuit']
   c0009:
@@ -109,9 +110,10 @@ concepts:
     definition: Semiconductor diode that gives off light when current flows through it, as a single part.
     source: https://www.wikidata.org/wiki/Q25504
     example: [a through-hole indicator LED, a surface-mount LED, an LED from a backlight strip, an infrared LED from a remote control]
-    note: 'Not LED or OLED display: a screen built from LEDs is a display. Not LED lamp, which is a product. Wikidata''s light-emitting diode is any such light source; here it means the discrete part.'
+    note: 'Not LED or OLED display: a screen built from LEDs is a display. Not LED lamp, which is a product. Here it means the discrete part.'
+    editorial_note: Wikidata's light-emitting diode is any such light source.
     broader: [c0007]
-    mappings: {exact: ['wd:Q25504'], broad: ['cpc:47150']}
+    mappings: {close: ['wd:Q25504'], broad: ['cpc:47150']}
     names:
       bafu: ['^light emitting diode']
   c0012:
@@ -144,16 +146,17 @@ concepts:
     source: https://www.wikidata.org/wiki/Q83341
     example: [a laptop LCD panel, a phone LCD module, a calculator's segment display, an LCD backlight unit]
     note: 'Not LED or OLED display: an LCD with an LED backlight is still an LCD. Not a whole monitor or television, which is a product. Includes the backlight unit, on its own or with the panel.'
-    editorial_note: BAFU's "LCD flat screen, 17 inches" is a whole computer monitor (housing, circuit board and LCD module), so it is left out.
+    editorial_note: BAFU's "LCD flat screen, 17 inches" is a whole computer monitor (housing, circuit board and LCD module), so it is left out. Wikidata's liquid-crystal display is the panel; a backlight unit on its own is included here.
     broader: [c0014]
-    mappings: {exact: ['wd:Q83341']}
+    mappings: {close: ['wd:Q83341']}
     names:
       bafu: ['^lcd (glass|module|screen)', '^backlight, lcd']
   c0016:
     label: LED or OLED display
     definition: Display panel or module whose image is made directly by light-emitting diodes, inorganic or organic (OLED), with no liquid-crystal layer.
+    source: https://www.wikidata.org/wiki/Q9197445
     example: [an OLED phone screen module, an AMOLED smartwatch display, a seven-segment LED display, an LED matrix panel]
-    note: 'Not liquid-crystal display: an LCD lit by an LED backlight is an LCD. Not light-emitting diode, which is a single loose LED. Wikidata''s OLED item is the emitting diode, not a display.'
+    note: 'Not liquid-crystal display: an LCD lit by an LED backlight is an LCD. Not light-emitting diode, which is a single loose LED.'
     broader: [c0014]
     mappings: {close: ['wd:Q9197445']}
     names:
@@ -187,7 +190,7 @@ concepts:
     definition: Permanent magnet made of an alloy of neodymium, iron and boron (NdFeB), the strongest common kind.
     source: https://www.wikidata.org/wiki/Q908880
     example: [a hard-drive voice-coil magnet, an earbud speaker magnet, a phone vibration-motor magnet, a nickel-plated disc magnet]
-    note: Not ferrite magnet, which is a dark grey ceramic and much weaker. Not samarium-cobalt magnet, a different rare-earth magnet.
+    note: 'Not ferrite magnet, which is a dark grey ceramic and much weaker. Not samarium-cobalt: that rare-earth magnet goes to permanent magnet.'
     editorial_note: BAFU's only dataset comes from the electric-vehicle motor chain.
     broader: [c0019]
     mappings: {exact: ['wd:Q908880'], broad: ['cpc:46931']}
@@ -214,9 +217,9 @@ concepts:
     definition: Electroacoustic transducer that turns an electrical audio signal into sound, as a single unit of cone or diaphragm, coil and magnet.
     source: https://www.wikidata.org/wiki/Q570
     example: [a laptop speaker unit, a phone earpiece speaker, a woofer from a speaker box, an earbud driver]
-    note: 'Not speaker, which is the whole stand-alone product with its enclosure. Not magnet: a magnet taken out of a driver is recorded as a magnet. Wikidata''s loudspeaker also covers a whole speaker box; here it means the driver unit only.'
-    editorial_note: No BAFU dataset.
-    mappings: {exact: ['wd:Q570'], broad: ['cpc:47330']}
+    note: 'Not speaker, which is the whole stand-alone product with its enclosure. Not magnet: a magnet taken out of a driver is recorded as a magnet. Here it means the driver unit only.'
+    editorial_note: No BAFU dataset. Wikidata's loudspeaker also covers a whole speaker box.
+    mappings: {close: ['wd:Q570'], broad: ['cpc:47330']}
   c0024:
     label: lithium-ion cell
     definition: Single lithium-ion electrochemical cell, the unit a lithium-ion battery is built from.
