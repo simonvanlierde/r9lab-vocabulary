@@ -18,21 +18,32 @@ concepts:
     mappings: {exact: ['wd:Q267298'], close: ['cpc:464']}
   c0002:
     label: lithium-ion battery
-    definition: A pack of one or more lithium-ion cells with casing and connections, as removed from a product.
-    note: BAFU has no LiCoO2 battery, the usual phone and tablet chemistry; NMC is the nearest.
+    definition: Rechargeable battery of one or more lithium-ion cells with its casing and connections, as removed from a product.
+    source: https://www.wikidata.org/wiki/Q2822895
+    example: [a phone's lithium-ion pouch battery, a laptop battery pack, a power-bank battery, a cordless-drill battery pack]
+    note: 'Not lithium-ion cell: a bare cell cut out of a pack has none of the pack''s case or protection. Includes lithium-polymer pouch batteries. A pack''s protection board belongs to the battery.'
+    editorial_note: BAFU has no LiCoO2 battery, the usual phone and tablet chemistry; NMC is the nearest.
     broader: [c0001]
     mappings: {exact: ['wd:Q2822895'], broad: ['cpc:46420']}
     names:
       bafu: ['^battery, (li-?ion|liio)', '^battery, rechargeable, prismatic, lincm']
   c0003:
     label: nickel-metal hydride battery
+    definition: Rechargeable battery of one or more nickel-metal hydride cells with its casing and connections.
+    source: https://www.wikidata.org/wiki/Q308567
+    example: [a rechargeable AA cell, a cordless-phone battery pack, an older shaver battery, a toothbrush battery]
+    note: 'Not primary cell: a NiMH cell is made to be recharged, even when it has the same size as an alkaline AA. Not nickel-cadmium battery, which has a different chemistry.'
     broader: [c0001]
     mappings: {exact: ['wd:Q308567'], broad: ['cpc:46420']}
     names:
       bafu: ['^battery, nimh']
   c0004:
     label: primary cell
-    note: Alkaline, zinc-carbon and coin cells. No BAFU dataset.
+    definition: Battery made to be used once and not recharged, usually a single cell in a standard size.
+    source: https://www.wikidata.org/wiki/Q1378887
+    example: [an alkaline AA cell, a zinc-carbon AAA cell, a CR2032 lithium coin cell, a 9 V block battery]
+    note: 'Alkaline, zinc-carbon and coin cells. Not lithium-ion battery: a lithium coin cell is primary and belongs here. Not nickel-metal hydride battery, which is rechargeable.'
+    editorial_note: No BAFU dataset.
     broader: [c0001]
     mappings: {exact: ['wd:Q1378887'], close: ['cpc:46410']}
   c0005:
@@ -65,36 +76,60 @@ concepts:
       bafu: ['^electronic component, (active|passive), unspecified']
   c0008:
     label: integrated circuit
+    definition: Electronic circuit formed on a small piece of semiconductor, sealed in a package with pins or pads, such as a processor or memory chip.
+    source: https://www.wikidata.org/wiki/Q80831
+    example: [a CPU, a DRAM chip, a flash memory chip, a microcontroller]
+    note: 'Not populated printed circuit board: a chip still soldered on stays part of the board, and a memory module is a board. Wikidata''s item is the circuit itself; here it means the packaged chip.'
     broader: [c0007]
     mappings: {exact: ['wd:Q80831'], close: ['cpc:47160']}
     names:
       bafu: ['^integrated circuit']
   c0009:
     label: capacitor
+    definition: Passive two-terminal electronic component that stores energy in an electric field.
+    source: https://www.wikidata.org/wiki/Q5322
+    example: [an aluminium electrolytic capacitor, a ceramic chip capacitor, a film capacitor, a tantalum capacitor]
+    note: 'Not battery: a capacitor, supercapacitors included, stores charge, not chemical energy. Not populated printed circuit board: a capacitor still soldered on stays part of the board.'
     broader: [c0007]
     mappings: {exact: ['wd:Q5322'], close: ['cpc:47110']}
     names:
       bafu: ['^capacitor']
   c0010:
     label: resistor
+    definition: Passive electronic component used for its electrical resistance.
+    source: https://www.wikidata.org/wiki/Q5321
+    example: [a carbon-film resistor, a surface-mount chip resistor, a potentiometer, a thermistor]
+    note: 'Not populated printed circuit board: a resistor still soldered on stays part of the board. Includes variable resistors such as potentiometers and thermistors.'
     broader: [c0007]
     mappings: {exact: ['wd:Q5321'], close: ['cpc:47120']}
     names:
       bafu: ['^resistor']
   c0011:
     label: light-emitting diode
+    definition: Semiconductor diode that gives off light when current flows through it, as a single part.
+    source: https://www.wikidata.org/wiki/Q25504
+    example: [a through-hole indicator LED, a surface-mount LED, an LED from a backlight strip, an infrared LED from a remote control]
+    note: 'Not LED or OLED display: a screen built from LEDs is a display. Not LED lamp, which is a product. Wikidata''s light-emitting diode is any such light source; here it means the discrete part.'
     broader: [c0007]
     mappings: {exact: ['wd:Q25504'], broad: ['cpc:47150']}
     names:
       bafu: ['^light emitting diode']
   c0012:
     label: inductor
+    definition: Passive two-terminal component that stores energy in its magnetic field, usually a coil of wire, often round a ferrite core.
+    source: https://www.wikidata.org/wiki/Q5325
+    example: [a toroidal choke, a surface-mount power inductor, a surface-mount ferrite bead, a common-mode choke from a power supply]
+    note: 'Not transformer: an inductor works on one circuit, a transformer couples two or more. Wire unwound from an inductor goes by its metal.'
     broader: [c0007]
     mappings: {exact: ['wd:Q5325'], broad: ['cpc:46122']}
     names:
       bafu: ['^inductor']
   c0013:
     label: transformer
+    definition: Electrical device that transfers energy from one circuit to another by electromagnetic induction, built from windings on a core.
+    source: https://www.wikidata.org/wiki/Q11658
+    example: [a mains transformer from an old power supply, a ferrite transformer from a switched-mode charger, a microwave-oven transformer, a doorbell transformer]
+    note: 'Not inductor, which has a single circuit. Not electronic component: small board-mounted transformers also go here. Wire unwound from a transformer goes by its metal.'
     mappings: {exact: ['wd:Q11658'], close: ['cpc:46121']}
   c0014:
     label: display
@@ -105,7 +140,11 @@ concepts:
     mappings: {exact: ['wd:Q6021804']}
   c0015:
     label: liquid-crystal display
-    note: BAFU's "LCD flat screen, 17 inches" is a whole computer monitor (housing, circuit board and LCD module), so it is left out.
+    definition: Display panel or module that forms images with liquid crystals, lit by a backlight or by reflected light.
+    source: https://www.wikidata.org/wiki/Q83341
+    example: [a laptop LCD panel, a phone LCD module, a calculator's segment display, an LCD backlight unit]
+    note: 'Not LED or OLED display: an LCD with an LED backlight is still an LCD. Not a whole monitor or television, which is a product. Includes the backlight unit, on its own or with the panel.'
+    editorial_note: BAFU's "LCD flat screen, 17 inches" is a whole computer monitor (housing, circuit board and LCD module), so it is left out.
     broader: [c0014]
     mappings: {exact: ['wd:Q83341']}
     names:
