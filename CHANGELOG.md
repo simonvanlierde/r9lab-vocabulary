@@ -17,6 +17,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just update` fetches, builds and checks everything and prints how the match counts changed; `just test-full` runs the tests as CI does.
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
 - Concepts take an `example` (`skos:example`), an `editorial_note` (`skos:editorialNote`) and a `source` for the definition (`dcterms:source`); `note` stays the scope note. The tests fail on a concept without a definition, an example and a scope note, except those still listed in `tests/pending-text.txt`.
+- The components the pilot classes map to (battery, printed circuit boards, electronic component, display, cable, magnet) have a definition with its source, examples and a scope note. The magnet pilot class maps to permanent magnet, and enamelled winding wire counts as its metal, not as cable.
 - The ten pilot classes have a definition with its source, examples and a note on the class each is told apart from. The short prompt glosses they carried before are gone; the pilot's prompt text stays in its registration.
 - The weekly CI run checks every Wikidata link against the live API, so a merged or deleted item fails it.
 - `just diff <tag>` lists the concepts added, deprecated, removed, remapped and relabelled since a release, as Markdown, and fails when a concept id was deleted instead of deprecated. It also lists a concept that was deprecated with no replacement or is no longer deprecated.

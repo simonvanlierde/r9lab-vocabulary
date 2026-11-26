@@ -98,9 +98,9 @@ concepts:
     mappings: {exact: ['wd:Q11658'], close: ['cpc:46121']}
   c0014:
     label: display
+    example: [a phone screen module, a laptop LCD panel, an OLED smartwatch display, an e-reader's e-paper display]
     definition: Electronic visual display panel or module that shows images or text, such as an LCD or OLED panel.
     source: https://www.wikidata.org/wiki/Q6021804
-    example: [a phone screen module, a laptop LCD panel, an OLED smartwatch display, a monitor's LCD panel]
     note: 'Not glass: a loose cover glass is a material. Not a whole monitor or television, which is a product.'
     mappings: {exact: ['wd:Q6021804']}
   c0015:
@@ -118,18 +118,18 @@ concepts:
       bafu: ['^(led|oled) (module|screen)']
   c0017:
     label: cable
+    note: 'Not a bare conductor: an uninsulated copper strip or braid goes by its metal, and so does enamelled winding wire wound into a coil, motor or transformer. Not a flexible printed circuit, which is a printed circuit board. Wikidata''s cable does not ask for insulation; this scheme does.'
     definition: 'Electric cable or wire: one or more insulated conductors, with or without plugs.'
     source: https://www.wikidata.org/wiki/Q188447
     example: [a power cord, a USB cable, an internal wire harness, a ribbon cable]
-    note: 'Not a bare conductor: an uninsulated copper strip or braid goes by its metal. Not a flexible printed circuit, which is a printed circuit board.'
     mappings: {exact: ['wd:Q188447'], close: ['cpc:463']}
     names:
       bafu: ['^cable, ', '^plugs, inlet and outlet']
   c0018:
     label: magnet
+    example: [a loudspeaker magnet, a hard-drive voice-coil magnet, an electromagnet from a door lock, a magnetic catch]
     definition: Material or object that produces a magnetic field, permanent or electromagnetic.
     source: https://www.wikidata.org/wiki/Q11421
-    example: [a loudspeaker magnet, a hard-drive voice-coil magnet, a relay coil, a magnetic catch]
     note: 'Not ferrous metal: a steel part a magnet sticks to is not a magnet. Not electric motor, which holds magnets but is a concept of its own. The pilot''s magnet class means permanent magnet.'
     mappings: {exact: ['wd:Q11421'], broad: ['cpc:4693']}
   c0019:
