@@ -24,7 +24,10 @@ scheme:
 concepts:
   m0001:
     label: metal
-    definition: Metallic elements and alloys.
+    definition: 'Metallic elements and their alloys: dense, conductive and ductile, Ashby''s metal family.'
+    source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
+    example: [steel, aluminium, copper, solder]
+    note: 'Not ceramic: metal oxides such as ferrite are ceramics. Not hybrid: a metal-plated plastic part goes by its main material.'
     mappings: {exact: ['pmdco:PMD_0000852', 'wd:Q11426']}
   m0002:
     label: ferrous metal
@@ -36,21 +39,30 @@ concepts:
     mappings: {exact: ['pmdco:PMD_0000639', 'wd:Q65122087'], close: ['cpc:411']}
   m0003:
     label: carbon and low-alloy steel
-    definition: Steel without the chromium content of stainless steel, including galvanised sheet.
+    definition: Steel with less chromium than stainless steel (under 10.5 %), plain or galvanised.
+    source: EN 10088-1:2014
+    example: [a steel chassis, galvanised sheet, a screw, a spring]
+    note: 'Not stainless steel: at 10.5 % chromium or more it is stainless. Not cast iron: steel has under about 2 % carbon. A zinc or paint coat does not change the class.'
     broader: [m0002]
     mappings: {broad: ['pmdco:PMD_0020096', 'wd:Q11427'], close: ['cpc:41121']}
     names:
       bafu: ['^steel, (converter|electric), (unalloyed|low-alloyed)', '^steel sheet']
   m0004:
     label: stainless steel
-    definition: Chromium-bearing steel that resists corrosion.
+    definition: Steel with at least 10.5 % chromium, which makes it resist corrosion.
+    source: EN 10088-1:2014
+    example: [a washing-machine drum, a dishwasher tub, a kettle body, a stainless screw]
+    note: 'Not non-ferrous metal: it is iron-based even when a magnet does not stick to it.'
     broader: [m0002]
     mappings: {exact: ['pmdco:PMD_0010003', 'wd:Q172587'], broad: ['cpc:41122']}
     names:
       bafu: ['^chromium steel 18/8']
   m0005:
     label: cast iron
-    definition: Iron-carbon alloy shaped by casting.
+    definition: Iron-carbon alloy with more than about 2 % carbon, shaped by casting.
+    source: https://www.wikidata.org/wiki/Q483269
+    example: [grey cast iron, ductile iron, a cast pump housing, a cast-iron motor frame]
+    note: 'Not carbon and low-alloy steel: steel has under about 2 % carbon, even when it is cast.'
     broader: [m0002]
     mappings: {exact: ['pmdco:PMD_0010002', 'wd:Q483269']}
     names:
@@ -65,35 +77,50 @@ concepts:
     mappings: {exact: ['pmdco:PMD_0010007', 'wd:Q5679431']}
   m0007:
     label: aluminium alloy
-    definition: Aluminium and its wrought and cast alloys.
+    definition: Aluminium and alloys in which aluminium is the main metal, wrought or cast.
+    source: https://www.wikidata.org/wiki/Q447725
+    example: [an aluminium heat sink, a die-cast frame, an extruded profile, aluminium foil]
+    note: Not magnesium alloy, which looks alike but is lighter. Wikidata's aluminium alloy leaves out pure aluminium; here it is included.
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0020186', 'wd:Q447725'], close: ['cpc:41431']}
     names:
       bafu: ['^aluminium, (primary|secondary|production mix)']
   m0008:
     label: magnesium alloy
-    definition: Alloys based on magnesium, usually die-cast.
+    definition: Alloys in which magnesium is the main metal, mostly die-cast.
+    source: https://www.wikidata.org/wiki/Q2180288
+    example: [a die-cast laptop chassis, a camera body, a phone mid-frame]
+    note: 'Not aluminium alloy: the two look alike, but magnesium is about a third lighter.'
     broader: [m0006]
     mappings: {exact: ['wd:Q2180288']}
     names:
       bafu: ['^magnesium-alloy']
   m0009:
     label: copper
-    definition: Unalloyed copper, as in wire and foil.
+    definition: Unalloyed copper, as in wire, foil, bus bars and windings.
+    source: https://www.wikidata.org/wiki/Q753
+    example: [copper wire, copper foil, a bus bar, enamelled winding wire]
+    note: 'Not copper alloy: brass and bronze are alloys. Not cable: insulated wire is a cable, but enamelled winding wire in a coil, motor or transformer is copper.'
     broader: [m0006]
     mappings: {exact: ['wd:Q753'], broad: ['cpc:41413']}
     names:
       bafu: ['^copper, (primary|secondary|at regional storage)', '^copper sheet']
   m0010:
     label: copper alloy
-    definition: Alloys based on copper, such as brass and bronze.
+    definition: Alloys in which copper is the main metal, such as brass, bronze and copper-beryllium.
+    source: https://w3id.org/pmd/co/PMD_0020187
+    example: [brass, phosphor bronze, a copper-beryllium contact spring, a bronze bushing]
+    note: 'Not copper: unalloyed copper is its own concept. Not solder, which is tin-based.'
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0020187'], broad: ['cpc:41413']}
     names:
       bafu: ['^bronze']
   m0011:
     label: brass
-    definition: Copper-zinc alloy.
+    definition: Alloy of copper and zinc.
+    source: https://www.wikidata.org/wiki/Q39782
+    example: [a brass connector pin, a threaded brass insert, a valve body]
+    note: Not bronze, which is copper with tin, not zinc.
     broader: [m0010]
     mappings: {exact: ['wd:Q39782']}
     names:
@@ -118,7 +145,10 @@ concepts:
       bafu: ['^nickel, 99\.5%']
   m0015:
     label: solder
-    definition: Low-melting tin-based alloy joining electronic components.
+    definition: Low-melting alloy, mostly tin-based, that joins electronic components to a board.
+    source: https://www.wikidata.org/wiki/Q866612
+    example: [tin-silver-copper solder, tin-lead solder, solder paste, solder wire]
+    note: 'Not brazing alloy: an alloy that melts above about 450 °C brazes rather than solders. Wikidata''s solder also covers joining any metal pieces; here it is the electronics solder.'
     broader: [m0006]
     mappings: {exact: ['wd:Q866612'], broad: ['cpc:4154']}
     names:

@@ -376,7 +376,7 @@ def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_p
         "iri": f"{schemes['materials'].iri}m0003",
         "label": "carbon and low-alloy steel",
         "path": ["metal", "ferrous metal", "carbon and low-alloy steel"],
-        "definition": "Steel without the chromium content of stainless steel, including galvanised sheet.",
+        "definition": schemes["materials"].concepts["m0003"]["definition"],
         "pilot": ["ferrous"],
     }
     assert concepts["s01"]["pilot"] == ["ferrous"]
