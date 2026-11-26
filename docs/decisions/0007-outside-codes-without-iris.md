@@ -40,9 +40,8 @@ nor maintain.
 * Good: no IRIs under our base for codes we do not own; CPV links resolve to the EU's data.
 * Good: the UNU-KEY names, under a non-commercial licence, stay out of the CC0 files by design.
 * Bad: SKOS tools see the UNU-KEY link as a data property, not a mapping.
-* Bad: sssom-py 0.4.22 drops a literal mapping without `object_id` on read, though the spec says
-  implementations must accept it, so `sssom validate` does not check those rows. Revisit when
-  sssom-py follows the spec.
+* Bad: tools older than SSSOM 1.0's literal mappings drop those rows. sssom-py 0.4.22 reads them,
+  but drops every row of a set in which all rows are literal mappings.
 * Bad: a CPV relation keeps the coarser meaning of R9lab's cut code; it is the padded EU code
   only because CPV pads with zeros.
 

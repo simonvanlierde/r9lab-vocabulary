@@ -100,8 +100,7 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
   row, for tools that read crosswalks without parsing SKOS. `just sssom-validate` checks it
   with sssom-py. Mappings from or to a deprecated concept are left out; the SKOS graph keeps
   them. The file has no `mapping_date` column, because the YAML records no date per mapping.
-  A UNU-KEY row is an SSSOM literal mapping, with the code in `object_label`; sssom-py 0.4.22
-  skips those rows when it reads the file.
+  A UNU-KEY row is an SSSOM 1.0 literal mapping, with the code in `object_label` and no `object_id`.
 - `dist/labels.json` and `dist/labels.md`: per scheme, each non-deprecated concept by id with
   its IRI, label, label path from its top concept, definition, and the keys of the pilot
   classes it falls under (`pilot`), plus the keys of every concept below it (`pilot_any`). A model prompt can quote them. `labels.json` also carries
