@@ -257,8 +257,13 @@ def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]
         if relation not in RELATIONS:
             errors.append(f"{where}: unknown mapping relation {relation!r}")
         if prefix in schemes:
-            if local not in schemes[prefix].concepts:
+            target = schemes[prefix].concepts.get(local)
+            if target is None:
                 errors.append(f"{where}: {curie} does not exist")
+            elif target.get("deprecated") and not c.get("deprecated"):
+                # Its SSSOM row and any pilot key it passed on would vanish without a word.
+                by = ", ".join(target.get("replaced_by") or []) or "nothing"
+                errors.append(f"{where}: {curie} is deprecated (replaced by {by})")
         elif prefix not in PREFIXES:
             errors.append(f"{where}: unknown prefix in {curie}")
         elif local not in FIXED_CODES.get(prefix, {local}):

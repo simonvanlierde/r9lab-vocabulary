@@ -134,6 +134,14 @@ def test_check_codes_names_a_pmdco_id_missing_from_the_pinned_source():
         ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t09"]}}, "replaced_by t09 does not exist"),
         ({"t01": {"label": "a", "mappings": {"close": ["t:t09"]}}}, "t:t09 does not exist"),
         (
+            {
+                "t01": {"label": "a", "mappings": {"narrow": ["t:t02"]}},
+                "t02": {"label": "b", "deprecated": True, "replaced_by": ["t03"]},
+                "t03": {"label": "c"},
+            },
+            "t:t02 is deprecated (replaced by t03)",
+        ),
+        (
             {"t01": {"label": "a", "notation": "x"}, "t02": {"label": "b", "notation": "x"}},
             "notation 'x' is also t01's",
         ),
