@@ -64,7 +64,14 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
 
 `just update` runs `just pipeline` and then `just rdf`, and prints how the match counts in
 `dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes
-`dist/r9lab-vocabulary.ttl`, the same graph as JSON-LD, and `dist/name-matches.csv`.
+`dist/r9lab-vocabulary.ttl`, the same graph as JSON-LD, `dist/name-matches.csv`, and
+`dist/r9lab.shacl.ttl`, the vocabulary's own SHACL shapes. Check a copy of the graph with
+`pyshacl -s r9lab.shacl.ttl r9lab-vocabulary.ttl`. The shapes require an English `prefLabel` and an
+`inScheme` on every concept, IRIs as mapping targets, a replacement in use for a deprecated
+concept, and the release metadata above on every scheme. `just check` runs them, with
+[skohub-shapes](https://github.com/skohub-io/skohub-shapes)' SKOS rules
+(`shapes/skohub-skos.shacl.ttl`), over `dist/r9lab-vocabulary.ttl` when it exists, and the tests
+run them on the graph `vocabulary/` builds.
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id

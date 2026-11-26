@@ -40,4 +40,5 @@ letter, so a version path never collides with a concept IRI.
 
 ### Confirmation
 
-`tests/test_scheme.py` checks the metadata on the built graph.
+`tests/test_scheme.py` checks the metadata on the built graph, and the SHACL shapes in
+`shapes/r9lab.shacl.ttl` on every scheme of every build.

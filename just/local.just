@@ -1,6 +1,6 @@
 # This repo's own recipes; copier updates never touch this file.
 
-# Check vocabulary/*.yaml against itself and the pinned sources, then write dist/ (Turtle, JSON-LD, name matches). Needs `just pipeline` first.
+# Check vocabulary/*.yaml against itself and the pinned sources, then write dist/ (Turtle, JSON-LD, SHACL shapes, name matches). Needs `just pipeline` first.
 rdf:
     uv run r9lab-vocabulary rdf
 
@@ -29,3 +29,13 @@ update:
 # The tests that read the pinned sources fail, instead of skipping, when the pipeline output is missing. As CI runs them.
 test-full: pipeline rdf
     PIPELINE_OUTPUT_REQUIRED=1 uv run pytest
+
+# Run at the end of `just check`: the SHACL shapes (own and skohub-shapes) over dist/r9lab-vocabulary.ttl, the file a release ships. tests/test_shacl.py runs them on the graph vocabulary/ builds, in CI too.
+local-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    [ -f dist/r9lab-vocabulary.ttl ] || { echo "local-check: no dist/r9lab-vocabulary.ttl, so SHACL ran only in the tests; \`just rdf\` writes it"; exit 0; }
+    shapes=$(mktemp)
+    trap 'rm -f "$shapes"' EXIT
+    cat shapes/r9lab.shacl.ttl shapes/skohub-skos.shacl.ttl >"$shapes"
+    uv run --locked pyshacl -sf turtle -s "$shapes" dist/r9lab-vocabulary.ttl

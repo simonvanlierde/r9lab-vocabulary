@@ -49,6 +49,7 @@ def test_rdf_writes_the_vocabulary(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     head = subprocess.run(["git", "log", "-1", "--format=%cs"], capture_output=True, text=True, check=True).stdout  # noqa: S607
     assert g.value(vocab, DCTERMS.modified) == rdflib.Literal(date.fromisoformat(head.strip()))
     assert g.value(vocab, DCTERMS.creator) == rdflib.URIRef("https://orcid.org/0009-0006-6953-909X")
+    assert (tmp_path / "r9lab.shacl.ttl").read_bytes() == Path("shapes/r9lab.shacl.ttl").read_bytes()
     header = (tmp_path / "name-matches.csv").read_text(encoding="utf-8").splitlines()[0]
     assert header == "concept,label,source,pattern,matches"
 

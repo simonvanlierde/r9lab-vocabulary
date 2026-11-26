@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 
 VOCABULARY = Path("vocabulary")
 CITATION = Path("CITATION.cff")
+SHAPES = Path("shapes/r9lab.shacl.ttl")  # published beside the graph, so users can check their copy
 DIST = Path("dist")
 PROCESSED = Path("data/processed")
 USER_AGENT = "r9lab-vocabulary (https://github.com/simonvanlierde/r9lab-vocabulary)"
@@ -199,7 +200,7 @@ def commit_date() -> date | None:
 
 
 def rdf(out: Path) -> int:
-    """Check the vocabulary against itself and the pinned sources, then write it to `out`."""
+    """Check the vocabulary against itself and the pinned sources, then write it and its SHACL shapes to `out`."""
     schemes = scheme.load(VOCABULARY)
     try:
         known = known_codes()
@@ -224,6 +225,7 @@ def rdf(out: Path) -> int:
     written = scheme.write(
         schemes, version("r9lab-vocabulary"), out, matches, citation=citation, modified=commit_date()
     )
+    written.append(Path(shutil.copy(SHAPES, out)))
     for path in written:
         sys.stdout.write(f"{path}\n")
     return 0

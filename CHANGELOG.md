@@ -18,5 +18,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The weekly CI run checks every Wikidata link against the live API, so a merged or deleted item fails it.
 - `just diff <tag>` lists the concepts added, deprecated, removed, remapped and relabelled since a release, as Markdown, and fails when a concept id was deleted instead of deprecated.
 - Each scheme and the vocabulary as a whole say who made and publishes them (ORCID), when they were created and last changed, their language and landing page, and a version IRI per release, such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`. The vocabulary is a `dcat:Dataset` and `schema:DefinedTermSet` of its schemes.
+- SHACL shapes, published as `r9lab.shacl.ttl` beside the graph: every concept has an English label and a scheme, mappings point at IRIs, a deprecated concept is replaced by one in use, and every scheme carries its release metadata. `just check` runs them with skohub-shapes' SKOS rules.
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD
