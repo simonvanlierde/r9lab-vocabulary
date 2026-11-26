@@ -125,7 +125,7 @@ def test_rdf_reports_a_broken_pattern_instead_of_crashing(
         "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, names: {bafu: ['(']}}\n"
     )
     (tmp_path / "mappings").mkdir()
-    header = "\t".join(scheme.LITERAL_COLUMNS)
+    header = "\t".join(scheme.TAG_COLUMNS)
     (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text(f"{header}\n")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": set(), "pmdco": set()})

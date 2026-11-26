@@ -192,7 +192,7 @@ def rdf(out: Path) -> int:
         known = known_codes()
         lists = name_lists()
         errors = scheme.validate(schemes, _versions(lists)) + scheme.check_codes(schemes, known)
-        errors += scheme.check_literal_mappings(schemes, TAG_MAPPINGS)
+        errors += scheme.check_tag_mappings(schemes, TAG_MAPPINGS)
     except FileNotFoundError as e:
         sys.stderr.write(f"error: {e}\n")
         return 3

@@ -36,12 +36,12 @@ count per version. A pattern is a Python regular expression matched case-insensi
 in the name (`re.search`).
 
 [`mappings/r9lab-tags.sssom.tsv`](mappings/r9lab-tags.sssom.tsv) maps each R9lab
-`Material:` or `Keyword:` tag, in lower case and typos included, to a concept, as an
-[SSSOM](https://mapping-commons.github.io/sssom/) literal mapping (`subject_type: rdfs literal`):
-`skos:exactMatch`, `closeMatch`, or `broadMatch` when the tag is narrower than the concept. A
-tag with no concept maps to `sssom:NoTermFound`. Joined on `concept` with
-`dist/name-matches.csv`, it gives each tag its BAFU activity names. sssom-py 0.4.23 validates
-the file but does not load literal mappings yet.
+`Material:` or `Keyword:` tag, in lower case and typos included, to a concept, as
+[SSSOM](https://mapping-commons.github.io/sssom/): `skos:exactMatch`, `closeMatch`, or
+`broadMatch` when the tag is narrower than the concept. A tag with no concept maps to
+`sssom:NoTermFound`. Each tag's `subject_id` is `r9lab-tag:` plus the URL-encoded tag
+(`r9lab-tag:pc%2Babs`), so SSSOM tools that need an id can load the file. Joined on `concept`
+with `dist/name-matches.csv`, it gives each tag its BAFU activity names.
 
 An agent proposed every row (`semapv:AgentBasedMatching`). A person who checks a row puts their
 ORCID CURIE in its `reviewer_id`; a row with no reviewer is a proposal, not a curated mapping.
