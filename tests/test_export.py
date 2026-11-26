@@ -1,11 +1,14 @@
 """What `export` writes: the SKOS graph, the name-match CSV, the SSSOM mapping set and the label tables."""
 
 import json
+import os
+import subprocess
+import sys
 from typing import TYPE_CHECKING
 
 import pytest
-from conftest import VERSIONS, Schemes, one
-from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Literal, URIRef
+from conftest import ROOT, VERSIONS, Schemes, one
+from rdflib import DCTERMS, OWL, SKOS, XSD, Literal, URIRef
 
 from r9lab_vocabulary import checks, export, scheme
 
@@ -17,15 +20,16 @@ if TYPE_CHECKING:
 TEST_ORCID = "https://orcid.org/0000-0002-1825-0097"
 
 
-@pytest.mark.parametrize("prefix", sorted(scheme.CODE_ONLY))
-def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
+@pytest.mark.parametrize("prefix", sorted(scheme.CODE_LISTS))
+def test_unu_keys_are_typed_codes_not_iris(schemes: Schemes, prefix: str):
     g = export.to_graph(schemes, export.About("test"))
-    base = scheme.PREFIXES[prefix]
-    nodes = {s for s in g.subjects(RDF.type, SKOS.Concept) if str(s).startswith(base)}
-    assert nodes
-    for node in nodes:
-        # Every literal, not one prefLabel: a second label could carry a licensed name.
-        assert {str(o) for o in g.objects(node) if isinstance(o, Literal)} == {str(node).removeprefix(base)}
+    datatype = URIRef(scheme.TERMS + scheme.CODE_LISTS[prefix][0])
+    values = g.objects(None, URIRef(scheme.TERMS + "unuKey"))
+    codes = [o for o in values if isinstance(o, Literal) and o.datatype == datatype]
+    assert codes
+    # A bare code, never a licensed key name.
+    assert {str(o) for o in codes} <= scheme.FIXED_CODES[prefix]
+    assert not [n for n in g.all_nodes() if str(n).startswith(f"{scheme.BASE}external/")]
 
 
 def test_cc0_covers_the_vocabulary_and_its_own_schemes_only(schemes: Schemes):
@@ -106,8 +110,9 @@ def read_sssom(path: Path) -> tuple[dict, list[dict[str, str]]]:
 
 
 def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tmp_path: Path):
-    meta, rows = read_sssom(export.write_sssom(schemes, export.About("0.1.0", [ORCID]), tmp_path))
+    meta, rows = read_sssom(export.write_sssom(schemes, export.About("0.1.0", [ORCID, TEST_ORCID]), tmp_path))
     assert meta["mapping_set_id"] == f"{scheme.BASE}r9lab-vocabulary.sssom.tsv"
+    assert meta["mapping_set_title"] == "R9lab reference vocabulary mappings"
     assert meta["mapping_set_version"] == "0.1.0"
     assert meta["license"] == "https://creativecommons.org/publicdomain/zero/1.0/"
     assert meta["curie_map"]["materials"] == schemes["materials"].iri
@@ -118,9 +123,25 @@ def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tm
         "subject_label": "metal",
         "predicate_id": "skos:exactMatch",
         "object_id": "wd:Q11426",
+        "object_label": "",
+        "object_type": "",
+        "object_source": "",
+        "mapping_justification": "semapv:ManualMappingCuration",
+        "author_id": "orcid:0009-0006-6953-909X",  # the first author, the publisher
+    } in rows
+    # A UNU-KEY has no IRI: an SSSOM 1.0 literal mapping, the key version in object_source.
+    assert {
+        "subject_id": "products:p0007",
+        "subject_label": "laptop",
+        "predicate_id": "skos:broadMatch",
+        "object_id": "",
+        "object_label": "0303",
+        "object_type": "rdfs literal",
+        "object_source": "r9lab:UNUKEYv1",
         "mapping_justification": "semapv:ManualMappingCuration",
         "author_id": "orcid:0009-0006-6953-909X",
     } in rows
+    assert meta["curie_map"]["r9lab"] == scheme.TERMS
     keys = [(r["subject_id"], r["predicate_id"], r["object_id"]) for r in rows]
     assert keys == sorted(keys)
 
@@ -258,3 +279,31 @@ def test_labels_md_escapes_a_pipe_in_any_cell(tmp_path: Path):
     schemes = one({"t01": {"label": "a|b", "definition": "c | d"}})
     _, md_path = export.write_labels(schemes, "test", tmp_path)
     assert "| t01 | a\\|b | a\\|b | c \\| d |  |" in md_path.read_text(encoding="utf-8")
+
+
+def test_labels_md_has_a_column_for_the_pilot_keys(tmp_path: Path):
+    schemes = pilot_fixture({"m01": {"label": "a", "definition": "An a."}}, {"exact": ["m:m01"]})
+    _, md_path = export.write_labels(schemes, "test", tmp_path)
+    lines = md_path.read_text(encoding="utf-8").splitlines()
+    assert "| id | label | path | definition | pilot |" in lines
+    assert "| m01 | a | a | An a. | x |" in lines
+
+
+# Builds the real vocabulary in a fresh interpreter, so each run gets its own hash seed.
+BUILD = """
+import sys
+from datetime import date
+from pathlib import Path
+from r9lab_vocabulary import export, scheme
+about = export.About("test", ["https://orcid.org/0000-0002-1825-0097"], None, date(2026, 2, 1))
+export.write(scheme.load(Path(sys.argv[1])), about, Path(sys.argv[2]), [])
+"""
+
+
+def test_two_builds_write_the_same_bytes_whatever_the_hash_seed(tmp_path: Path):
+    for seed in ("1", "2"):
+        env = {**os.environ, "PYTHONHASHSEED": seed}
+        out = tmp_path / seed
+        subprocess.run([sys.executable, "-c", BUILD, ROOT / "vocabulary", out], env=env, check=True)  # noqa: S603
+    for name in ("r9lab-vocabulary.ttl", "r9lab-vocabulary.jsonld"):
+        assert (tmp_path / "1" / name).read_bytes() == (tmp_path / "2" / name).read_bytes(), name

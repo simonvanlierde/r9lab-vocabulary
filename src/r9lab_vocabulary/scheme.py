@@ -2,8 +2,8 @@
 
 Each file in `vocabulary/` is one concept scheme. Concept ids are opaque and never
 reused: a concept that goes away is marked `deprecated`, never deleted. A mapping is a
-CURIE whose prefix names either an outside scheme (`PREFIXES`) or another scheme of
-this vocabulary (its `slug`).
+CURIE whose prefix names an outside scheme (`PREFIXES`), a code list with no IRIs
+(`CODE_LISTS`), or another scheme of this vocabulary (its `slug`).
 
 `checks` holds the rules the vocabulary must keep, `export` writes it as SKOS and its side files.
 """
@@ -28,10 +28,9 @@ PREFIXES = {
     "cpc": "https://vocab.sentier.dev/products/cpc/2.1/CPCv2.1/",
     "wd": "http://www.wikidata.org/entity/",
     "pmdco": "https://w3id.org/pmd/co/",
-    # Code-only schemes minted here: the UNU-KEY names are CC BY-NC-SA, so only codes are kept.
-    "unu1": f"{BASE}external/unu-key-v1/",
-    "unu2": f"{BASE}external/unu-key-v2/",
-    "r9lab-cpv": f"{BASE}external/r9lab-cpv/",
+    # The EU's Common Procurement Vocabulary: 8 digits, no check digit. R9lab stores the code
+    # with its trailing zeros cut, so its 302131 is 30213100 here.
+    "cpv": "http://data.europa.eu/cpv/cpv/",
     # The six categories of Annex III to the WEEE Directive 2012/19/EU. They have no IRIs of
     # their own, so each is a fragment on the directive's ELI, after its Annex III anchor.
     "weee6": "http://data.europa.eu/eli/dir/2012/19/oj#anx_III-",
@@ -60,10 +59,14 @@ FIXED_CODES = {
     },
 }
 # fmt: on
-CODE_ONLY = {
-    "unu1": "UNU-KEY v1 codes (codes only; names under CC BY-NC-SA 3.0 IGO are not copied)",
-    "unu2": "UNU-KEY v2 codes (codes only; names under CC BY-NC-SA 4.0 are not copied)",
-    "r9lab-cpv": "CPV codes as stored by R9lab (codes only, truncated as in the app)",
+# The vocabulary's own property and datatypes. `checks` reserves the `terms` slug for it.
+TERMS = f"{BASE}terms#"
+# Code lists with no IRIs of their own and names under a non-commercial licence: a mapping to
+# one is written as a typed literal on `TERMS unuKey`, never as an IRI minted here.
+# Prefix -> (datatype local name, label).
+CODE_LISTS = {
+    "unu1": ("UNUKEYv1", "UNU-KEY v1 code"),
+    "unu2": ("UNUKEYv2", "UNU-KEY v2 code"),
 }
 RELATIONS = {
     "exact": SKOS.exactMatch,
@@ -139,7 +142,7 @@ def load(directory: Path) -> dict[str, Scheme]:
             msg = f"{path.name}: `concepts` must map each id to a concept"
             raise ValueError(msg)  # noqa: TRY004 - bad input, not a caller's bug
         slug = meta["slug"]
-        if slug in schemes or slug in PREFIXES:
+        if slug in schemes or slug in PREFIXES or slug in CODE_LISTS:
             msg = f"{path.name}: scheme slug {slug!r} is already taken"
             raise ValueError(msg)
         schemes[slug] = Scheme(slug, meta, concepts)

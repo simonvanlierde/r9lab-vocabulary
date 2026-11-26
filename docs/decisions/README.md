@@ -12,3 +12,4 @@ structure, and add a record when you make a choice that is expensive to undo.
 | [0004](0004-versioned-iris-and-scheme-dates.md) Version IRIs under the base, dates from the sources and git | accepted | 2026-11-26 |
 | [0005](0005-mapping-review-log.md) Tag mappings built from a review log | accepted | 2026-11-26 |
 | [0006](0006-product-families-and-facets.md) Product families for navigation, facets as their own schemes later | accepted | 2026-11-26 |
+| [0007](0007-outside-codes-without-iris.md) Outside codes: the owner's IRIs, or typed literals | accepted | 2026-11-26 |

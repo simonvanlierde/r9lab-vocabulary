@@ -4,13 +4,15 @@ scheme:
   id_letter: t
   title: Workshop tools
   created: 2026-01-01
+  description: >
+    Hand tools, to pin what the build writes.
 concepts:
   t01:
     label: hand tool
     definition: A tool worked by hand.
     example: [a hammer]
     note: 'Not power tool: a hand tool has no motor.'
-    mappings: {close: ['wd:Q1'], related: ['unu1:0001']}
+    mappings: {close: ['wd:Q1'], broad: ['unu1:0001']}
   t02:
     label: flat screwdriver
     definition: Hand tool that turns screws.

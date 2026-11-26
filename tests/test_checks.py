@@ -15,18 +15,22 @@ if TYPE_CHECKING:
 def test_check_tag_mappings_catches(schemes: Schemes, tmp_path: Path):
     path = tmp_path / "t.sssom.tsv"
     j = "semapv:AgentBasedMatching"
+    schemes = schemes | one({"t01": {"label": "old", "deprecated": True}})
     path.write_text(
         "#curie_map:\n#  materials: https://example.org/m/\n#  r9lab-tag: https://example.org/t/\n"
         "#  semapv: https://w3id.org/semapv/vocab/\n#  skos: http://www.w3.org/2004/02/skos/core#\n"
-        "#  sssom: https://w3id.org/sssom/\n"
-        "subject_id\tsubject_label\tpredicate_id\tobject_id\tobject_label\tmapping_justification\n"
-        f"r9lab-tag:steel\tsteel\tskos:broadMatch\tmaterials:m0002\tferrous metal\t{j}\n"
+        "#  sssom: https://w3id.org/sssom/\n#  t: https://example.org/old/\n#  orcid: https://orcid.org/\n"
+        "subject_id\tsubject_label\tpredicate_id\tobject_id\tobject_label\tmapping_justification\treviewer_id\n"
+        f"r9lab-tag:steel\tsteel\tskos:broadMatch\tmaterials:m0002\tferrous metal\t{j}\torcid:0000-0002-1825-0097\n"
         f"r9lab-tag:steel\tsteel\tskos:exactMatch\tmaterials:m0003\tcarbon and low-alloy steel\t{j}\n"
         f"r9lab-tag:Glass\tGlass\tskos:sameAs\tmaterials:m9999\t\t{j}\n"
         "r9lab-tag:pe\tpe\texact\tmaterials:m0022\tpolyethylene\tby hand\n"
         f"r9lab-tag:pc abs\tpc abs\tskos:exactMatch\tcomponents:c0001\tbattery\t{j}\n"
         f"r9lab-tag:pp\tpp\tskos:exactMatch\tmaterials:m0023\tPP\t{j}\n"
         f"r9lab-tag:fan%20blades\tfan blades\tskos:exactMatch\tsssom:NoTermFound\t\t{j}\n"
+        f"r9lab-tag:tin\ttin\tskos:exactMatch\tt:t01\told\t{j}\n"
+        f"r9lab-tag:wood\twood\tskos:exactMatch\tsssom:NoTermFound\twood\t{j}\n"
+        f"r9lab-tag:zinc\tzinc\tskos:exactMatch\tmaterials:m0002\tferrous metal\t{j}\tmyid:simon\n"
     )
     assert checks.check_tag_mappings(schemes, path) == [
         "t.sssom.tsv: 'steel' is not lower case or appears twice",
@@ -40,6 +44,9 @@ def test_check_tag_mappings_catches(schemes: Schemes, tmp_path: Path):
         "t.sssom.tsv: 'pc abs': subject_id r9lab-tag:pc abs is not r9lab-tag: plus the encoded tag",
         "t.sssom.tsv: 'pc abs': prefix of components:c0001 is not in the curie_map",
         "t.sssom.tsv: 'pp': object_label 'PP' is not materials:m0023's label",
+        "t.sssom.tsv: 'tin': t:t01 is not a live concept",
+        "t.sssom.tsv: 'wood': object_label 'wood' is not sssom:NoTermFound's label",
+        "t.sssom.tsv: 'zinc': prefix of myid:simon is not in the curie_map",
     ]
 
 
@@ -63,6 +70,12 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
     assert "materials/m0003: cpc:41121 is not in the pinned cpc source" in errors
 
 
+def test_check_codes_names_a_pmdco_id_missing_from_the_pinned_source():
+    schemes = one({"t01": {"label": "a", "mappings": {"close": ["pmdco:PMD_0000001", "pmdco:PMD_0000852"]}}})
+    errors = checks.check_codes(schemes, {"pmdco": {"PMD_0000852"}})
+    assert errors == ["t/t01: pmdco:PMD_0000001 is not in the pinned pmdco source"]
+
+
 @pytest.mark.parametrize(
     ("concepts", "message"),
     [
@@ -79,6 +92,8 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:7"]}}}, "weee6:7 is not a weee6 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["unu1:0310"]}}}, "unu1:0310 is not a unu1 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["unu2:0406"]}}}, "unu2:0406 is not a unu2 code"),
+        ({"t01": {"label": "a", "mappings": {"related": ["unu1:0303"]}}}, "unu1:0303 must be a broad mapping"),
+        ({"t01": {"label": "a", "mappings": {"close": ["cpv:302131"]}}}, "cpv:302131 is not an 8-digit CPV code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:0"]}}}, "weee6:0 is not a weee6 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:06"]}}}, "weee6:06 is not a weee6 code"),
         ({"t01": {"label": "a", "replaced_by": ["t02"]}, "t02": {"label": "b"}}, "needs deprecated"),
@@ -120,6 +135,24 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "related": ["t09"]}}, "related t09 does not exist"),
         ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t09"]}}, "replaced_by t09 does not exist"),
         ({"t01": {"label": "a", "mappings": {"close": ["t:t09"]}}}, "t:t09 does not exist"),
+        ({"t01": {"label": "a", "related": ["t01"]}}, "related t01 is itself or above or below it"),
+        (
+            {"t01": {"label": "a"}, "t02": {"label": "b", "broader": ["t01"], "related": ["t01"]}},
+            "t/t02: related t01 is itself or above or below it",
+        ),
+        (
+            {"t01": {"label": "a", "related": ["t02"]}, "t02": {"label": "b", "broader": ["t01"]}},
+            "t/t01: related t02 is itself or above or below it",
+        ),
+        ({101: {"label": "a"}}, "t/101: id must be"),
+        (
+            {
+                "t01": {"label": "a", "mappings": {"narrow": ["t:t02"]}},
+                "t02": {"label": "b", "deprecated": True, "replaced_by": ["t03"]},
+                "t03": {"label": "c"},
+            },
+            "t:t02 is deprecated (replaced by t03)",
+        ),
         (
             {"t01": {"label": "a", "notation": "x"}, "t02": {"label": "b", "notation": "x"}},
             "notation 'x' is also t01's",
@@ -134,6 +167,22 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             "replaced_by t02 is deprecated",
         ),
         ({"t01": None}, "t01: no label"),
+        ({"t01": {"label": True}}, "t/t01: label must be non-empty text"),  # YAML `label: on`
+        ({"t01": {"label": 5}}, "t/t01: label must be non-empty text"),
+        ({"t01": {"label": " "}}, "t/t01: label must be non-empty text"),
+        ({"t01": {"label": "a", "broader": 5}}, "t/t01: broader must be a list of ids"),
+        ({"t01": {"label": "a", "broader": "t02"}, "t02": {"label": "b"}}, "t/t01: broader must be a list of ids"),
+        ({"t01": {"label": "a", "related": ["t02", 3]}, "t02": {"label": "b"}}, "t/t01: related must be a list of ids"),
+        (
+            {"t01": {"label": "a", "deprecated": True, "replaced_by": "t02"}, "t02": {"label": "b"}},
+            "t/t01: replaced_by must be a list of ids",
+        ),
+        ({"t01": {"label": "a", "deprecated": "false"}}, "t/t01: deprecated must be true or false"),
+        ({"scheme": {"title": None}}, "t: title must be non-empty text"),
+        ({"scheme": {"title": 3}}, "t: title must be non-empty text"),
+        ({"scheme": {"description": ""}}, "t: description must be non-empty text"),
+        ({"scheme": {"slug": "tags"}}, "tags: slug 'tags' is reserved"),
+        ({"scheme": {"slug": "terms"}}, "terms: slug 'terms' is reserved"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):

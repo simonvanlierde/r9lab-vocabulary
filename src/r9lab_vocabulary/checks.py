@@ -17,6 +17,7 @@ from urllib.parse import quote
 import yaml
 
 from r9lab_vocabulary.scheme import (
+    CODE_LISTS,
     FIXED_CODES,
     PREFIXES,
     RELATIONS,
@@ -34,14 +35,19 @@ if TYPE_CHECKING:
 
     from r9lab_vocabulary.scheme import Scheme
 
+LINKS = ("broader", "related", "replaced_by")  # each a list of concept ids in the same scheme
 # Every field a concept may carry; validate rejects any other, so a misspelt one is not lost.
-FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, "broader", "related", "mappings", "names"}
+FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, *LINKS, "mappings", "names", "deprecated"}
 # A concept in use carries all three, so a model prompt never gets a bare label.
 REQUIRED_TEXTS = ("definition", "example", "note")
-FIELDS |= {"deprecated", "replaced_by"}
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A version path segment (`0.1.0`) starts with a digit, so it never collides with a scheme slug.
 SLUG = re.compile(r"^[a-z]")
+# Path segments under the base that the tag IRIs and the vocabulary's own terms already use.
+RESERVED_SLUGS = {"tags", "terms"}
+# Outside codes checked for their shape only, as no source pins their list: (pattern, what it is).
+CODE_SHAPES = {"cpv": (re.compile(r"^[0-9]{8}$"), "an 8-digit CPV code")}
+LITERAL_RELATION = "broad"
 
 
 def validate(schemes: dict[str, Scheme], versions: Mapping[str, Collection[str]]) -> list[str]:
@@ -61,26 +67,62 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: Mappi
     errors = []
     if not SLUG.match(scheme.slug):
         errors.append(f"{scheme.slug}: slug must start with a lower-case letter")
+    if scheme.slug in RESERVED_SLUGS:
+        errors.append(f"{scheme.slug}: slug {scheme.slug!r} is reserved for other IRIs under the base")
+    errors += [
+        f"{scheme.slug}: {field} must be non-empty text"
+        for field in ("title", "description")
+        if not _is_text(scheme.meta.get(field))
+    ]
     created = scheme.meta.get("created")
     if created is not None and (not isinstance(created, date) or isinstance(created, datetime)):
         errors.append(f"{scheme.slug}: created must be a date (YYYY-MM-DD, unquoted), not {created!r}")
     letter = scheme.meta.get("id_letter")
+    malformed = False
     for cid, c in scheme.concepts.items():
         where = f"{scheme.slug}/{cid}"
-        if not ID.match(cid) or (letter and not cid.startswith(letter)):
+        if not isinstance(cid, str) or not ID.match(cid) or (letter and not cid.startswith(letter)):
             errors.append(f"{where}: id must be {letter or 'a letter'} plus 2-4 digits")
-        if not c.get("label"):
-            errors.append(f"{where}: no label")
         errors += [f"{where}: unknown field {k!r}" for k in sorted(set(c) - FIELDS)]
+        if shape := _validate_shape(where, c):
+            # The checks below, and the export, assume these types.
+            errors += shape
+            malformed = True
+            continue
         errors += _validate_text(where, c)
         errors += _validate_links(where, c, scheme)
+        errors += _validate_related(where, cid, c, scheme)
         errors += _validate_mappings(where, c, schemes)
         errors += _validate_names(where, c, versions)
+    if malformed:
+        return errors
     errors += _duplicates(
         scheme, "label", lambda c: None if c.get("deprecated") else str(c.get("label", "")).casefold()
     )
     errors += _duplicates(scheme, "notation", lambda c: None if c.get("notation") is None else str(c["notation"]))
     errors += _cycles(scheme)
+    return errors
+
+
+def _is_text(value: object) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _validate_shape(where: str, c: dict[str, Any]) -> list[str]:
+    """A label that is text, links that are lists of ids, and a true or false `deprecated`."""
+    if c.get("label") is None:
+        errors = [f"{where}: no label"]
+    elif not _is_text(c["label"]):
+        errors = [f"{where}: label must be non-empty text, not {c['label']!r}"]
+    else:
+        errors = []
+    errors += [
+        f"{where}: {field} must be a list of ids, not {c[field]!r}"
+        for field in LINKS
+        if c.get(field) is not None and not (isinstance(c[field], list) and all(isinstance(r, str) for r in c[field]))
+    ]
+    if not isinstance(c.get("deprecated", False), bool):
+        errors.append(f"{where}: deprecated must be true or false, not {c['deprecated']!r}")
     return errors
 
 
@@ -107,6 +149,16 @@ def _duplicates(scheme: Scheme, field: str, key: Callable[[dict[str, Any]], Any]
             errors.append(f"{scheme.slug}/{cid}: {field} {c[field]!r} is also {seen[k]}'s")
         seen[k] = cid
     return errors
+
+
+def _validate_related(where: str, cid: str, c: dict[str, Any], scheme: Scheme) -> list[str]:
+    """SKOS S27: `related` is disjoint with `broaderTransitive`, in either direction."""
+    up = set(ancestors(scheme, cid))
+    return [
+        f"{where}: related {ref} is itself or above or below it"
+        for ref in c.get("related") or []
+        if ref == cid or ref in up or (ref in scheme.concepts and cid in ancestors(scheme, ref))
+    ]
 
 
 def _validate_links(where: str, c: dict[str, Any], scheme: Scheme) -> list[str]:
@@ -209,6 +261,21 @@ def name_matches(schemes: dict[str, Scheme], lists: dict[str, dict[str, list[str
     return out
 
 
+def _outside_code_errors(relation: str, prefix: str, local: str) -> list[str]:
+    curie = f"{prefix}:{local}"
+    if prefix not in PREFIXES and prefix not in CODE_LISTS:
+        return [f"unknown prefix in {curie}"]
+    errors = []
+    if local not in FIXED_CODES.get(prefix, {local}):
+        errors.append(f"{curie} is not a {prefix} code")
+    if (shape := CODE_SHAPES.get(prefix)) and not shape[0].match(local):
+        errors.append(f"{curie} is not {shape[1]}")
+    # A code list's literal says only "falls under", so its relation is always broad.
+    if prefix in CODE_LISTS and relation != LITERAL_RELATION:
+        errors.append(f"{curie} must be a {LITERAL_RELATION} mapping")
+    return errors
+
+
 def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]) -> list[str]:
     raw = c.get("mappings") or {}
     if not isinstance(raw, dict) or not all(isinstance(v, list) for v in raw.values()):
@@ -220,12 +287,15 @@ def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]
         if relation not in RELATIONS:
             errors.append(f"{where}: unknown mapping relation {relation!r}")
         if prefix in schemes:
-            if local not in schemes[prefix].concepts:
+            target = schemes[prefix].concepts.get(local)
+            if target is None:
                 errors.append(f"{where}: {curie} does not exist")
-        elif prefix not in PREFIXES:
-            errors.append(f"{where}: unknown prefix in {curie}")
-        elif local not in FIXED_CODES.get(prefix, {local}):
-            errors.append(f"{where}: {curie} is not a {prefix} code")
+            elif target.get("deprecated") and not c.get("deprecated"):
+                # Its SSSOM row and any pilot key it passed on would vanish without a word.
+                by = ", ".join(target.get("replaced_by") or []) or "nothing"
+                errors.append(f"{where}: {curie} is deprecated (replaced by {by})")
+        else:
+            errors += [f"{where}: {e}" for e in _outside_code_errors(relation, prefix, local)]
         # SKOS integrity: exactMatch is disjoint with the hierarchical and associative matches.
         if curie in relation_of and relation_of[curie] != relation:
             errors.append(f"{where}: {curie} is both {relation_of[curie]} and {relation}")
@@ -306,10 +376,10 @@ def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     """Rows of the SSSOM file that maps R9lab tags to concepts that break a rule.
 
     A tag (`subject_label`) is lower case, as tags are matched, and appears once; its
-    `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is a SKOS match
-    property (`skos:exactMatch`, as `export.write_sssom` writes it), its justification a semapv
-    term, and its object a live concept here, under its current label, or
-    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`. A missing file is one error.
+    `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is one of the five SKOS
+    match properties, its justification a semapv term, and its object a live concept here,
+    under its current label, or `sssom:NoTermFound`. Every CURIE's prefix is in the file's
+    `curie_map`. A missing file is one error.
     """
     try:
         meta, reader = read_sssom(path)

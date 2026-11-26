@@ -20,6 +20,13 @@ ROOT = Path(__file__).resolve().parent.parent
 EVERYTHING = type("All", (set,), {"__contains__": lambda *_: True})()
 Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
+# The metadata block a test SSSOM file starts with.
+HEAD = "#curie_map:\n#  r9lab-tag: https://w3id.org/r9lab/vocabulary/tags/\n"
+
+
+def tsv(columns: tuple[str, ...], rows: list[dict[str, str]]) -> str:
+    """An SSSOM file: `HEAD`, then `columns` and one line per row, a missing field empty."""
+    return HEAD + "\n".join(["\t".join(columns), *("\t".join(r.get(c, "") for c in columns) for r in rows)]) + "\n"
 
 
 @pytest.fixture(scope="module")
@@ -32,19 +39,19 @@ TEXT = {"definition": "d", "example": "e", "note": "n"}
 
 
 def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
-    """One scheme `t` (or `meta`'s slug) holding `concepts`, with `meta` over a title and id letter `t`.
+    """One scheme `t` (or `meta`'s slug) holding `concepts`, with `meta` over a title, description and id letter.
 
     Each concept in use gets placeholder text, so a test checks only its own rule.
     """
     concepts = {
         cid: {**TEXT, **c} if isinstance(c, dict) and not c.get("deprecated") else c for cid, c in concepts.items()
     }
-    meta = {"title": "t", "id_letter": "t", **(meta or {})}
+    meta = {"title": "t", "description": "d", "id_letter": "t", **(meta or {})}
     return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 
 
-def _git(cwd: Path, *args: str, day: str = "2026-01-01") -> None:
-    stamp = f"{day}T12:00:00Z"
+def _git(cwd: Path, *args: str, day: str = "2026-01-01", time: str = "12:00:00Z") -> None:
+    stamp = f"{day}T{time}"
     env = {"GIT_COMMITTER_DATE": stamp, "GIT_AUTHOR_DATE": stamp, "PATH": os.environ["PATH"]}
     subprocess.run(  # noqa: S603
         ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false", *args],  # noqa: S607
@@ -57,7 +64,7 @@ def _git(cwd: Path, *args: str, day: str = "2026-01-01") -> None:
 
 @pytest.fixture
 def git() -> Callable[..., None]:
-    """`git(cwd, *args, day=...)`: git in `cwd` as a throwaway committer, dated noon UTC on `day`, with no HOME."""
+    """`git(cwd, *args, day=..., time=...)`: git in `cwd` as a throwaway committer at `time` (noon UTC) on `day`."""
     return _git
 
 
@@ -90,7 +97,7 @@ def stub_sources(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Callable[..
             monkeypatch.chdir(ROOT)
             return
         (tmp_path / "vocabulary").mkdir()
-        text = f"scheme: {{slug: t, title: t, id_letter: t}}\nconcepts:\n  {concepts}\n"
+        text = f"scheme: {{slug: t, title: t, description: d, id_letter: t}}\nconcepts:\n  {concepts}\n"
         (tmp_path / "vocabulary" / "t.yaml").write_text(text)
         (tmp_path / "mappings").mkdir()
         (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text("\t".join(checks.TAG_COLUMNS) + "\n")

@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 DIRECTORY = Path("data/raw/.bafu-cache")
+NAME_COLUMNS = ["code", "name", "location"]  # each row a name-list reader returns, and the cache keeps
 _MAX_BYTES = 4 * 1024 * 1024
 
 
@@ -33,7 +34,6 @@ def read_names(
     source_id: str,
     payload: bytes,
     *,
-    columns: list[str],
     reader: Callable[[bytes], list[dict[str, str]]],
     version: str | None,
 ) -> list[dict[str, str]]:
@@ -55,7 +55,7 @@ def read_names(
             not hasattr(os, "getuid") or not DIRECTORY.stat().st_mode & (stat.S_IRWXG | stat.S_IRWXO)
         ):
             key = json.dumps([hashlib.sha256(payload).hexdigest(), reader_identity]).encode()
-            if (cached := _read(path, key, columns)) is not None:
+            if (cached := _read(path, key)) is not None:
                 return cached
 
     rows = reader(payload)
@@ -65,7 +65,7 @@ def read_names(
     return rows
 
 
-def _read(path: Path, key: bytes, columns: list[str]) -> list[dict[str, str]] | None:
+def _read(path: Path, key: bytes) -> list[dict[str, str]] | None:
     try:
         if not path.is_file():
             return None
@@ -79,7 +79,7 @@ def _read(path: Path, key: bytes, columns: list[str]) -> list[dict[str, str]] | 
         rows = json.loads(payload)
     except FileNotFoundError, ValueError, RecursionError:
         return None
-    fields = set(columns)
+    fields = set(NAME_COLUMNS)
     if isinstance(rows, list) and all(
         isinstance(row, dict) and row.keys() == fields and all(isinstance(value, str) for value in row.values())
         for row in rows

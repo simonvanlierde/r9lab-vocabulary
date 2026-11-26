@@ -31,7 +31,7 @@ repository, so a version IRI resolves to the repository, not to its release. Add
 per-release rule is a follow-up once the first release is tagged.
 
 * `dct:created` is the `created` date in each scheme's YAML: the date of the commit that added
-  the file. The vocabulary node and the code-only schemes take the earliest of them.
+  the file. The vocabulary node takes the earliest of them.
 * `dct:modified` is `SOURCE_DATE_EPOCH` when set, else the date of the commit built (`git log
   -1` in the package's own checkout, never in a repository around it), not the build date, so
   two builds of one commit are the same files. With neither, `just rdf` stops with an error,
@@ -47,15 +47,17 @@ per-release rule is a follow-up once the first release is tagged.
 
 PyST's examples load each release of a vocabulary as its own concept scheme. Here the concept
 IRIs carry no version, by design: a concept IRI must stay the same across releases to stay
-persistent, and only the scheme's `owl:versionIRI` names the release. How to load several
-releases into PyST is open, and left to the PyST round-trip task.
+persistent, and only the scheme's `owl:versionIRI` names the release. PyST keys schemes and
+concepts by IRI and answers a second create with 409, so one PyST holds one release of each
+scheme. A new release updates that PyST in place; older releases stay in the GitHub releases.
+`just pyst-round-trip` loads a release into an empty PyST; the update path is not scripted yet.
 
 ### Consequences
 
 * Good: one redirect rule covers every versioned IRI of a release.
 * Bad: until the per-release w3id rule exists, the version IRIs resolve to the repository, not
   to the release.
-* Open: how PyST should hold more than one release of a scheme whose concept IRIs are unversioned.
+* Bad: a PyST shows only the release last loaded into it.
 * Bad: a build of uncommitted edits carries the date of the last commit.
 
 ### Confirmation

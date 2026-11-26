@@ -85,6 +85,7 @@ jobs:
 
       # dist/, as `just rdf` writes it, and its SSSOM file checked against the SSSOM schema
       # as `just sssom-validate` does. Not in the template: keep these on a copier update.
+      # The sssom pin is also in just/local.just; change both together.
       - run: uv run r9lab-vocabulary rdf
       - run: uvx --exclude-newer "1 week" --from sssom==0.4.22 sssom validate dist/r9lab-vocabulary.sssom.tsv
 
@@ -100,6 +101,9 @@ jobs:
         env:
           PIPELINE_OUTPUT_REQUIRED: "1"
           TRIPWIRE: ${{ github.event_name == 'schedule' && '1' || '' }}
+      # The tag-mapping review log, as `just local-check` runs it: its rules, and a warning for
+      # each verdict on a withdrawn proposal. Not in the template: keep it on a copier update.
+      - run: uv run python -m r9lab_vocabulary.curate check
 
       # Fetch records only: URL, timestamp, checksum, byte count, vintage. They hold
       # no source values, so the artifact redistributes nothing (see ATTRIBUTION.md).

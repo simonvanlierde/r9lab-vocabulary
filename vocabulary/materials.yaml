@@ -184,7 +184,7 @@ concepts:
     label: gold
     definition: Gold and alloys based on gold, as in bonding wire, contact plating and jewellery.
     source: https://www.wikidata.org/wiki/Q897
-    example: [gold bonding wire, gold-plated connector pins, gold fingers on a circuit board edge, an 18-carat gold watch case]
+    example: [gold bonding wire, gold plating listed on its own in a material declaration, gold fingers on a circuit board edge, an 18-carat gold watch case]
     note: 'Not brass: a gold-coloured part is often brass. Gold-plated parts go by their base metal. Gold alloys are included.'
     editorial_note: Wikidata's gold is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0016]
@@ -195,7 +195,7 @@ concepts:
     label: silver
     definition: Silver and alloys based on silver, as in electrical contacts, conductive paste and plating.
     source: https://www.wikidata.org/wiki/Q1090
-    example: [a silver relay contact, silver paste on a solar cell, silver-plated wire, sterling silver]
+    example: [a silver relay contact, silver paste on a solar cell, silver plating listed on its own in a material declaration, sterling silver]
     note: 'Not solder: tin-silver solder is solder. Silver-plated parts go by their base metal. Silver alloys are included.'
     editorial_note: Wikidata's silver is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0016]
@@ -328,7 +328,7 @@ concepts:
     broader: [m0021]
     mappings: {exact: ['wd:Q177941'], broad: ['cpc:34790', 'wd:Q145273']}
     names:
-      bafu: ['^nylon 6']
+      bafu: ['^nylon 6', '^glass fibre reinforced plastic, polyamide']
   m0032:
     label: acetal (POM)
     definition: Polyoxymethylene, a stiff, low-friction thermoplastic, as in gears, clips and slides.
@@ -507,7 +507,7 @@ concepts:
     broader: [m0050]
     mappings: {exact: ['pmdco:PMD_0090008', 'wd:Q7224880']}
     names:
-      bafu: ['^glass fibre reinforced plastic']
+      bafu: ['^glass fibre reinforced plastic, polyester']
   m0052:
     label: FR-4 laminate
     definition: Flame-retardant glass-fibre epoxy laminate, the usual circuit board substrate.
@@ -556,7 +556,7 @@ concepts:
       bafu: ['^corrugated board', '^kraft paper']
   m0057:
     label: textile
-    note: 'Not polymer: a solid plastic part is a polymer, even when the same plastic is also spun into fibre. Not composite: fibres set in resin, as in FR-4, are a composite. Woven glass fabric is glass fibre.'
+    note: 'Not polymer: a solid plastic part is a polymer, even when the same plastic is also spun into fibre. Not composite: fibres set in resin, as in FR-4, are a composite. Woven glass fabric is glass fibre. In the pilot, a fabric that is mostly plastic by mass, such as polyester felt or a nylon strap, is plastic.'
     definition: Material made of fibres, woven, knitted or non-woven.
     source: https://www.wikidata.org/wiki/Q28823
     example: [cotton fabric, polyester felt, a nylon strap, a fabric speaker grille]

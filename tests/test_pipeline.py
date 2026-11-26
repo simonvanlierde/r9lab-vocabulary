@@ -18,6 +18,7 @@ from rdflib import DCTERMS
 from r9lab_vocabulary import _bafu_cache, pipeline, scheme
 
 if TYPE_CHECKING:
+    import urllib.request
     from collections.abc import Callable
 
 CPC = '"CPC21code","CPC21title"\r\n"4112","Crude steel"\r\n"4131","Silver, caf\xe9"\r\n'.encode("latin-1")
@@ -68,6 +69,16 @@ def test_commit_date_reads_the_package_checkout_not_one_around_it(
     (tmp_path / "unpacked").mkdir()
     monkeypatch.setattr(pipeline, "ROOT", tmp_path / "unpacked")
     assert pipeline.commit_date() is None
+
+
+def test_commit_date_is_the_utc_date_of_a_commit_made_near_midnight(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, git: Callable[..., None]
+):
+    monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
+    git(tmp_path, "init", "-q")
+    git(tmp_path, "commit", "-q", "--allow-empty", "-m", "x", day="2026-03-04", time="23:30:00-05:00")
+    monkeypatch.setattr(pipeline, "ROOT", tmp_path)
+    assert pipeline.commit_date() == date(2026, 3, 5)  # 04:30 UTC, as SOURCE_DATE_EPOCH would give
 
 
 def test_rdf_without_a_commit_date_is_an_error(
@@ -151,14 +162,14 @@ def test_rdf_reports_a_missing_tag_mappings_file_as_a_rule_error(
     assert capsys.readouterr().err == "error: mappings/r9lab-tags.sssom.tsv: missing\n"
 
 
-# Prefixes no source pins: Wikidata is checked live by `just wikidata`, and R9lab's CPV codes
-# are truncated as the app stores them, so no CPV list holds them.
-UNCHECKED = {"wd", "r9lab-cpv"}
+# Prefixes no source pins: Wikidata is checked live by `just wikidata`, and a CPV code only
+# for its 8-digit shape, as no CPV list is pinned.
+UNCHECKED = {"wd", "cpv"}
 
 
 def test_every_outside_prefix_has_its_codes_checked_or_is_exempt():
     routes = set(scheme.FIXED_CODES) | set(pipeline.SOURCE_CODES) | UNCHECKED
-    assert set(scheme.PREFIXES) == routes
+    assert set(scheme.PREFIXES) | set(scheme.CODE_LISTS) == routes
 
 
 def test_rdf_fails_on_a_name_pattern_that_matches_nothing(
@@ -369,7 +380,6 @@ def test_bafu_cache_misses_after_input_changes_or_corruption(tmp_path: Path, mon
         return _bafu_cache.read_names(
             "bafu-2030-v1",
             payload,
-            columns=pipeline.NAME_COLUMNS,
             reader=reader,
             version=_bafu_cache.reader_version(reader_file),
         )
@@ -404,5 +414,43 @@ def test_bafu_cache_failure_keeps_the_reader_error(tmp_path: Path, monkeypatch: 
         raise OSError(msg)
 
     with pytest.raises(OSError, match="archive could not be read"):
-        _bafu_cache.read_names("bafu-2030-v1", b"example", columns=pipeline.NAME_COLUMNS, reader=reader, version="1")
+        _bafu_cache.read_names("bafu-2030-v1", b"example", reader=reader, version="1")
     assert calls == 1
+
+
+def test_wikidata_fails_on_a_missing_or_redirected_item(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], stub_sources: Callable[..., None]
+):
+    stub_sources(concepts="t01: {label: a, mappings: {exact: [wd:Q1]}, definition: d, example: e, note: n}\n"
+                 "  t02: {label: b, mappings: {exact: [wd:Q2]}, definition: d, example: e, note: n}\n"
+                 "  t03: {label: c, mappings: {close: [wd:Q3]}, definition: d, example: e, note: n}")  # fmt: skip
+    entities = {
+        "Q1": {"id": "Q1", "labels": {"en": {"value": "universe"}}},
+        "Q2": {"id": "Q2", "missing": ""},
+        "Q3": {"id": "Q30", "labels": {"en": {"value": "United States"}}},  # Q3 now redirects to Q30
+    }
+    requests = []
+
+    def urlopen(req: urllib.request.Request, timeout: float) -> io.BytesIO:
+        requests.append((req.full_url, req.get_header("User-agent"), timeout))
+        return io.BytesIO(json.dumps({"entities": entities}).encode())
+
+    monkeypatch.setattr(pipeline.urllib.request, "urlopen", urlopen)
+    assert pipeline.main(["wikidata"]) == 1
+    assert capsys.readouterr().out.splitlines() == [
+        "t/t01\ta\texact\tQ1\tuniverse",
+        "t/t02\tb\texact\tQ2\tMISSING OR REDIRECTED",
+        "t/t03\tc\tclose\tQ3\tMISSING OR REDIRECTED",
+    ]
+    [(url, agent, _)] = requests
+    assert "ids=Q1%7CQ2%7CQ3" in url
+    assert agent == pipeline.USER_AGENT
+
+
+def test_help_names_the_projects_own_commands(capsys: pytest.CaptureFixture[str]):
+    assert pipeline.main(["--help"]) == 0
+    out = capsys.readouterr().out
+    assert "  r9lab-vocabulary fetch " in out  # sourceledger's own help comes first
+    for command in ("rdf", "names", "wikidata", "diff REF"):
+        assert f"\n  r9lab-vocabulary {command} " in out, command
+    assert "`just` lists every recipe" in out

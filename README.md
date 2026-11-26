@@ -29,7 +29,10 @@ graph:
 
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
-PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and v2 and R9lab CPV codes. Each product type also has a
+PMDco v3.1.2, Wikidata and EU CPV codes. The CPV code is the one R9lab stores, padded to its 8
+digits (R9lab's 302131 is `cpv:30213100`). Each product type also carries its UNU-KEY v1 and v2
+codes as typed literals, `r9lab:unuKey "0303"^^r9lab:UNUKEYv1`, since the keys have no IRIs
+([ADR 0007](docs/decisions/0007-outside-codes-without-iris.md)). Each product type also has a
 `broadMatch` to its category in Annex III to the WEEE Directive 2012/19/EU (`weee6:1` to
 `weee6:6`), a fragment on the directive's ELI. Materials and components also
 carry candidate patterns for names in outside lists that have no ids, such as BAFU activity
@@ -58,8 +61,8 @@ tag its BAFU activity names.
 [`docs/review-protocol.md`](docs/review-protocol.md) how verdicts are counted.
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
-with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
-only; none of their names is copied.
+with `replaced_by`, and stays in the file. The UNU-KEY names are under a non-commercial
+licence, so only their codes are kept.
 
 Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`, a
 `dcat:Dataset` made of the schemes), says who made it, when, and which release it is, with a
@@ -87,6 +90,9 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
 `dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes:
 
 - `dist/r9lab-vocabulary.ttl` and `dist/r9lab-vocabulary.jsonld`: the SKOS graph.
+  `just pyst-round-trip` loads it into a throwaway [PyST](https://github.com/cauldron/py-semantic-taxonomy)
+  in Docker, reads every scheme and concept back and fails on a statement lost or added.
+  `tests/pyst/round_trip.py` says how the graph is reshaped for PyST's API.
 - `dist/name-matches.csv`: each name pattern with its match count per version.
 - `dist/r9lab.shacl.ttl`: the vocabulary's own SHACL shapes. Check a copy of the graph with
   `pyshacl -s r9lab.shacl.ttl r9lab-vocabulary.ttl`.
@@ -94,6 +100,7 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
   row, for tools that read crosswalks without parsing SKOS. `just sssom-validate` checks it
   with sssom-py. Mappings from or to a deprecated concept are left out; the SKOS graph keeps
   them. The file has no `mapping_date` column, because the YAML records no date per mapping.
+  A UNU-KEY row is an SSSOM 1.0 literal mapping, with the code in `object_label` and no `object_id`.
 - `dist/labels.json` and `dist/labels.md`: per scheme, each non-deprecated concept by id with
   its IRI, label, label path from its top concept, definition, and the keys of the pilot
   classes it falls under (`pilot`), plus the keys of every concept below it (`pilot_any`). A model prompt can quote them. `labels.json` also carries
@@ -108,7 +115,7 @@ SKOS rules (`tests/fixtures/skohub-skos.shacl.ttl`), on the graph `vocabulary/` 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
 missing from the pinned files, a WEEE category other than 1 to 6, or a name pattern that matches no live name in a version.
-The scheme slugs `tags` and `external` are taken by other IRIs under the base.
+The scheme slugs `tags` and `terms` are taken by other IRIs under the base.
 
 Every `r9lab-vocabulary` command exits 0 on success and 1 on a broken rule, or for `wikidata` a
 missing or redirected item. Exit 2 is a bad argument (an unknown `names --source`, a `diff` ref

@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 import pytest
+from conftest import tsv
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
@@ -26,16 +27,11 @@ concepts:
   m0001: {label: steel, definition: An alloy of iron and carbon., note: Not cast iron.}
   m0002: {label: copper}
 """
-HEAD = "#curie_map:\n#  r9lab-tag: https://w3id.org/r9lab/vocabulary/tags/\n"
 PROPOSALS = [
     ("stainless", "skos:broadMatch", "materials:m0001", "steel", "a guess"),
     ("cu", "skos:exactMatch", "materials:m0002", "copper", ""),
 ]
 TOOL = "secret-matcher-v1"  # what proposed each mapping; a card must never show it
-
-
-def tsv(columns: tuple[str, ...], rows: list[dict[str, str]]) -> str:
-    return HEAD + "\n".join(["\t".join(columns), *("\t".join(r.get(c, "") for c in columns) for r in rows)]) + "\n"
 
 
 def make_root(tmp_path: Path, extra: int = 0) -> Path:

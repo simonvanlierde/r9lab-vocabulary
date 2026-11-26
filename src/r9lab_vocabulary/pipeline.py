@@ -14,6 +14,7 @@ family is one more `[[source]]` block.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
 import io
 import json
@@ -40,6 +41,7 @@ import yaml
 from sourceledger import Source
 
 from r9lab_vocabulary import _bafu_cache, checks, export, scheme
+from r9lab_vocabulary._bafu_cache import NAME_COLUMNS
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -55,7 +57,6 @@ USER_AGENT = "r9lab-vocabulary (https://github.com/simonvanlierde/r9lab-vocabula
 CPC_SOURCE, PMDCO_SOURCE, WIKIDATA = "cpc21", "pmdco", "wd"
 BAFU_FAMILY = "bafu"
 _BAFU_READER_VERSION = _bafu_cache.reader_version(Path(__file__))
-NAME_COLUMNS = ["code", "name", "location"]
 IMPLEMENTED = "implemented"
 XML_CHUNK = 8192  # bytes fed per step; parsing stops at the first chunk holding the whole head
 REF = "referenceFunction"
@@ -158,11 +159,11 @@ def parse(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str
 
 
 def _parse_for_build(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str]]]:
-    source_id = source["id"]
-    if source_id.partition("-")[0] != BAFU_FAMILY:
+    family = source["id"].partition("-")[0]
+    if family != BAFU_FAMILY:
         return parse(source, payload)
     return NAME_COLUMNS, _bafu_cache.read_names(
-        source_id, payload, columns=NAME_COLUMNS, reader=NAME_LISTS["bafu"].read, version=_BAFU_READER_VERSION
+        source["id"], payload, reader=NAME_LISTS[family].read, version=_BAFU_READER_VERSION
     )
 
 
@@ -202,17 +203,21 @@ def _built(paths: Iterable[Path]) -> None:
 
 
 def commit_date() -> date | None:
-    """`SOURCE_DATE_EPOCH` as a UTC date when set, else the date of the commit `ROOT` has checked out, else None.
+    """`SOURCE_DATE_EPOCH`, else the time of the commit `ROOT` has checked out, as a UTC date; else None.
 
     It is `dct:modified`: the build date would make two builds of one commit differ. Git is not
     let look above `ROOT`, so a tree unpacked inside another checkout does not take that one's date.
     """
-    if epoch := os.environ.get("SOURCE_DATE_EPOCH"):
-        return datetime.fromtimestamp(int(epoch), UTC).date()
+    epoch = os.environ.get("SOURCE_DATE_EPOCH") or _commit_time()
+    return datetime.fromtimestamp(int(epoch), UTC).date() if epoch else None
+
+
+def _commit_time() -> str | None:
+    """The committer time of the commit `ROOT` has checked out, as Unix seconds; None outside a checkout."""
     env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
     try:
         out = subprocess.run(  # noqa: S603
-            ["git", "-C", str(ROOT), "log", "-1", "--format=%cs"],  # noqa: S607
+            ["git", "-C", str(ROOT), "log", "-1", "--format=%ct"],  # noqa: S607
             capture_output=True,
             text=True,
             check=True,
@@ -220,7 +225,7 @@ def commit_date() -> date | None:
         ).stdout
     except OSError, subprocess.CalledProcessError:
         return None
-    return date.fromisoformat(out.strip()) if out.strip() else None
+    return out.strip() or None
 
 
 def citation(path: Path = CITATION) -> tuple[list[str], str | None]:
@@ -383,13 +388,38 @@ def diff(ref: str) -> int:
 
 
 OWN = ("rdf", "wikidata", "names", "diff")  # the subcommands this module runs; sourceledger runs the rest
+HELP = ("-h", "--help")
+EPILOG = """
+this project's own commands:
+  r9lab-vocabulary rdf       check vocabulary/*.yaml and write dist/ (needs `just pipeline` first)
+  r9lab-vocabulary names     print every name each `names` pattern matches
+  r9lab-vocabulary wikidata  check each Wikidata link against its item's label (live network)
+  r9lab-vocabulary diff REF  print the vocabulary changes since a git tag, as Markdown
+
+`just` lists every recipe, these among them.
+"""
+
+
+def _sourceledger[T](run: Callable[..., T], args: list[str] | None = None) -> T:
+    """`run`, sourceledger's `main` or `entry`, with this project's reader, name and user agent."""
+    return run(args, parse=_parse_for_build, prog="r9lab-vocabulary", user_agent=USER_AGENT)
+
+
+def _stages(args: list[str]) -> int:
+    """One of sourceledger's stages; its `--help` with this project's own commands added."""
+    if len(args) == 1 and args[0] in HELP:
+        with contextlib.suppress(SystemExit):  # argparse exits after printing the help
+            _sourceledger(sourceledger.main, args)
+        sys.stdout.write(EPILOG)
+        return 0
+    return _sourceledger(sourceledger.main, args)
 
 
 def main(argv: list[str] | None = None) -> int:
     """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names`, `wikidata` or `diff REF`."""
     args = sys.argv[1:] if argv is None else argv
     if not args or args[0] not in OWN:
-        return sourceledger.main(args, parse=_parse_for_build, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
+        return _stages(args)
     try:
         if args[:1] == ["rdf"]:
             p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
@@ -413,9 +443,9 @@ def main(argv: list[str] | None = None) -> int:
 
 def entry() -> NoReturn:
     """The `r9lab-vocabulary` command."""
-    if sys.argv[1:2] and sys.argv[1] in OWN:
+    if sys.argv[1:2] and sys.argv[1] in (*OWN, *HELP):
         sys.exit(main())
-    sourceledger.entry(parse=_parse_for_build, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
+    _sourceledger(sourceledger.entry)
 
 
 if __name__ == "__main__":

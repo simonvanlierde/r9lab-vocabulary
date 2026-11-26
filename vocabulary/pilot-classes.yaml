@@ -7,13 +7,13 @@ scheme:
   id_letter: s
   title: R9lab pilot material classes (L1)
   created: 2026-11-17
-  collection: Photo-study pilot L1 classes
+  collection: Pilot L1 material classes
   description: >
-    The eleven coarse material classes scored in a photo-study pilot, mapped to the material and
-    component classes.
+    The eleven coarse material classes a pilot study sorts photographed parts into, mapped to the
+    material and component classes.
 concepts:
   s01:
-    label: ferrous
+    label: ferrous metal
     notation: ferrous
     definition: A component made mainly, by mass, of iron or an iron-based alloy, such as steel or cast iron.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017
@@ -29,7 +29,7 @@ concepts:
     note: 'Not ferrous: every steel is ferrous, stainless included, though some stainless steel is not magnetic. Not cable: insulated copper wire is a cable.'
     mappings: {narrow: ['materials:m0006']}
   s03:
-    label: plastic
+    label: plastic material
     notation: plastic
     definition: A component made mainly, by mass, of a rigid or flexible plastic, thermoplastic or thermoset.
     source: https://www.wikidata.org/wiki/Q11474
@@ -38,7 +38,7 @@ concepts:
     editorial_note: Glass-fibre composites go here, not under display or glass, because their footprint per kg (about 2.5-8 kg CO2e, set mostly by the resin) sits with plastics, and they end of life as thermosets.
     mappings: {narrow: ['materials:m0020', 'materials:m0053', 'materials:m0050']}
   s04:
-    label: electronics
+    label: electronic parts
     notation: electronics
     definition: A printed circuit board, bare or populated, or a loose electronic component.
     source: https://www.wikidata.org/wiki/Q173350
@@ -46,7 +46,7 @@ concepts:
     note: 'Not display or glass: a display keeps its own driver board. Batteries, cables and magnets have their own classes. A flexible printed circuit counts here, but a flat flex cable with no printed tracks is a cable. Not electric motor or transformer: a small choke or transformer on a circuit board stays electronics.'
     mappings: {narrow: ['components:c0005', 'components:c0006', 'components:c0007']}
   s05:
-    label: battery
+    label: battery or cell
     notation: battery
     definition: 'A battery or a bare cell: one or more electrochemical cells, with or without the case, terminals and protective devices a battery has.'
     source: IEC 60050-482:2004, 482-01-04
@@ -63,7 +63,7 @@ concepts:
     note: 'Not plastic: a clear plastic window or light guide is plastic. Not electronics: a display keeps its driver board.'
     mappings: {narrow: ['materials:m0043', 'components:c0014']}
   s07:
-    label: rubber
+    label: rubber or elastomer
     notation: rubber
     definition: 'A component made mainly, by mass, of an elastomer, a soft material that stretches and springs back: natural or synthetic rubber, silicone or thermoplastic elastomer.'
     source: https://www.wikidata.org/wiki/Q252266
@@ -71,7 +71,7 @@ concepts:
     note: 'Not plastic: a hard part that does not spring back is plastic. Not cable: a rubber-sheathed cable is a cable.'
     mappings: {narrow: ['materials:m0038']}
   s08:
-    label: cable
+    label: cable or wire
     note: 'Not electronics: a flexible printed circuit is a printed circuit board, but a flat flex cable with no printed tracks is a cable. Not non-ferrous: a bare copper strip is non-ferrous metal. So is enamelled winding wire in a coil, motor or transformer.'
     notation: cable
     definition: 'An electric cable or wire: one or more insulated conductors, with or without plugs.'
@@ -87,7 +87,7 @@ concepts:
     note: 'Not ferrous: a steel part a magnet sticks to is ferrous. Not electric motor or transformer: a whole motor goes there. A whole loudspeaker driver counts here. An electromagnet takes its main material''s class.'
     mappings: {exact: ['components:c0019'], narrow: ['components:c0023']}
   s10:
-    label: other
+    label: other material
     notation: other
     definition: A component whose main material fits none of the other ten classes, such as paper, cardboard, wood, fabric or ceramic.
     example: [a cardboard insert, a wooden case, a fabric speaker grille, a ceramic insulator]
