@@ -70,7 +70,7 @@ concepts:
     definition: Discrete electronic part, such as a chip, capacitor, resistor or LED.
     source: https://www.wikidata.org/wiki/Q11653
     example: [an integrated circuit, an electrolytic capacitor, a resistor, a quartz crystal]
-    note: 'Not populated printed circuit board: a board recorded whole, parts and all, is one item. Not transformer or electric motor, which are concepts of their own.'
+    note: 'Not populated printed circuit board: a board recorded whole, parts and all, is one item. Not transformer or electric motor: a wound transformer, even a small one, or a part that turns is not a loose electronic component.'
     mappings: {exact: ['wd:Q11653']}
     names:
       bafu: ['^electronic component, (active|passive), unspecified']
@@ -79,7 +79,7 @@ concepts:
     definition: Electronic circuit formed on a small piece of semiconductor, sealed in a package with pins or pads, such as a processor or memory chip.
     source: https://www.wikidata.org/wiki/Q80831
     example: [a CPU, a DRAM chip, a flash memory chip, a microcontroller]
-    note: 'Not populated printed circuit board: a chip still soldered on stays part of the board, and a memory module is a board. Here it means the packaged chip.'
+    note: 'Not populated printed circuit board: a chip still soldered on stays part of the board, and a memory module is a board. Not a bare silicon die or wafer, which has no package.'
     editorial_note: Wikidata's item is the circuit itself.
     broader: [c0007]
     mappings: {close: ['cpc:47160', 'wd:Q80831']}
@@ -110,7 +110,7 @@ concepts:
     definition: Semiconductor diode that gives off light when current flows through it, as a single part.
     source: https://www.wikidata.org/wiki/Q25504
     example: [a through-hole indicator LED, a surface-mount LED, an LED from a backlight strip, an infrared LED from a remote control]
-    note: 'Not LED or OLED display: a screen built from LEDs is a display. Not LED lamp, which is a product. Here it means the discrete part.'
+    note: 'Not LED or OLED display: a screen built from LEDs is a display. Not LED lamp, which is a product. Not LED strip: LEDs still on a strip are a populated printed circuit board.'
     editorial_note: Wikidata's light-emitting diode is any such light source.
     broader: [c0007]
     mappings: {close: ['wd:Q25504'], broad: ['cpc:47150']}
@@ -173,10 +173,10 @@ concepts:
       bafu: ['^cable, ', '^plugs, inlet and outlet']
   c0018:
     label: magnet
-    example: [a loudspeaker magnet, a hard-drive voice-coil magnet, an electromagnet from a door lock, a magnetic catch]
+    example: [an electromagnet from a door lock, a solenoid coil from a washing-machine valve, an electromagnetic door holder]
     definition: Material or object that produces a magnetic field, permanent or electromagnetic.
     source: https://www.wikidata.org/wiki/Q11421
-    note: 'Not ferrous metal: a steel part a magnet sticks to is not a magnet. Not electric motor, which holds magnets but is a concept of its own.'
+    note: 'Not ferrous metal: a steel part a magnet sticks to is not a magnet. Not permanent magnet: a magnet that holds its field without current is permanent. Not electric motor: a whole motor holds magnets but turns.'
     editorial_note: Pilot class s09 (permanent magnet) maps to permanent magnet (c0019), not here.
     mappings: {exact: ['wd:Q11421'], broad: ['cpc:4693']}
   c0019:
@@ -184,7 +184,7 @@ concepts:
     definition: Magnet made of a material that keeps its own magnetic field without an electric current.
     source: https://www.wikidata.org/wiki/Q353743
     example: [a loudspeaker ring magnet, a fridge door-seal magnet strip, a hard-drive voice-coil magnet, a magnetic catch]
-    note: 'Not electromagnet: a coil that is magnetic only while current flows stays under magnet. Not electric motor, which holds magnets but is a concept of its own.'
+    note: 'Not electromagnet: a coil that is magnetic only while current flows is not a permanent magnet. Not electric motor: a whole motor holds magnets but turns.'
     broader: [c0018]
     mappings: {exact: ['wd:Q353743']}
   c0020:
@@ -211,7 +211,7 @@ concepts:
     definition: Electromechanical device that turns electrical energy into motion, usually by rotation.
     source: https://www.wikidata.org/wiki/Q72313
     example: [a fan motor, a vibration motor from a phone, a stepper motor from a printer, a hard-drive spindle motor]
-    note: 'Not magnet: a magnet taken out of a motor is recorded as a magnet. Not transformer, which has windings but no moving parts.'
+    note: 'Not magnet: a loose magnet taken out of a motor is a magnet. Not transformer: a transformer has windings but no moving parts.'
     editorial_note: Small motors; BAFU has only electric-vehicle and scooter motors.
     mappings: {exact: ['wd:Q72313'], broad: ['cpc:46111']}
   c0023:

@@ -72,7 +72,7 @@ concepts:
     label: non-ferrous metal
     definition: Metals and alloys not based on iron, such as aluminium, copper, zinc, magnesium, solder and the precious metals.
     source: https://www.wikidata.org/wiki/Q5679431
-    example: [an aluminium die casting, copper wire, brass, tin-silver solder]
+    example: [an aluminium die casting, bare copper wire, brass, tin-silver solder]
     note: 'Not ferrous metal: stainless steel is ferrous, though some grades are not magnetic.'
     broader: [m0001]
     mappings: {exact: ['pmdco:PMD_0010007', 'wd:Q5679431']}
@@ -101,7 +101,7 @@ concepts:
     label: copper
     definition: Unalloyed copper, as in wire, foil, bus bars and windings.
     source: https://www.wikidata.org/wiki/Q753
-    example: [copper wire, copper foil, a bus bar, enamelled winding wire]
+    example: [bare copper wire, copper foil, a bus bar, enamelled winding wire]
     note: 'Not copper alloy: brass and bronze are alloys. Not cable: insulated wire is a cable, but enamelled winding wire in a coil, motor or transformer is copper.'
     broader: [m0006]
     mappings: {exact: ['wd:Q753'], broad: ['cpc:41413']}
@@ -112,7 +112,7 @@ concepts:
     definition: Alloys in which copper is the main metal, such as brass, bronze and copper-beryllium.
     source: https://w3id.org/pmd/co/PMD_0020187
     example: [brass, phosphor bronze, a copper-beryllium contact spring, a bronze bushing]
-    note: 'Not copper: unalloyed copper is its own concept. Not solder, which is tin-based.'
+    note: 'Not copper: unalloyed copper is salmon-red, while brass is yellow and bronze is brownish. Not solder, which is tin-based.'
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0020187'], broad: ['cpc:41413']}
     names:
@@ -142,9 +142,9 @@ concepts:
     label: tin
     definition: Tin and alloys based on tin, other than solder.
     source: https://www.wikidata.org/wiki/Q1096
-    example: [pewter, a tin ingot, tin plating listed on its own in a material declaration]
-    note: 'Not solder: a tin-based alloy that joins parts is solder. Tinplate and other tin-plated parts go by their base metal unless the record lists the plating by itself. Tin-based alloys are included.'
-    editorial_note: Wikidata's tin is the element only.
+    example: [pewter, a tin ingot, a pewter tankard]
+    note: 'Not solder: a tin-based alloy that joins parts is solder. Tinplate and other tin-plated parts go by their base metal. Tin-based alloys are included.'
+    editorial_note: Wikidata's tin is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0006]
     mappings: {close: ['cpc:41443', 'wd:Q1096']}
     names:
@@ -153,9 +153,9 @@ concepts:
     label: nickel
     definition: Nickel and alloys based on nickel, as in battery connector strip, plating and heating wire.
     source: https://www.wikidata.org/wiki/Q744
-    example: [nickel strip from a battery pack, nichrome heating wire, nickel plating listed on its own, a nickel-based superalloy part]
-    note: 'Not stainless steel: steel that contains nickel is still ferrous. Nickel-plated parts go by their base metal unless the record lists the plating by itself. Nickel-based alloys are included.'
-    editorial_note: Wikidata's nickel is the element only.
+    example: [nickel strip from a battery pack, nichrome heating wire, a nickel battery tab, a nickel-based superalloy part]
+    note: 'Not stainless steel: steel that contains nickel is still ferrous. Nickel-plated parts go by their base metal. Nickel-based alloys are included.'
+    editorial_note: Wikidata's nickel is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0006]
     mappings: {close: ['wd:Q744'], broad: ['cpc:4142']}
     names:
@@ -176,8 +176,8 @@ concepts:
     definition: Rare metals of high value that resist corrosion, such as gold, silver and the platinum group, and their alloys.
     source: https://www.wikidata.org/wiki/Q271449
     example: [platinum in a temperature sensor, rhodium plating, ruthenium in a chip resistor, a mixed precious-metal concentrate]
-    note: Gold, silver and palladium have narrower concepts; other precious metals, such as platinum, rhodium and ruthenium, stay here. Plating goes by its base metal unless the record lists it on its own. Alloys are included.
-    editorial_note: Wikidata's precious metal counts only the elements.
+    note: Gold, silver and palladium have narrower concepts; other precious metals, such as platinum, rhodium and ruthenium, stay here. Plated parts go by their base metal. Alloys are included.
+    editorial_note: Wikidata's precious metal counts only the elements. Plating listed on its own in a material declaration goes here.
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0010014'], close: ['cpc:413', 'wd:Q271449']}
   m0017:
@@ -185,8 +185,8 @@ concepts:
     definition: Gold and alloys based on gold, as in bonding wire, contact plating and jewellery.
     source: https://www.wikidata.org/wiki/Q897
     example: [gold bonding wire, gold-plated connector pins, gold fingers on a circuit board edge, an 18-carat gold watch case]
-    note: 'Not brass: a gold-coloured part is often brass. Gold-plated parts go by their base metal unless the record lists the plating by itself. Gold alloys are included.'
-    editorial_note: Wikidata's gold is the element only.
+    note: 'Not brass: a gold-coloured part is often brass. Gold-plated parts go by their base metal. Gold alloys are included.'
+    editorial_note: Wikidata's gold is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010015'], close: ['cpc:4132', 'wd:Q897']}
     names:
@@ -196,8 +196,8 @@ concepts:
     definition: Silver and alloys based on silver, as in electrical contacts, conductive paste and plating.
     source: https://www.wikidata.org/wiki/Q1090
     example: [a silver relay contact, silver paste on a solar cell, silver-plated wire, sterling silver]
-    note: 'Not solder: tin-silver solder is solder. Silver-plated parts go by their base metal unless the record lists the plating by itself. Silver alloys are included.'
-    editorial_note: Wikidata's silver is the element only.
+    note: 'Not solder: tin-silver solder is solder. Silver-plated parts go by their base metal. Silver alloys are included.'
+    editorial_note: Wikidata's silver is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010016'], close: ['cpc:4131', 'wd:Q1090']}
     names:
@@ -206,9 +206,9 @@ concepts:
     label: palladium
     definition: Palladium and alloys based on palladium, as in contact plating, capacitor electrodes and catalysts.
     source: https://www.wikidata.org/wiki/Q1089
-    example: [palladium-nickel plating on a connector contact, palladium plating listed on its own in a material declaration, palladium in a catalytic converter coating]
-    note: 'Not silver: a silver-palladium alloy that is mostly silver is silver. Plated parts go by their base metal unless the record lists the plating by itself. Palladium alloys are included.'
-    editorial_note: Wikidata's palladium is the element only.
+    example: [palladium-nickel plating on a connector contact, a palladium bar, palladium in a catalytic converter coating]
+    note: 'Not silver: a silver-palladium alloy that is mostly silver is silver. Plated parts go by their base metal. Palladium alloys are included.'
+    editorial_note: Wikidata's palladium is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010018'], close: ['wd:Q1089']}
     names:
@@ -233,7 +233,7 @@ concepts:
     label: polyethylene
     definition: Thermoplastic made from ethylene, ranging from soft film to rigid moulded parts.
     source: https://www.wikidata.org/wiki/Q143429
-    example: [an HDPE container, LDPE packaging film, PE cable sheath, a PE foam insert]
+    example: [an HDPE container, LDPE packaging film, a stripped PE cable sheath, a PE foam insert]
     note: 'Not polypropylene: PP is the other common polyolefin and is stiffer. Includes HDPE, LDPE and LLDPE. PE foam goes here when the record names the polymer, and to foam when it does not.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050005', 'wd:Q143429'], close: ['cpc:34710']}
@@ -273,7 +273,7 @@ concepts:
     label: polycarbonate
     definition: Tough, often transparent thermoplastic with carbonate groups in its chain, as in housings, lenses and optical discs.
     source: https://www.wikidata.org/wiki/Q62246
-    example: [PC, a clear lamp cover, a CD or DVD, a power tool housing]
+    example: [a clear safety-glasses lens, a clear lamp cover, a CD or DVD, a power tool housing]
     note: 'Not polycarbonate/ABS blend: a part marked PC+ABS goes there. Not glass: a clear polycarbonate panel is a polymer.'
     broader: [m0021]
     mappings: {exact: ['wd:Q62246'], broad: ['cpc:34740']}
@@ -302,7 +302,7 @@ concepts:
     label: polyvinyl chloride
     definition: Thermoplastic polymer of vinyl chloride, rigid or made flexible with plasticisers, as in cable insulation and pipes.
     source: https://www.wikidata.org/wiki/Q146368
-    example: [PVC, cable insulation, a mains cord sheath, a rigid PVC conduit]
+    example: [stripped cable insulation, a rigid PVC conduit, a grey PVC pipe offcut, a clear flexible tube]
     note: 'PVC. Includes rigid and plasticised grades. Not elastomer: soft PVC sheathing is still PVC, though it bends like rubber.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050013', 'wd:Q146368'], broad: ['cpc:34730']}
@@ -312,7 +312,7 @@ concepts:
     label: polyethylene terephthalate
     definition: Thermoplastic polyester of ethylene glycol and terephthalic acid, as in bottles, films and fibres.
     source: https://www.wikidata.org/wiki/Q145863
-    example: [PET, a PET bottle, a polyester insulating film, a clear blister pack]
+    example: [a drinks bottle, a polyester insulating film, a clear blister pack, a clear food tray]
     note: 'PET. Not polybutylene terephthalate: PBT is a related polyester for moulded parts. Not textile: polyester fabric or felt is textile.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050019', 'wd:Q145863'], broad: ['cpc:34740']}
@@ -342,7 +342,7 @@ concepts:
     label: polybutylene terephthalate
     definition: Thermoplastic polyester of butanediol and terephthalic acid, as in connectors, switch housings and keycaps.
     source: https://www.wikidata.org/wiki/Q145445
-    example: [PBT, a connector body, a relay housing, a PBT keycap]
+    example: [a keyboard switch housing, a connector body, a relay housing, a textured keycap]
     note: 'PBT. Not polyethylene terephthalate: PET is the related polyester for bottles, films and fibres.'
     editorial_note: No BAFU dataset; needs a proxy.
     broader: [m0021]
@@ -379,7 +379,7 @@ concepts:
     definition: Polymer whose chains are joined by urethane links, rigid or flexible, as foam or solid.
     source: https://www.wikidata.org/wiki/Q146322
     example: [rigid PUR insulation foam from a fridge, flexible PUR foam padding, a polyurethane potting compound, polyurethane varnish]
-    note: 'PUR. Not foam: PUR foam goes here. Not thermoplastic elastomer: thermoplastic polyurethane (TPU) is a thermoplastic elastomer.'
+    note: 'PUR. Not foam: a foam known to be polyurethane goes here. Not thermoplastic elastomer: thermoplastic polyurethane (TPU) is a thermoplastic elastomer.'
     broader: [m0020]
     mappings: {exact: ['wd:Q146322'], broad: ['cpc:34790']}
     names:
@@ -405,7 +405,7 @@ concepts:
     definition: Elastomer made by polymerising petrochemical monomers, such as SBR, EPDM, NBR and neoprene.
     source: https://www.wikidata.org/wiki/Q6714735
     example: [an EPDM door seal, an NBR O-ring, a chloroprene rubber gasket, an SBR rubber foot]
-    note: 'Not silicone rubber or thermoplastic elastomer: both have their own concepts here.'
+    note: 'Not silicone rubber: a soft, heat-resistant rubber, often translucent, is silicone. Not thermoplastic elastomer: a soft grip overmoulded onto a hard part is a thermoplastic elastomer.'
     editorial_note: Wikidata's synthetic rubber also counts silicone rubber, and PMDco's silicone rubber is a kind of synthetic rubber.
     broader: [m0038]
     mappings: {close: ['cpc:34800', 'wd:Q6714735', 'pmdco:PMD_0050032']}
@@ -415,8 +415,8 @@ concepts:
     label: silicone rubber
     definition: Elastomer with a silicon-oxygen backbone, heat resistant and flexible over a wide temperature range.
     source: https://www.wikidata.org/wiki/Q4115245
-    example: [a silicone keypad, a silicone oven door seal, a silicone cable sheath, a silicone hose from a coffee machine]
-    note: 'Not synthetic rubber: silicone rubber has its own concept here. Silicone grease and oil are not rubber.'
+    example: [a silicone keypad, a silicone oven door seal, stripped silicone cable insulation, a silicone hose from a coffee machine]
+    note: 'Not synthetic rubber: silicone stays soft at oven heat and is often translucent. Silicone grease and oil are not rubber.'
     editorial_note: BAFU's silicone product is a proxy for silicone rubber. Wikidata counts silicone rubber as a synthetic rubber.
     broader: [m0038]
     mappings: {exact: ['pmdco:PMD_0090052', 'wd:Q4115245']}
@@ -426,7 +426,7 @@ concepts:
     label: thermoplastic elastomer
     definition: Elastomer that softens on heating and can be remelted, as in overmoulded grips and soft cable sheaths.
     source: https://www.wikidata.org/wiki/Q146527
-    example: [a soft-touch grip on a tool, TPU, a TPE cable sheath, a styrenic block copolymer seal]
+    example: [a soft-touch grip on a tool, a flexible phone case, a stripped TPE cable sheath, a styrenic block copolymer seal]
     note: 'TPE. Not thermoplastic: a plastic that stays hard is a thermoplastic. Not synthetic rubber: vulcanised rubber cannot be remelted.'
     editorial_note: Wikidata also lists it under thermoplastic; here it is an elastomer only.
     broader: [m0038]
@@ -478,8 +478,8 @@ concepts:
     label: ferrite
     definition: Ceramic of iron oxide combined with other metal oxides, often magnetic, as in ferrite cores and magnets.
     source: https://www.wikidata.org/wiki/Q114047906
-    example: [a ferrite toroid core, a ferrite bead on a cable, a ferrite loudspeaker magnet, a ferrite rod from a radio antenna]
-    note: 'Not ferrous metal: ferrite is an oxide, not an alloy, and the ferrite phase of steel is steel. Not technical ceramic, though ferrites are engineered ceramics too.'
+    example: [a ferrite toroid core, a clip-on ferrite bead, a ferrite rod from a radio antenna, a ferrite pot core]
+    note: 'Not ferrous metal: ferrite is an oxide, not an alloy, and the ferrite phase of steel is steel. Not technical ceramic, though ferrites are engineered ceramics too. Not ferrite magnet: a ferrite permanent magnet is a magnet.'
     broader: [m0046]
     mappings: {exact: ['wd:Q114047906']}
     names:
@@ -489,7 +489,7 @@ concepts:
     definition: Family of materials built from more than one phase, or from a solid with gas or voids through it, such as composites, foams, textiles and natural materials like wood and leather.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [FR-4, a carbon-fibre panel, plywood, a foam gasket]
-    note: 'Not a part of separate materials: a part that can be taken apart is recorded by each material. Covers composites, foams, natural materials and textiles.'
+    note: 'Not an assembly: when a part is pieces of different materials screwed, clipped or glued together, each piece goes by its own material. Covers composites, foams, natural materials and textiles.'
   m0050:
     label: composite
     definition: Material in which a matrix holds fibres or particles of another material, as in fibre-reinforced plastics and laminates.
