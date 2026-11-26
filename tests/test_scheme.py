@@ -364,7 +364,7 @@ def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_p
         ids = [c["id"] for c in s["concepts"]]
         assert ids == sorted(cid for cid, c in schemes[s["slug"]].concepts.items() if not c.get("deprecated"))
     concepts = {c["id"]: c for s in doc["schemes"] for c in s["concepts"]}
-    assert concepts["m0003"] == {
+    assert {k: v for k, v in concepts["m0003"].items() if k not in ("note", "example")} == {
         "id": "m0003",
         "iri": f"{schemes['materials'].iri}m0003",
         "label": "carbon and low-alloy steel",
@@ -379,12 +379,28 @@ def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_p
     assert "| m0003 | carbon and low-alloy steel | metal > ferrous metal > carbon and low-alloy steel |" in md
 
 
+def test_labels_carry_the_scope_note_and_examples_but_not_the_editorial_note():
+    concepts = {"t01": {"label": "a", "note": " Not b. ", "example": ["x "], "editorial_note": "Ask Ann."}}
+    (c,) = scheme.labels(one(concepts))[0]["concepts"]
+    assert (c["note"], c["example"]) == ("Not b.", ["x"])
+    assert "Ask Ann." not in json.dumps(c)
+
+
 def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
     schemes = one({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]}, "t02": {"label": "b"}})
     json_path, md_path = scheme.write_labels(schemes, "test", tmp_path)
     doc = json.loads(json_path.read_text(encoding="utf-8"))
     assert doc["schemes"][0]["concepts"] == [
-        {"id": "t02", "iri": f"{schemes['t'].iri}t02", "label": "b", "path": ["b"], "definition": None, "pilot": []}
+        {
+            "id": "t02",
+            "iri": f"{schemes['t'].iri}t02",
+            "label": "b",
+            "path": ["b"],
+            "definition": None,
+            "note": None,
+            "example": [],
+            "pilot": [],
+        }
     ]
     assert "t01" not in md_path.read_text(encoding="utf-8")
 
