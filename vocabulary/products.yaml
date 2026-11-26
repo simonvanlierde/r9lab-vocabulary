@@ -103,54 +103,90 @@ concepts:
     mappings: {exact: ['wd:Q3972'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0012:
     label: computer mouse
+    definition: Hand-held pointing device that moves a pointer on a computer display, wired or wireless.
+    source: https://www.wikidata.org/wiki/Q7987
+    example: [a wired optical mouse, a wireless mouse with its USB receiver, a trackball, a gaming mouse]
+    note: Not computer keyboard, though both fall under UNU-KEY 0301 and WEEE category 6. Not a laptop's built-in touchpad, which stays part of the laptop.
     broader: [p0001]
     mappings: {exact: ['wd:Q7987'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023741']}
   p0013:
     label: computer keyboard
+    definition: Separate input device with an arrangement of keys for typing text and commands into a computer.
+    source: https://www.wikidata.org/wiki/Q250
+    example: [a USB keyboard, a wireless keyboard, a numeric keypad, a keyboard cover for a tablet]
+    note: 'Not a laptop''s built-in keyboard, which stays part of the laptop. Not remote control: a remote with a small keyboard is UNU-KEY 0401, a computer keyboard 0301.'
     broader: [p0001]
     mappings: {exact: ['wd:Q250'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023746']}
   p0014:
     label: laptop charger
-    definition: External power adapter for a laptop.
+    definition: External power adapter that converts mains electricity into the direct current a laptop runs and charges on.
+    source: https://www.wikidata.org/wiki/Q887369
+    example: [a barrel-plug laptop adapter, a USB-C laptop charger, a power brick with its mains cord]
+    note: Not computer power supply, which sits inside a desktop case. Wikidata's AC adapter covers adapters for any appliance; here only those for laptops.
     broader: [p0001]
     mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0015:
     label: mobile phone
+    definition: Portable telephone that makes calls over a cellular radio network, smartphones and basic phones included.
+    source: https://www.wikidata.org/wiki/Q17517
+    example: [a smartphone, a feature phone, a flip phone, a rugged phone]
+    note: 'Not desk phone: UNU-KEY puts mobile phones in 0306 and fixed telephones in 0305. Not tablet, even one with a SIM slot.'
+    editorial_note: All mobile phones in the corpus so far are smartphones.
     broader: [p0002]
-    note: All mobile phones in the corpus so far are smartphones.
-    mappings: {narrow: ['wd:Q22645'], broad: ['cpc:47222', 'unu1:0306', 'unu2:0306', 'weee6:6'], close: ['r9lab-cpv:3225']}
+    mappings: {exact: ['wd:Q17517'], close: ['r9lab-cpv:3225'], broad: ['cpc:47222', 'unu1:0306', 'unu2:0306', 'weee6:6'], narrow: ['wd:Q22645']}
   p0016:
     label: desk phone
-    definition: Wired desk telephone, including IP phones.
+    definition: Telephone made to stand on a desk and connect by wire to a phone line or data network, IP phones included.
+    example: [an office IP phone, an analogue corded telephone, a conference speakerphone]
+    note: Not mobile phone, which uses a cellular network (UNU-KEY 0306, against 0305 here). Wikidata's VoIP phone covers only IP phones; here analogue desk sets are included too.
     broader: [p0002]
     mappings: {close: ['wd:Q943687'], broad: ['cpc:47223', 'unu1:0305', 'unu2:0305', 'weee6:6'], related: ['r9lab-cpv:325521']}
   p0017:
     label: router
-    note: Includes home gateways.
+    definition: Network device that connects computer networks and forwards data between them, home gateways included.
+    source: https://www.wikidata.org/wiki/Q5318
+    example: [a Wi-Fi router, a DSL home gateway, a cable modem router, a mesh Wi-Fi node]
+    note: 'Not desk phone: a gateway with phone ports is still a router. UNU-KEY files routers under 0301 with computer mice and keyboards, not with telephones.'
     broader: [p0002]
     mappings: {exact: ['wd:Q5318'], broad: ['cpc:47223', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:324131']}
   p0018:
     label: GPS navigation device
+    definition: Device that works out its position from satellite signals and shows it on a map, usually with route directions.
+    source: https://www.wikidata.org/wiki/Q1486497
+    example: [a car satnav, a handheld GPS receiver, a cycling GPS unit]
+    note: 'Not mobile phone: a phone with satellite navigation is still a mobile phone. UNU-KEY 0402 and WEEE category 5 put it with consumer electronics, not with telephones.'
     broader: [p0002]
     mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0402', 'unu2:0402', 'weee6:5'], close: ['r9lab-cpv:381121']}
   p0019:
     label: headphones
+    definition: Pair of small loudspeakers worn on or in the ears, including wireless earbuds and headsets with a microphone.
+    source: https://www.wikidata.org/wiki/Q186819
+    example: [over-ear headphones, wireless earbuds with their charging case, a wired in-ear headset, a gaming headset]
+    note: Not speaker, which plays into the room (UNU-KEY 0405, against 0401 here). Not loudspeaker driver, which is a component taken out of either.
     broader: [p0003]
     mappings: {exact: ['wd:Q186819'], broad: ['cpc:47330', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['r9lab-cpv:323421']}
   p0020:
     label: speaker
-    definition: Stand-alone loudspeaker product, wired or Bluetooth.
+    definition: Stand-alone loudspeaker product, wired or wireless, with or without a built-in amplifier.
+    example: [a Bluetooth speaker, a pair of bookshelf speakers, a smart speaker, a set of computer speakers]
+    note: 'Not headphones, which are worn on the ears (UNU-KEY 0401, against 0405 here). Not loudspeaker driver: a driver taken out of a product is a component. Not radio, which tunes broadcasts itself.'
     broader: [p0003]
     mappings: {broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
   p0021:
     label: radio
-    note: Includes clock radios.
+    definition: Stand-alone receiver for sound broadcasts, mains or battery powered.
+    example: [a portable FM radio, a DAB radio, a clock radio, a kitchen radio]
+    note: 'Includes clock radios. Not speaker: a radio tunes broadcasts itself, a speaker only plays what it is sent. UNU-KEY v1 files mains and clock radios under 0402, v2 under 0403.'
     broader: [p0003]
     # Mains and clock radios (HS 852713, 852791, 852792) are 0402 in the 2018 HS table and
     # 0403 in the 2026 one, though Annex 2 maps v1 0402 to v2 0402.
     mappings: {broad: ['cpc:47311', 'unu1:0402', 'unu2:0403', 'weee6:5'], close: ['r9lab-cpv:323442']}
   p0022:
     label: remote control
+    definition: Hand-held device that operates another device from a distance, usually by infrared or radio.
+    source: https://www.wikidata.org/wiki/Q185091
+    example: [a TV remote, a set-top box remote, an air-conditioner remote, a universal remote]
+    note: Not computer mouse or computer keyboard, which control a computer (UNU-KEY 0301, against 0401 here).
     broader: [p0003]
     mappings: {exact: ['wd:Q185091'], broad: ['cpc:48220', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['r9lab-cpv:3882']}
   p0023:
