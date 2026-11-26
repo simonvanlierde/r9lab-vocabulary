@@ -43,3 +43,6 @@ data/raw/*
 data/processed/*
 # `just data-release` writes the folder to publish here.
 /release/
+
+# The review page's link secret (src/r9lab_vocabulary/review/__main__.py).
+.review-secret

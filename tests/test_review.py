@@ -1,4 +1,4 @@
-"""The review page: blind cards, timed verdicts appended to the log, and refused forged requests."""
+"""The review page: rater links, blind cards, timed verdicts appended to the log, and refused forged requests."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from conftest import tsv
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
 from r9lab_vocabulary import curate, review
@@ -32,6 +32,7 @@ PROPOSALS = [
     ("cu", "skos:exactMatch", "materials:m0002", "copper", ""),
 ]
 TOOL = "secret-matcher-v1"  # what proposed each mapping; a card must never show it
+SECRET = b"a-test-secret"
 
 
 def make_root(tmp_path: Path, extra: int = 0) -> Path:
@@ -52,8 +53,14 @@ def make_root(tmp_path: Path, extra: int = 0) -> Path:
 
 
 def client(root: Path, rater: str = RATER, *, follow_redirects: bool = True) -> TestClient:
-    app = create_app(root, rater)
-    return TestClient(app, base_url="http://127.0.0.1", follow_redirects=follow_redirects)
+    """A browser signed in as `rater`, on a page that knows only them."""
+    return signed_in(create_app(root, [rater], SECRET), rater, follow_redirects=follow_redirects)
+
+
+def signed_in(app: FastAPI, rater: str, *, follow_redirects: bool = True) -> TestClient:
+    c = TestClient(app, base_url="http://127.0.0.1", follow_redirects=follow_redirects)
+    c.cookies.set(review.COOKIE, review.rater_token(SECRET, rater))
+    return c
 
 
 def form(html: str) -> dict[str, str]:
@@ -292,27 +299,112 @@ def test_without_javascript_a_verdict_redirects_back_to_the_page(tmp_path: Path)
     assert (response.status_code, response.headers["location"]) == (303, "/")
 
 
-@pytest.mark.parametrize("reviewer", [None, "simon", "", f"{RATER}x", f"x{RATER}"])
+@pytest.mark.parametrize("reviewer", [None, "simon", "", f"{RATER}x", f"x{RATER}", f"{RATER},simon"])
 def test_the_page_will_not_start_without_an_orcid(
     reviewer: str | None, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ):
     if reviewer is None:
-        monkeypatch.delenv("R9LAB_REVIEWER", raising=False)
+        monkeypatch.delenv("R9LAB_RATERS", raising=False)
     else:
-        monkeypatch.setenv("R9LAB_REVIEWER", reviewer)
+        monkeypatch.setenv("R9LAB_RATERS", reviewer)
     monkeypatch.setattr("uvicorn.run", lambda *_, **__: pytest.fail("the server started"))
     assert main([]) == 2
-    assert "R9LAB_REVIEWER" in capsys.readouterr().err
+    assert "R9LAB_RATERS" in capsys.readouterr().err
 
 
-def test_the_page_serves_on_this_machine_only(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+def test_the_page_serves_on_this_machine_unless_told_otherwise(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
     calls = []
-    monkeypatch.setenv("R9LAB_REVIEWER", RATER)
+    monkeypatch.setenv("R9LAB_RATERS", RATER)
     monkeypatch.chdir(make_root(tmp_path))
     monkeypatch.setattr("uvicorn.run", lambda _app, **kwargs: calls.append(kwargs))
     assert main(["--port", "9999"]) == 0
     assert main([]) == 0
-    assert calls == [{"host": "127.0.0.1", "port": port, "timeout_graceful_shutdown": 2} for port in (9999, 8740)]
+    assert main(["--host", "0.0.0.0"]) == 0  # noqa: S104 - what the container listens on
+    assert calls == [
+        {"host": host, "port": port, "timeout_graceful_shutdown": 2}
+        for host, port in (("127.0.0.1", 9999), ("127.0.0.1", 8740), ("0.0.0.0", 8740))  # noqa: S104
+    ]
+
+
+def test_each_rater_gets_a_link_that_outlives_a_restart(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    monkeypatch.setenv("R9LAB_RATERS", f"{RATER}, {OTHER}")
+    monkeypatch.chdir(make_root(tmp_path))
+    monkeypatch.setattr("uvicorn.run", lambda *_, **__: None)
+    links = []
+    for _ in range(2):
+        assert main([]) == 0
+        links.append(re.findall(r"(orcid:\S+): (http://127\.0\.0\.1:8740/r/\w{32})", capsys.readouterr().out))
+    assert links[0] == links[1]
+    assert [rater for rater, _ in links[0]] == [RATER, OTHER]
+    assert links[0][0][1] != links[0][1][1]
+    assert (tmp_path / ".review-secret").stat().st_mode & 0o777 == 0o600
+    (tmp_path / ".review-secret").unlink()  # a new secret is a new link for everyone
+    main([])
+    assert re.findall(r"/r/(\w+)", capsys.readouterr().out)[0] not in links[0][0][1]
+
+
+def test_the_page_answers_to_the_names_in_allowed_hosts(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    apps = []
+    monkeypatch.setenv("R9LAB_RATERS", RATER)
+    monkeypatch.setenv("R9LAB_ALLOWED_HOSTS", "review.example.org")
+    monkeypatch.chdir(make_root(tmp_path))
+    monkeypatch.setattr("uvicorn.run", lambda app, **_: apps.append(app))
+    assert main([]) == 0
+    link = f"/r/{review.rater_token((tmp_path / '.review-secret').read_bytes(), RATER)}"
+    there = TestClient(apps[0], base_url="https://review.example.org", follow_redirects=False)
+    assert there.get(link).status_code == 303
+    here = TestClient(apps[0], base_url="http://127.0.0.1", follow_redirects=False)
+    assert here.get(link).status_code == 400  # not listed, so refused
+
+
+def test_a_link_signs_the_rater_in_with_a_cookie_scripts_cannot_read(tmp_path: Path):
+    app = create_app(make_root(tmp_path), [RATER], SECRET)
+    link = f"/r/{review.rater_token(SECRET, RATER)}"
+    for base, secure in (("http://127.0.0.1", False), ("https://127.0.0.1", True)):
+        c = TestClient(app, base_url=base, follow_redirects=False)
+        response = c.get(link, headers={"Sec-Fetch-Site": "cross-site"})  # clicked in a mail or a chat
+        assert (response.status_code, response.headers["location"]) == (303, "/")
+        cookie = response.headers["set-cookie"].lower()
+        assert "httponly" in cookie
+        assert "samesite=lax" in cookie
+        assert ("; secure" in cookie) is secure
+    assert TestClient(app, base_url="http://127.0.0.1").get(f"{link}x").status_code == 404
+
+
+@pytest.mark.parametrize("cookie", [None, "guess", review.rater_token(b"another-secret", RATER)])
+def test_without_a_link_the_page_asks_for_one(tmp_path: Path, cookie: str | None):
+    root = make_root(tmp_path)
+    c = TestClient(create_app(root, [RATER], SECRET), base_url="http://127.0.0.1")
+    if cookie:
+        c.cookies.set(review.COOKIE, cookie)
+    page = c.get("/")
+    assert page.status_code == 401
+    assert "Open the review link you were given" in page.text
+    assert 'name="verdict"' not in page.text
+    assert c.post("/verdict", data={"card": "x", "verdict": "agree", "token": "x"}).status_code == 401
+    assert c.post("/undo", data={"token": "x"}).status_code == 401
+    assert c.get("/progress").status_code == 401
+    assert curate.read(root / curate.REVIEWS)[2] == []
+
+
+def test_two_raters_on_one_page_each_judge_their_own_queue(tmp_path: Path):
+    root = make_root(tmp_path, extra=8)
+    app = create_app(root, [RATER, OTHER], SECRET)
+    pages = {rater: signed_in(app, rater) for rater in (RATER, OTHER)}
+    firsts = {rater: form(c.get("/").text) for rater, c in pages.items()}
+    assert firsts[RATER]["card"] != firsts[OTHER]["card"]  # their own order and card names
+    assert firsts[RATER]["token"] != firsts[OTHER]["token"]
+    for rater, c in pages.items():
+        c.post("/verdict", data=firsts[rater] | {"verdict": "agree"})
+    assert f"You: 1 of 10 · {RATER}" not in pages[RATER].get("/").text
+    assert re.search(rf"{OTHER}: 1 of 10 · You: 1 of 10|You: 1 of 10 · {OTHER}: 1 of 10", pages[RATER].get("/").text)
+    rows = curate.read(root / curate.REVIEWS)[2]
+    assert sorted(r["reviewer_id"] for r in rows) == sorted([RATER, OTHER])
+    assert [curate.key(r) for r in rows if r["reviewer_id"] == RATER] == [Session(root, RATER).order[0]]
+    other_token = firsts[OTHER]["token"]  # one rater's form token does not work on another's page
+    assert pages[RATER].post("/undo", data={"token": other_token}).status_code == 403
 
 
 def test_undo_shows_the_last_card_again_and_its_new_verdict_counts(tmp_path: Path):
@@ -390,7 +482,7 @@ def test_the_page_will_not_start_without_a_review_log(
         (root / curate.REVIEWS).unlink()
     else:
         (root / curate.REVIEWS).write_text(log)
-    monkeypatch.setenv("R9LAB_REVIEWER", RATER)
+    monkeypatch.setenv("R9LAB_RATERS", RATER)
     monkeypatch.chdir(root)
     monkeypatch.setattr("uvicorn.run", lambda *_, **__: pytest.fail("the server started"))
     assert main([]) == 2

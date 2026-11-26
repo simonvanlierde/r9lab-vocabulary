@@ -20,13 +20,24 @@ diff ref:
 curate:
     uv run python -m r9lab_vocabulary.curate build
 
-# Serve the tag-mapping review page on http://127.0.0.1:<port> for the rater in R9LAB_REVIEWER (an ORCID CURIE). Ctrl-C stops it and rebuilds the published file; just still reports the run as interrupted.
+# Serve the tag-mapping review page on http://127.0.0.1:<port> for the raters in R9LAB_RATERS (ORCID CURIEs) and print each one's link. Ctrl-C stops it and rebuilds the published file; just still reports the run as interrupted.
 review port="8740":
     #!/usr/bin/env bash
     set -u
     trap true INT  # let Ctrl-C stop the page, then still rebuild
     uv run --extra review python -m r9lab_vocabulary.review --port {{ port }}
     status=$?
+    uv run python -m r9lab_vocabulary.curate build || exit
+    exit "$status"
+
+# The review page in Docker (docker/review/compose.yaml), published on 127.0.0.1:8740 for a proxy to serve. Same variables as `review`, plus R9LAB_ALLOWED_HOSTS and R9LAB_PUBLISH. Ctrl-C stops it and rebuilds the published file.
+review-stack:
+    #!/usr/bin/env bash
+    set -u
+    trap true INT  # let Ctrl-C stop the stack, then still rebuild
+    R9LAB_UID="$(id -u)" R9LAB_GID="$(id -g)" docker compose -f docker/review/compose.yaml up --build
+    status=$?
+    docker compose -f docker/review/compose.yaml down
     uv run python -m r9lab_vocabulary.curate build || exit
     exit "$status"
 
