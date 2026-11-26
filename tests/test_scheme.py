@@ -38,7 +38,14 @@ def schemes() -> dict[str, scheme.Scheme]:
     return scheme.load(ROOT / "vocabulary")
 
 
+TEXT = {"definition": "d", "example": "e", "note": "n"}
+
+
 def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
+    """One scheme of `concepts`, each in use given placeholder text so a test checks only its own rule."""
+    concepts = {
+        cid: {**TEXT, **c} if isinstance(c, dict) and not c.get("deprecated") else c for cid, c in concepts.items()
+    }
     meta = {"title": "t", "id_letter": "t", **(meta or {})}
     return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 
@@ -188,9 +195,10 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "note": ["x"]}}, "note must be non-empty text"),
         ({"t01": {"label": "a", "example": []}}, "example must be non-empty text"),
         ({"t01": {"label": "a", "example": ["x", 3]}}, "example must be non-empty text"),
-        ({"t01": {"label": "a", "source": "Ashby 2017"}}, "source needs a definition"),
+        ({"t01": {"label": "a", "source": "Ashby 2017", "definition": None}}, "source needs a definition"),
         ({"t01": {"label": "a", "examples": ["x"]}}, "unknown field 'examples'"),
         ({"t01": {}}, "t/t01: no label"),
+        ({"t01": {"label": "a", "note": None}}, "t/t01: missing note"),
         ({"t01": {"label": "a", "related": ["t09"]}}, "related t09 does not exist"),
         ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t09"]}}, "replaced_by t09 does not exist"),
         ({"t01": {"label": "a", "mappings": {"close": ["t:t09"]}}}, "t:t09 does not exist"),
@@ -242,13 +250,6 @@ def test_text_fields_are_written_as_skos_notes():
     assert g.value(a, DCTERMS.source) == URIRef("https://www.wikidata.org/wiki/Q1")
     assert g.value(b, DCTERMS.source) == Literal("Ashby 2017, sec. 2.2")
     assert g.value(URIRef(schemes["t"].iri + "t03"), DCTERMS.source) == URIRef("http://example.org/c")
-
-
-def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Schemes):
-    concepts = {cid: c for s in schemes.values() for cid, c in s.concepts.items() if not c.get("deprecated")}
-    done = {cid for cid, c in concepts.items() if all(c.get(f) for f in ("definition", "example", "note"))}
-    missing = set(concepts) - done
-    assert not missing, f"no definition, example or note: {sorted(missing)}"
 
 
 def test_a_weee_category_link_points_into_annex_iii_of_the_directive():
@@ -384,7 +385,7 @@ def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
     json_path, md_path = scheme.write_labels(schemes, "test", tmp_path)
     doc = json.loads(json_path.read_text(encoding="utf-8"))
     assert doc["schemes"][0]["concepts"] == [
-        {"id": "t02", "iri": f"{schemes['t'].iri}t02", "label": "b", "path": ["b"], "definition": None, "pilot": []}
+        {"id": "t02", "iri": f"{schemes['t'].iri}t02", "label": "b", "path": ["b"], "definition": "d", "pilot": []}
     ]
     assert "t01" not in md_path.read_text(encoding="utf-8")
 

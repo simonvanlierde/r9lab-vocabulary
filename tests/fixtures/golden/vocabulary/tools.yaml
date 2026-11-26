@@ -10,10 +10,15 @@ concepts:
   t01:
     label: hand tool
     definition: A tool worked by hand.
+    example: [a hammer]
+    note: 'Not power tool: a hand tool has no motor.'
     mappings: {exact: ['wd:Q1'], related: ['unu1:0001']}
   t02:
     label: screwdriver
     notation: driver
+    definition: Hand tool that turns screws.
+    example: [a flat-blade screwdriver]
+    note: 'Not hand tool in general: it only turns screws.'
     broader: [t01]
     mappings: {close: ['parts:p01']}
   t03:

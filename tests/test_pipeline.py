@@ -90,7 +90,7 @@ def test_rdf_without_an_orcid_in_citation_cff_is_an_error(
     stub_sources: Callable[..., None],
     citation: str | None,
 ):
-    stub_sources(concepts="t01: {label: a}")
+    stub_sources(concepts="t01: {label: a, definition: d, example: e, note: n}")
     if citation is not None:
         (tmp_path / "CITATION.cff").write_text(citation)
     monkeypatch.setenv("SOURCE_DATE_EPOCH", "1767225600")
@@ -144,7 +144,7 @@ def test_rdf_reports_a_malformed_vocabulary_instead_of_crashing(
 def test_rdf_reports_a_missing_tag_mappings_file_as_a_rule_error(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], stub_sources: Callable[..., None]
 ):
-    stub_sources(concepts="t01: {label: a}")
+    stub_sources(concepts="t01: {label: a, definition: d, example: e, note: n}")
     (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").unlink()
     assert pipeline.main(["rdf", "--out", str(tmp_path / "dist")]) == 1
     assert capsys.readouterr().err == "error: mappings/r9lab-tags.sssom.tsv: missing\n"
@@ -230,7 +230,10 @@ def test_the_bafu_reader_refuses_a_brightway_archive_without_one_database():
 def test_rdf_reports_a_broken_pattern_instead_of_crashing(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], stub_sources: Callable[..., None]
 ):
-    stub_sources({"2026-v1": ["Brass, at plant"]}, concepts="t01: {label: a, names: {bafu: ['(']}}")
+    stub_sources(
+        {"2026-v1": ["Brass, at plant"]},
+        concepts="t01: {label: a, definition: d, example: e, note: n, names: {bafu: ['(']}}",
+    )
     assert pipeline.main(["rdf", "--out", str(tmp_path / "dist")]) == 1
     assert "t/t01: bafu pattern '(':" in capsys.readouterr().err
 
@@ -238,7 +241,10 @@ def test_rdf_reports_a_broken_pattern_instead_of_crashing(
 def test_names_reports_a_broken_pattern_instead_of_crashing(
     capsys: pytest.CaptureFixture[str], stub_sources: Callable[..., None]
 ):
-    stub_sources({"2026-v1": ["Brass, at plant"]}, concepts="t01: {label: a, names: {bafu: ['(']}}")
+    stub_sources(
+        {"2026-v1": ["Brass, at plant"]},
+        concepts="t01: {label: a, definition: d, example: e, note: n, names: {bafu: ['(']}}",
+    )
     assert pipeline.main(["names"]) == 1
     assert "t/t01: bafu pattern '(':" in capsys.readouterr().err
 
@@ -258,7 +264,7 @@ def test_the_ecospold1_head_stops_before_the_exchanges():
 
 
 THREE_NAMES = {"2025-v2": ["Brass, at plant"], "2026-v1": ["Brass, at plant", "Brass, at regional storage"]}
-BRASS = "t01: {label: a, names: {bafu: ['^brass']}}"
+BRASS = "t01: {label: a, definition: d, example: e, note: n, names: {bafu: ['^brass']}}"
 
 
 def test_names_lists_every_match_of_one_source(capsys: pytest.CaptureFixture[str], stub_sources: Callable[..., None]):

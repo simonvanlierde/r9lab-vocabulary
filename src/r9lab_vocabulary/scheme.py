@@ -86,6 +86,8 @@ TEXT_FIELDS = {
     "editorial_note": SKOS.editorialNote,
 }
 MANY_TEXTS = {"example"}
+# A concept in use carries all three, so a model prompt never gets a bare label.
+REQUIRED_TEXTS = ("definition", "example", "note")
 # Where the definition comes from: a URL, written as an IRI, or a citation.
 SOURCE = "source"
 # Every field a concept may carry; validate rejects any other, so a misspelt one is not lost.
@@ -228,6 +230,8 @@ def _validate_text(where: str, c: dict[str, Any]) -> list[str]:
     ]
     if SOURCE in c and not c.get("definition"):
         errors.append(f"{where}: {SOURCE} needs a definition to cite")
+    if not c.get("deprecated") and (missing := [f for f in REQUIRED_TEXTS if not c.get(f)]):
+        errors.append(f"{where}: missing {', '.join(missing)}")
     return errors
 
 

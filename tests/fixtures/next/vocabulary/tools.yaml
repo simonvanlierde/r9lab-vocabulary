@@ -7,9 +7,15 @@ scheme:
 concepts:
   t01:
     label: hand tool
+    definition: A tool worked by hand.
+    example: [a hammer]
+    note: 'Not power tool: a hand tool has no motor.'
     mappings: {close: ['wd:Q1'], related: ['unu1:0001']}
   t02:
     label: flat screwdriver
+    definition: Hand tool that turns screws.
+    example: [a flat-blade screwdriver]
+    note: 'Not hand tool in general: it only turns screws.'
     broader: [t01]
     mappings: {close: ['parts:p01']}
   t03:
@@ -18,4 +24,7 @@ concepts:
     replaced_by: [t02]
   t04:
     label: torque wrench
+    definition: Wrench that tightens a fastener to a set torque.
+    example: [a click torque wrench]
+    note: 'Not screwdriver: it turns nuts and bolts.'
     broader: [t01]
