@@ -3,13 +3,16 @@
 Run with `just review`. The page appends each verdict to `mappings/r9lab-tags/reviews.sssom.tsv`
 as it is given, under the ORCID in `R9LAB_REVIEWER`; `just review` rebuilds the published file when
 the page stops. `docs/review-protocol.md` holds the rules a rater follows.
+
+The page has no login: it assumes a host where only the rater has an account, since anyone on the
+machine who can reach 127.0.0.1 can load it and post verdicts under that ORCID.
 """
 
 from __future__ import annotations
 
 import asyncio
 import datetime as dt
-import random
+import hashlib
 import secrets
 import threading
 import time
@@ -62,30 +65,35 @@ class Session:
         self.concepts = {
             f"{slug}:{cid}": c for slug, s in scheme.load(root / "vocabulary").items() for cid, c in s.concepts.items()
         }
-        self.proposed = {curate.key(p) for p in self.predictions}
+        self.proposed = {curate.key(p): p for p in self.predictions}
         self.lock = threading.Lock()  # one verdict per card, even from a double click or two tabs
-        self.order = list(range(len(self.predictions)))
-        random.Random(reviewer).shuffle(self.order)  # noqa: S311 - an order, not a secret; the seed is the ORCID, so a rater sees the same order again
+        # Sorting on a hash of ORCID and key gives each rater their own order, the same after a
+        # restart, and a new proposal slots in without moving the others.
+        self.order = sorted(self.proposed, key=self.card_id)
+
+    def card_id(self, key: tuple[str, str, str]) -> str:
+        """The card's name in the form: says nothing about where the proposal sits in the file."""
+        return hashlib.sha256("\t".join((self.reviewer, *key)).encode()).hexdigest()
 
     def reviews(self) -> list[dict[str, str]]:
         """Every rater's verdicts, read from the log each time, so another rater's page shows up."""
         return curate.read(self.root / curate.REVIEWS)[2]
 
-    def queue(self) -> list[int]:
-        """Indexes into the proposals this rater has not judged yet, in their order."""
+    def queue(self) -> list[tuple[str, str, str]]:
+        """Keys of the proposals this rater has not judged yet, in their order."""
         done = {curate.key(r) for r in self.reviews() if r["reviewer_id"] == self.reviewer}
-        return [i for i in self.order if curate.key(self.predictions[i]) not in done]
+        return [k for k in self.order if k not in done]
 
     def card(self) -> dict[str, str | bool] | None:
         """The next proposal, blinded: no justification, tool, confidence or comment. Notes when it was shown."""
         queue = self.queue()
         if not queue:
             return None
-        row = self.predictions[queue[0]]
-        self.shown_at.setdefault(curate.key(row), time.monotonic())
+        row = self.proposed[queue[0]]
+        self.shown_at.setdefault(queue[0], time.monotonic())
         concept = self.concepts.get(row["object_id"], {})
         return {
-            "i": str(queue[0]),
+            "card": self.card_id(queue[0]),
             "tag": row["subject_label"],
             "relation": RELATION_WORDS.get(row["predicate_id"], row["predicate_id"]),
             "no_term": row["object_id"] == checks.NO_TERM,
@@ -103,21 +111,25 @@ class Session:
                 done.setdefault(r["reviewer_id"], set()).add(curate.key(r))
         return {rater: len(keys) for rater, keys in sorted(done.items())} | {"of": len(self.predictions)}
 
-    def record(self, i: int, verdict: str) -> None:
-        """Append the verdict on card `i`; 409 when `i` is not the card this rater is on."""
+    def record(self, card: str, verdict: str) -> None:
+        """Append the verdict on `card`; 409 when it is not the card this rater is on, 500 when the log refuses it."""
         with self.lock:
             queue = self.queue()
-            if not queue or queue[0] != i:
+            if not queue or self.card_id(queue[0]) != card:
                 raise HTTPException(409, "this card was already judged; reload the page")
-            row = self.predictions[i]
-            shown = self.shown_at.pop(curate.key(row), None)
-            curate.append_review(self.root, {
-                **{c: row[c] for c in (*curate.KEY, "mapping_justification")},
-                "reviewer_id": self.reviewer,
-                "reviewer_agreement": VERDICTS[verdict],
-                "review_seconds": f"{time.monotonic() - shown:.1f}" if shown is not None else "",
-                "review_date": dt.datetime.now(tz=dt.UTC).date().isoformat(),
-            })  # fmt: skip
+            row = self.proposed[queue[0]]
+            shown = self.shown_at.get(queue[0])
+            try:
+                curate.append_review(self.root, {
+                    **{c: row[c] for c in (*curate.KEY, "mapping_justification")},
+                    "reviewer_id": self.reviewer,
+                    "reviewer_agreement": VERDICTS[verdict],
+                    "review_seconds": f"{time.monotonic() - shown:.1f}" if shown is not None else "",
+                    "review_date": dt.datetime.now(tz=dt.UTC).date().isoformat(),
+                })  # fmt: skip
+            except ValueError as e:
+                raise HTTPException(500, str(e)) from e
+            self.shown_at.pop(queue[0], None)  # only now: a failed write keeps the time for the retry
 
 
 def same_origin(request: Request, session: Session, token: str) -> None:
@@ -172,7 +184,7 @@ def create_app(root: Path, reviewer: str) -> FastAPI:
     @app.post("/verdict")
     def verdict(
         request: Request,
-        i: Annotated[int, Form()],
+        card: Annotated[str, Form()],
         verdict: Annotated[str, Form()],
         token: Annotated[str, Form()],
         hx_request: Annotated[str | None, Header()] = None,
@@ -180,7 +192,7 @@ def create_app(root: Path, reviewer: str) -> FastAPI:
         same_origin(request, session, token)
         if verdict not in VERDICTS:
             raise HTTPException(422, f"verdict must be one of {', '.join(VERDICTS)}")
-        session.record(i, verdict)
+        session.record(card, verdict)
         if not hx_request:  # a plain form post, without JavaScript
             return RedirectResponse("/", status_code=303)
         return TEMPLATES.TemplateResponse(request, "card.jinja", {"s": session, "card": session.card()})

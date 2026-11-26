@@ -22,8 +22,9 @@ they misspell.
 ## Blinding and order
 
 - The card hides what proposed the link, the proposer's justification, confidence and comment.
-- Each rater gets every proposal once, in an order shuffled with their ORCID as the seed, so two
-  raters see different orders and one rater sees the same order after a restart.
+- Each rater gets every proposal once, in an order set by their ORCID, so two raters see different
+  orders and one rater sees the same order after a restart. A new proposal slots in without
+  moving the others.
 - Raters work alone. The page shows how many cards each rater has judged, never their verdicts.
 - Do not look a card up elsewhere before the verdict; the time a verdict takes is part of the
   record.

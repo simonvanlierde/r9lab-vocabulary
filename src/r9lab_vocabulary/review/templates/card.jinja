@@ -9,7 +9,7 @@
   {% if card.definition %}<p class="definition">{{ card.definition }}</p>{% endif %}
   {% if card.note %}<p class="note">{{ card.note }}</p>{% endif %}
   {% endif %}
-  <input type="hidden" name="i" value="{{ card.i }}">
+  <input type="hidden" name="card" value="{{ card.card }}">
   <input type="hidden" name="token" value="{{ s.csrf }}">
   <div class="verdicts">
     {#- The ids let htmx put focus back on the same button in the next card. #}

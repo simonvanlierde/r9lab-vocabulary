@@ -205,7 +205,10 @@ def append_review(root: Path, row: dict[str, str]) -> None:
     if (root / REVIEWS).stat().st_size == 0:
         msg = f"{REVIEWS} is empty; restore its header from git before reviewing"
         raise ValueError(msg)
+    ends_line = (root / REVIEWS).read_bytes().endswith(b"\n")  # a row added by hand may lack its newline
     with (root / REVIEWS).open("a", encoding="utf-8", newline="") as f:
+        if not ends_line:
+            f.write("\n")
         csv.writer(f, delimiter="\t", lineterminator="\n").writerow([row.get(c, "") for c in REVIEW_COLUMNS])
         f.flush()
         os.fsync(f.fileno())

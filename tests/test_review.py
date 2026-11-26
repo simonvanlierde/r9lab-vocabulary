@@ -60,7 +60,16 @@ def client(root: Path, rater: str = RATER, *, follow_redirects: bool = True) -> 
 
 
 def form(html: str) -> dict[str, str]:
-    return dict(re.findall(r'name="(i|token)" value="([^"]+)"', html))
+    return dict(re.findall(r'name="(card|token)" value="([^"]+)"', html))
+
+
+def verdict_rows(root: Path, rows: list[tuple[str, tuple[str, ...]]]) -> None:
+    """Write a log holding an "agree" from each (rater, proposal) pair."""
+    (root / curate.REVIEWS).write_text(tsv(curate.REVIEW_COLUMNS, [
+        {"subject_id": f"r9lab-tag:{tag}", "predicate_id": p, "object_id": o, "reviewer_id": rater,
+         "reviewer_agreement": "1", "review_date": "2026-11-26", "mapping_justification": "semapv:AgentBasedMatching"}
+        for rater, (tag, p, o, *_) in rows
+    ]))  # fmt: skip
 
 
 def test_no_card_shows_what_proposed_it(tmp_path: Path):
@@ -73,35 +82,104 @@ def test_no_card_shows_what_proposed_it(tmp_path: Path):
         assert hidden not in shown
     assert "An alloy of iron and carbon." in shown
     assert "Not cast iron." in shown
+    assert "is a kind of" in shown  # the relation in plain words
+    assert "skos:" not in shown
 
 
-def test_a_tag_is_shown_as_text_not_markup(tmp_path: Path):
+def test_a_proposal_of_no_concept_says_so(tmp_path: Path):
+    root = make_root(tmp_path)
+    predictions = root / curate.PREDICTIONS
+    predictions.write_text(predictions.read_text().replace("materials:m0002\tcopper", "sssom:NoTermFound\t"))
+    verdict_rows(root, [(RATER, PROPOSALS[0])])
+    assert "has no concept in the vocabulary" in client(root).get("/").text
+
+
+def test_a_tag_and_a_definition_are_shown_as_text_not_markup(tmp_path: Path):
     root = make_root(tmp_path)
     predictions = root / curate.PREDICTIONS
     predictions.write_text(predictions.read_text().replace("\tstainless\t", "\t<i>stainless</i>\t"))
-    page = "".join(client(root, r).get("/").text for r in (RATER, OTHER))  # one of them gets the tag first
+    vocabulary = root / "vocabulary" / "materials.yaml"
+    vocabulary.write_text(vocabulary.read_text().replace("An alloy", "<b>An</b> alloy"))
+    verdict_rows(root, [(RATER, PROPOSALS[1])])  # leaves the steel card
+    page = client(root).get("/").text
     assert "&lt;i&gt;stainless&lt;/i&gt;" in page
+    assert "&lt;b&gt;An&lt;/b&gt;" in page
     assert "<i>stainless" not in page
+    assert "<b>" not in page
 
 
 def test_each_rater_has_their_own_order_and_keeps_it_after_a_restart(tmp_path: Path):
     root = make_root(tmp_path, extra=18)
-    assert Session(root, RATER).order == Session(root, RATER).order
-    assert Session(root, RATER).order != Session(root, OTHER).order
-    assert sorted(Session(root, RATER).order) == list(range(20))
+    assert Session(root, RATER).queue() == Session(root, RATER).queue()
+    assert Session(root, RATER).queue() != Session(root, OTHER).queue()
+    assert len(set(Session(root, RATER).queue())) == 20
 
 
-def test_a_verdict_is_appended_with_the_rater_agreement_date_and_seconds(tmp_path: Path):
+def test_a_new_proposal_keeps_the_order_of_the_others(tmp_path: Path):
+    (tmp_path / "before").mkdir()
+    (tmp_path / "after").mkdir()
+    before = Session(make_root(tmp_path / "before", extra=18), RATER).queue()
+    after = Session(make_root(tmp_path / "after", extra=19), RATER).queue()
+    assert [k for k in after if k in before] == before
+
+
+def test_the_card_does_not_give_away_its_place_in_the_proposals(tmp_path: Path):
+    card = form(client(make_root(tmp_path)).get("/").text)["card"]
+    assert card not in {"0", "1"}
+
+
+def test_a_card_another_rater_judged_still_comes_up(tmp_path: Path):
+    root = make_root(tmp_path)
+    verdict_rows(root, [(OTHER, PROPOSALS[0]), (OTHER, PROPOSALS[1]), (RATER, PROPOSALS[1])])
+    [left] = Session(root, RATER).queue()
+    assert left == (f"r9lab-tag:{PROPOSALS[0][0]}", *PROPOSALS[0][1:3])
+
+
+@pytest.mark.parametrize(("verdict", "agreement"), [("agree", "1"), ("unsure", "0"), ("disagree", "-1")])
+def test_a_verdict_is_appended_with_the_rater_agreement_date_and_seconds(tmp_path: Path, verdict: str, agreement: str):
     root = make_root(tmp_path)
     c = client(root)
     first = form(c.get("/").text)
-    response = c.post("/verdict", data=first | {"verdict": "disagree"}, headers={"HX-Request": "true"})
+    response = c.post("/verdict", data=first | {"verdict": verdict}, headers={"HX-Request": "true"})
     assert response.status_code == 200
-    assert form(response.text)["i"] != first["i"]  # the next card came back
+    assert form(response.text)["card"] != first["card"]  # the next card came back
     [row] = curate.read(root / curate.REVIEWS)[2]
-    assert (row["reviewer_id"], row["reviewer_agreement"]) == (RATER, "-1")
+    assert (row["reviewer_id"], row["reviewer_agreement"]) == (RATER, agreement)
+    assert curate.key(row) in {(f"r9lab-tag:{tag}", p, o) for tag, p, o, *_ in PROPOSALS}
+    assert row["mapping_justification"] == "semapv:AgentBasedMatching"
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", row["review_date"])
+    assert re.fullmatch(r"\d+\.\d", row["review_seconds"])
     assert curate.check_reviews([row]) == []
+
+
+def test_a_log_without_a_final_newline_takes_the_next_verdict_on_its_own_line(tmp_path: Path):
+    root = make_root(tmp_path)
+    verdict_rows(root, [(OTHER, PROPOSALS[0])])
+    log = root / curate.REVIEWS
+    log.write_text(log.read_text().rstrip("\n"))  # a row added by hand, as the protocol allows
+    c = client(root)
+    c.post("/verdict", data=form(c.get("/").text) | {"verdict": "agree"})
+    assert len(curate.read(log)[2]) == 2
+    assert curate.read_log(root)[3] == []
+
+
+def test_a_failed_write_keeps_the_time_for_the_retry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    now = [10.0]
+    monkeypatch.setattr(review, "time", SimpleNamespace(monotonic=lambda: now[0]))
+    root = make_root(tmp_path)
+    c = client(root)
+    card = form(c.get("/").text) | {"verdict": "agree"}
+    log = (root / curate.REVIEWS).read_text()
+    (root / curate.REVIEWS).write_text("")
+    failed = c.post("/verdict", data=card, headers={"HX-Request": "true"})
+    assert failed.status_code == 500
+    assert 'role="alert"' in failed.text
+    assert "is empty" in failed.text
+    (root / curate.REVIEWS).write_text(log)
+    now[0] = 14.0
+    c.post("/verdict", data=card, headers={"HX-Request": "true"})
+    [row] = curate.read(root / curate.REVIEWS)[2]
+    assert row["review_seconds"] == "4.0"
 
 
 def test_the_time_runs_from_the_first_showing_not_a_reload(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
@@ -111,7 +189,7 @@ def test_the_time_runs_from_the_first_showing_not_a_reload(tmp_path: Path, monke
     card = session.card()
     assert card
     session.card()
-    session.record(int(str(card["i"])), "agree")
+    session.record(str(card["card"]), "agree")
     [row] = curate.read(tmp_path / curate.REVIEWS)[2]
     assert row["review_seconds"] == "7.0"
 
@@ -131,7 +209,7 @@ def test_two_verdicts_on_one_card_at_once_record_one(tmp_path: Path, monkeypatch
 
     def judge(verdict: str) -> None:
         try:
-            session.record(int(str(card["i"])), verdict)
+            session.record(str(card["card"]), verdict)
             outcomes.append(200)
         except HTTPException as e:
             outcomes.append(e.status_code)
@@ -147,14 +225,19 @@ def test_two_verdicts_on_one_card_at_once_record_one(tmp_path: Path, monkeypatch
 
 def test_progress_counts_each_rater_and_skips_withdrawn_proposals(tmp_path: Path):
     root = make_root(tmp_path)
-    rows = [
-        {"subject_id": f"r9lab-tag:{tag}", "predicate_id": p, "object_id": o, "reviewer_id": rater,
-         "reviewer_agreement": "1", "review_date": "2026-11-26", "mapping_justification": "semapv:AgentBasedMatching"}
-        for rater, (tag, p, o, *_) in [(RATER, PROPOSALS[0]), (OTHER, PROPOSALS[0]), (OTHER, PROPOSALS[1])]
-    ]  # fmt: skip
-    withdrawn = rows[0] | {"subject_id": "r9lab-tag:gone"}
-    (root / curate.REVIEWS).write_text(tsv(curate.REVIEW_COLUMNS, [*rows, withdrawn]))
+    withdrawn = ("gone", *PROPOSALS[0][1:])
+    verdict_rows(root, [(RATER, PROPOSALS[0]), (OTHER, PROPOSALS[0]), (OTHER, PROPOSALS[1]), (RATER, withdrawn)])
     assert Session(root, RATER).progress() == {OTHER: 2, RATER: 1, "of": 2}
+
+
+def test_the_progress_stream_sends_the_counts_as_one_event(tmp_path: Path):
+    root = make_root(tmp_path)
+    verdict_rows(root, [(f"<b>{OTHER}</b>", PROPOSALS[0])])
+    with client(root).stream("GET", "/progress") as response:
+        assert response.headers["content-type"].startswith("text/event-stream")
+        first = next(response.iter_lines())
+    assert first.startswith('data: <p id="progress">')
+    assert f"&lt;b&gt;{OTHER}&lt;/b&gt;: 1 of 2" in first
 
 
 def test_a_judged_card_does_not_come_back_and_the_queue_ends(tmp_path: Path):
@@ -182,10 +265,21 @@ def test_forged_and_stale_verdicts_are_refused(tmp_path: Path):
     assert '<p id="card" role="alert">this card was already judged' in stale.text  # takes the card's place
 
 
-def test_the_page_cannot_be_framed(tmp_path: Path):
-    headers = client(make_root(tmp_path)).get("/").headers
-    assert headers["x-frame-options"] == "DENY"
-    assert headers["content-security-policy"] == "frame-ancestors 'none'"
+def test_every_response_carries_the_security_headers(tmp_path: Path):
+    c = client(make_root(tmp_path))
+    refused = c.post("/verdict", data=form(c.get("/").text) | {"verdict": "agree", "token": "guess"})
+    assert refused.status_code == 403
+    for response in (c.get("/"), refused):
+        for name, value in review.SECURITY_HEADERS:
+            assert response.headers[name.decode()] == value.decode()
+
+
+def test_every_file_the_page_loads_is_served(tmp_path: Path):
+    c = client(make_root(tmp_path))
+    paths = re.findall(r'(?:src|href)="(/static/[^"]+)"', c.get("/").text)
+    assert len(paths) == 4
+    for path in paths:
+        assert c.get(path).status_code == 200
 
 
 def test_an_empty_log_is_refused_rather_than_given_a_headerless_row(tmp_path: Path):
@@ -201,11 +295,14 @@ def test_without_javascript_a_verdict_redirects_back_to_the_page(tmp_path: Path)
     assert (response.status_code, response.headers["location"]) == (303, "/")
 
 
-@pytest.mark.parametrize("reviewer", ["simon", "", f"{RATER}x", f"x{RATER}"])
+@pytest.mark.parametrize("reviewer", [None, "simon", "", f"{RATER}x", f"x{RATER}"])
 def test_the_page_will_not_start_without_an_orcid(
-    reviewer: str, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    reviewer: str | None, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ):
-    monkeypatch.setenv("R9LAB_REVIEWER", reviewer)
+    if reviewer is None:
+        monkeypatch.delenv("R9LAB_REVIEWER", raising=False)
+    else:
+        monkeypatch.setenv("R9LAB_REVIEWER", reviewer)
     monkeypatch.setattr("uvicorn.run", lambda *_, **__: pytest.fail("the server started"))
     assert main([]) == 2
     assert "R9LAB_REVIEWER" in capsys.readouterr().err
@@ -217,4 +314,5 @@ def test_the_page_serves_on_this_machine_only(monkeypatch: pytest.MonkeyPatch, t
     monkeypatch.chdir(make_root(tmp_path))
     monkeypatch.setattr("uvicorn.run", lambda _app, **kwargs: calls.append(kwargs))
     assert main(["--port", "9999"]) == 0
-    assert calls == [{"host": "127.0.0.1", "port": 9999, "timeout_graceful_shutdown": 2}]
+    assert main([]) == 0
+    assert calls == [{"host": "127.0.0.1", "port": port, "timeout_graceful_shutdown": 2} for port in (9999, 8740)]
