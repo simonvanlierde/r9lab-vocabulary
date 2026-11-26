@@ -130,8 +130,8 @@ concepts:
     label: transformer
     definition: Electrical device that transfers energy from one circuit to another by electromagnetic induction, built from windings on a core.
     source: https://www.wikidata.org/wiki/Q11658
-    example: [a mains transformer from an old power supply, a ferrite transformer from a switched-mode charger, a microwave-oven transformer, a doorbell transformer]
-    note: 'Not inductor, which has a single circuit. Not electronic component: small board-mounted transformers also go here. Wire unwound from a transformer goes by its metal.'
+    example: [a mains transformer from an old power supply, a microwave-oven transformer, a doorbell transformer]
+    note: 'Not inductor, which has a single circuit. Not electronic component, which takes a small transformer still mounted on a board. Wire unwound from a transformer goes by its metal.'
     mappings: {exact: ['wd:Q11658'], close: ['cpc:46121']}
   c0014:
     label: display

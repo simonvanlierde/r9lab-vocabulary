@@ -96,9 +96,9 @@ concepts:
   s11:
     label: electric motor or transformer
     notation: motor_transformer
-    definition: A copper-wound electromechanical part, such as an electric motor, a mains transformer or a large inductor, which scrap recyclers trade as a grade of its own.
+    definition: A copper-wound electromechanical part, such as an electric motor or a mains transformer, which scrap recyclers trade as a grade of its own.
     source: https://www.isrispecs.org/wp-content/uploads/2026/09/2026-July-ReMA_ISRI_Specifications.pdf
     example: [a washing-machine motor, a fan motor, a mains transformer from an old amplifier, a microwave-oven transformer]
     note: 'Not electronics: a small choke or transformer on a circuit board stays electronics. Not magnet: a loose magnet taken out of a motor is a magnet. Not non-ferrous: copper wire unwound from a motor or transformer is non-ferrous.'
-    editorial_note: Follows the electric motor grades of the ReMA (ISRI) Scrap Specifications, "Elmo" and "Small Elmo", which recyclers price apart from copper and steel scrap. Transformers and large inductors join them as the same build of copper windings on a steel core.
+    editorial_note: Follows the electric motor grades of the ReMA (ISRI) Scrap Specifications, "Elmo" and "Small Elmo", which recyclers price apart from copper and steel scrap. Transformers join them as the same build of copper windings on a steel core.
     mappings: {narrow: ['components:c0022', 'components:c0013']}

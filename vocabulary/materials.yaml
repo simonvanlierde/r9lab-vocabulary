@@ -206,7 +206,7 @@ concepts:
     label: palladium
     definition: Palladium and alloys based on palladium, as in contact plating, capacitor electrodes and catalysts.
     source: https://www.wikidata.org/wiki/Q1089
-    example: [palladium-nickel plating on a connector contact, a palladium bar, palladium in a catalytic converter coating]
+    example: [a palladium bar, palladium in a catalytic converter coating]
     note: 'Not silver: a silver-palladium alloy that is mostly silver is silver. Plated parts go by their base metal. Palladium alloys are included.'
     editorial_note: Wikidata's palladium is the element only. Plating listed on its own in a material declaration goes here.
     broader: [m0016]
@@ -494,7 +494,7 @@ concepts:
     label: composite
     definition: Material in which a matrix holds fibres or particles of another material, as in fibre-reinforced plastics and laminates.
     source: https://www.wikidata.org/wiki/Q181790
-    example: [glass-fibre reinforced polymer, carbon-fibre reinforced polymer, FR-2 paper-phenolic board, cement-bonded particle board]
+    example: [glass-fibre reinforced polymer, carbon-fibre reinforced polymer, FR-2 paper-phenolic board]
     note: 'Not textile: fibres without a matrix are textile, except glass fibres, which are glass fibre. Paper or foil laminated with plastic goes by its main material.'
     broader: [m0049]
     mappings: {exact: ['pmdco:PMD_0000577', 'wd:Q181790']}
