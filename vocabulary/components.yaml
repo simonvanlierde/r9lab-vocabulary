@@ -56,7 +56,7 @@ concepts:
       bafu: ['^printed wiring board, (surface mounted|through-hole mounted|mixed mounted)', 'mainboard', '^printed wiring board, power supply unit']
   c0007:
     label: electronic component
-    definition: Discrete electronic part, such as a chip, capacitor, resistor or LED, mounted on a board or loose.
+    definition: Discrete electronic part, such as a chip, capacitor, resistor or LED, recorded loose, not soldered to a board.
     source: https://www.wikidata.org/wiki/Q11653
     example: [an integrated circuit, an electrolytic capacitor, a resistor, a quartz crystal]
     note: 'Not populated printed circuit board: a board recorded whole, parts and all, is one item. Not transformer or electric motor, which are concepts of their own.'
@@ -118,7 +118,7 @@ concepts:
       bafu: ['^(led|oled) (module|screen)']
   c0017:
     label: cable
-    note: 'Not a bare conductor: an uninsulated copper strip or braid goes by its metal, and so does enamelled winding wire wound into a coil, motor or transformer. Not a flexible printed circuit, which is a printed circuit board. Wikidata''s cable does not ask for insulation; this scheme does.'
+    note: 'Not a bare conductor: an uninsulated copper strip or braid goes by its metal. So does enamelled winding wire in a coil, motor or transformer. Not a flexible printed circuit, which is a printed circuit board. Wikidata''s cable does not ask for insulation; this scheme does.'
     definition: 'Electric cable or wire: one or more insulated conductors, with or without plugs.'
     source: https://www.wikidata.org/wiki/Q188447
     example: [a power cord, a USB cable, an internal wire harness, a ribbon cable]
@@ -130,7 +130,8 @@ concepts:
     example: [a loudspeaker magnet, a hard-drive voice-coil magnet, an electromagnet from a door lock, a magnetic catch]
     definition: Material or object that produces a magnetic field, permanent or electromagnetic.
     source: https://www.wikidata.org/wiki/Q11421
-    note: 'Not ferrous metal: a steel part a magnet sticks to is not a magnet. Not electric motor, which holds magnets but is a concept of its own. The pilot''s magnet class means permanent magnet.'
+    note: 'Not ferrous metal: a steel part a magnet sticks to is not a magnet. Not electric motor, which holds magnets but is a concept of its own.'
+    editorial_note: Pilot class s09 (magnet) maps to permanent magnet (c0019), not here.
     mappings: {exact: ['wd:Q11421'], broad: ['cpc:4693']}
   c0019:
     label: permanent magnet

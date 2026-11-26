@@ -17,7 +17,7 @@ concepts:
     notation: ferrous
     definition: A component made mainly, by mass, of iron or an iron-based alloy, such as steel or cast iron.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017
-    example: [a steel chassis, a screw, a hard-drive cover plate, a transformer core]
+    example: [a steel chassis, a screw, a steel mounting bracket, a transformer core]
     note: 'Not non-ferrous: stainless and plated steel are ferrous even when they look bright. Alloys based on chromium, manganese, cobalt or nickel are non-ferrous.'
     mappings: {exact: ['materials:m0002']}
   s02:
@@ -34,7 +34,7 @@ concepts:
     definition: A component made mainly, by mass, of a rigid or flexible plastic, thermoplastic or thermoset.
     source: https://www.wikidata.org/wiki/Q11474
     example: [an ABS housing, a polycarbonate cover, a nylon gear, a foam insert]
-    note: 'Not rubber: a soft part that stretches and springs back is rubber. Not cable, even though a cable''s sheath is plastic.'
+    note: 'Not rubber: a soft part that stretches and springs back is rubber. Not cable, even though a cable''s sheath is plastic. A glass-filled grade such as PA66-GF30 is plastic.'
     mappings: {close: ['materials:m0020']}
   s04:
     label: electronics
@@ -50,7 +50,7 @@ concepts:
     definition: One or more electrochemical cells fitted with what they need for use, such as a case, terminals and protective devices.
     source: IEC 60050-482:2004, 482-01-04
     example: [a phone's lithium-ion pouch battery, a laptop battery pack, an AA cell, a coin cell]
-    note: 'Not electronics: a pack''s protection board stays with the battery. A single loose cell is a battery too.'
+    note: 'Not electronics: a pack''s protection board stays with the battery. A single AA or coin cell is a battery too.'
     mappings: {exact: ['components:c0001']}
   s06:
     label: display or glass
@@ -63,14 +63,14 @@ concepts:
   s07:
     label: rubber
     notation: rubber
-    definition: 'A component made mainly of an elastomer, a soft material that stretches and springs back: natural or synthetic rubber, silicone or TPE.'
+    definition: 'A component made mainly of an elastomer, a soft material that stretches and springs back: natural or synthetic rubber, silicone or thermoplastic elastomer.'
     source: https://www.wikidata.org/wiki/Q252266
     example: [a rubber foot, a gasket or seal, a keypad membrane, a drive belt]
     note: 'Not plastic: a hard part that does not spring back is plastic. Not cable: a rubber-sheathed cable is a cable.'
     mappings: {close: ['materials:m0038']}
   s08:
     label: cable
-    note: 'Not electronics: a flexible printed circuit is a printed board. Not non-ferrous: a bare copper strip has no insulation, and enamelled winding wire wound into a coil, motor or transformer goes by its metal.'
+    note: 'Not electronics: a flexible printed circuit is a printed circuit board. Not non-ferrous: a bare copper strip is non-ferrous metal. So is enamelled winding wire in a coil, motor or transformer.'
     notation: cable
     definition: 'An electric cable or wire: one or more insulated conductors, with or without plugs.'
     source: https://www.wikidata.org/wiki/Q188447
@@ -79,15 +79,15 @@ concepts:
   s09:
     label: magnet
     notation: magnet
-    definition: 'A permanent magnet: material that keeps its own magnetic field, such as a ferrite or NdFeB magnet.'
+    definition: 'A permanent magnet: material that keeps its own magnetic field without an electric current, such as a ferrite or neodymium (NdFeB) magnet.'
     source: https://www.wikidata.org/wiki/Q11421
     example: [a loudspeaker magnet, a hard-drive voice-coil magnet, a motor rotor magnet, a magnetic catch]
-    note: 'Not ferrous: a steel part a magnet sticks to is ferrous. A motor or an electromagnet is not a magnet; it takes its main material''s class.'
+    note: 'Not ferrous: a steel part a magnet sticks to is ferrous. A motor or an electromagnet is not in this class. It takes its main material''s class.'
     mappings: {exact: ['components:c0019']}
   s10:
     label: other
     notation: other
     definition: A component whose main material fits none of the other nine classes, such as paper, cardboard, wood, fabric or ceramic.
     example: [a cardboard insert, a wooden case, a fabric speaker grille, a ceramic insulator]
-    note: 'Only when no other class fits: a paper or fabric part that is mostly plastic by mass is plastic.'
+    note: 'Only when no other class fits: a paper or fabric part that is mostly plastic by mass is plastic, and woven glass fabric is display or glass.'
     mappings: {narrow: ['materials:m0055', 'materials:m0056', 'materials:m0057']}

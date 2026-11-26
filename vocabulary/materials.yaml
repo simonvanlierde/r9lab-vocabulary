@@ -150,7 +150,7 @@ concepts:
     definition: 'Plastics: thermoplastic and thermosetting polymers, Ashby''s polymer family.'
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [ABS, polycarbonate, polypropylene, epoxy resin]
-    note: 'Not elastomer: rubbers are a family of their own. Wikidata''s polymer is wider and also covers rubbers and biopolymers, hence the close match.'
+    note: 'Not elastomer: rubbers are a family of their own. Wikidata''s polymer also covers rubbers and biopolymers.'
     mappings: {close: ['pmdco:PMD_0000888', 'wd:Q81163', 'cpc:347']}
   m0021:
     label: thermoplastic
@@ -261,7 +261,7 @@ concepts:
     definition: Rubbery material of long-chain molecules that recovers its shape after large strain.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [natural rubber, silicone rubber, EPDM, a thermoplastic elastomer]
-    note: 'Not polymer: a hard plastic that does not spring back is a polymer. Wikidata calls elastomers plastics; Ashby keeps them a separate family, and so does this scheme.'
+    note: 'Not polymer: a hard plastic that does not spring back is a polymer. Wikidata files elastomers under plastics; here they are a family of their own, as in Ashby.'
     mappings: {exact: ['pmdco:PMD_0050030', 'wd:Q252266']}
   m0039:
     label: natural rubber
@@ -347,7 +347,7 @@ concepts:
     mappings: {exact: ['wd:Q2451477']}
   m0055:
     label: wood
-    note: 'Not paper and board, though both are wood fibre: a felted sheet such as cardboard is paper and board, while fibreboard and particle board are wood. Cement-bonded particle board is a wood-cement hybrid, not wood.'
+    note: 'Not paper and board: cardboard is paper and board, but fibreboard and particle board are wood. Not composite: cement-bonded particle board is a composite.'
     definition: Fibrous material from trees, solid or as engineered board.
     source: https://www.wikidata.org/wiki/Q287
     example: [solid wood, plywood, MDF, particle board]
