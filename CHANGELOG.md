@@ -17,6 +17,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `mappings/r9lab-tags.sssom.tsv` maps the R9lab material and keyword tags, typos included, to concepts. It is built from a [review log](docs/decisions/0005-mapping-review-log.md) of machine proposals and raters' verdicts, by `just curate`.
 - `just review` serves a page on this machine for rating the tag mappings one blind card at a time, following the [review protocol](docs/review-protocol.md).
 - `just rdf` and `just check` refuse a broken vocabulary before anything is written: an unknown link, a cycle, a duplicate label or notation, a code missing from the pinned source files, a mapping to a deprecated concept, or a concept in use without its texts.
+- `just pyst-round-trip` loads the built graph into a throwaway [PyST](https://github.com/cauldron/py-semantic-taxonomy) in Docker and fails on any scheme or concept statement that does not come back.
 - `just names` prints what each BAFU pattern matches, `just wikidata` lists each Wikidata link beside the item's current label, and `just diff <tag>` lists what changed since a release and fails when a concept id was deleted.
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD

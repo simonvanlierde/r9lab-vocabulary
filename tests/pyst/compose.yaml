@@ -1,0 +1,40 @@
+# A throwaway PyST (py-semantic-taxonomy) with its Postgres, for `just pyst-round-trip`.
+# PyST is third-party code, so it runs here and never on the host. Nothing is mounted and
+# the database lives in the container, so `docker compose down` leaves nothing behind.
+# Search (Typesense) is left out: the round trip reads the concept API, not search.
+name: tmp-pyst
+
+services:
+  db:
+    container_name: tmp-pyst-db
+    image: postgres:17-alpine@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73
+    environment:
+      POSTGRES_USER: pyst
+      POSTGRES_PASSWORD: pyst
+      POSTGRES_DB: PyST
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "pyst", "-d", "PyST"]
+      interval: 1s
+      retries: 30
+
+  pyst:
+    container_name: tmp-pyst-app
+    build:
+      # PyST 0.4.4, pinned by commit; its dependencies are resolved as of that date.
+      dockerfile_inline: |
+        FROM ghcr.io/astral-sh/uv:0.9.5-python3.12-bookworm-slim@sha256:f4a1d5fb780441a485a8e3f88b30344ab858ed8acde3cc35f1ef59516b253ec8
+        RUN uv pip install --system --exclude-newer 2026-05-18 \
+            https://github.com/cauldron/py-semantic-taxonomy/archive/57ac3fe616e8831d8d252f377fd6ffbfa62635f6.tar.gz
+        USER nobody
+        CMD ["uvicorn", "--factory", "py_semantic_taxonomy.app:create_app", "--host", "0.0.0.0", "--port", "8000"]
+    image: tmp-pyst:57ac3fe
+    environment:
+      PyST_db_host: db
+      PyST_db_user: pyst
+      PyST_db_pass: pyst
+      PyST_auth_token: round-trip
+    ports:
+      - "127.0.0.1:${PYST_PORT:-8741}:8000"
+    depends_on:
+      db:
+        condition: service_healthy

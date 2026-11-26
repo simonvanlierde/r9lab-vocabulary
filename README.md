@@ -90,6 +90,9 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
 `dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes:
 
 - `dist/r9lab-vocabulary.ttl` and `dist/r9lab-vocabulary.jsonld`: the SKOS graph.
+  `just pyst-round-trip` loads it into a throwaway [PyST](https://github.com/cauldron/py-semantic-taxonomy)
+  in Docker, reads every scheme and concept back and fails on a statement lost or added.
+  `tests/pyst/round_trip.py` says how the graph is reshaped for PyST's API.
 - `dist/name-matches.csv`: each name pattern with its match count per version.
 - `dist/r9lab.shacl.ttl`: the vocabulary's own SHACL shapes. Check a copy of the graph with
   `pyshacl -s r9lab.shacl.ttl r9lab-vocabulary.ttl`.
