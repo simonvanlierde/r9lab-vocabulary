@@ -1,5 +1,6 @@
 """The vocabulary's own rules, on the real files and on small broken copies."""
 
+import csv
 import json
 from pathlib import Path
 
@@ -182,8 +183,8 @@ ORCID = "https://orcid.org/0009-0006-6953-909X"
 def read_sssom(path: Path) -> tuple[dict, list[dict[str, str]]]:
     lines = path.read_text(encoding="utf-8").splitlines()
     header = [line[1:] for line in lines if line.startswith("#")]
-    rows = [line.split("\t") for line in lines if not line.startswith("#")]
-    return yaml.safe_load("\n".join(header)), [dict(zip(rows[0], r, strict=True)) for r in rows[1:]]
+    rows = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
+    return yaml.safe_load("\n".join(header)), list(rows)
 
 
 def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tmp_path: Path):
@@ -249,3 +250,47 @@ def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
         {"id": "t02", "iri": f"{schemes['t'].iri}t02", "label": "b", "path": ["b"], "definition": None, "pilot": []}
     ]
     assert "t01" not in md_path.read_text(encoding="utf-8")
+
+
+def test_a_close_pilot_mapping_marks_its_target_but_not_the_targets_descendants(schemes: Schemes):
+    concepts = {c["id"]: c for s in scheme.labels(schemes) for c in s["concepts"]}
+    assert "non_ferrous" in concepts["m0006"]["pilot"]
+    assert "non_ferrous" not in concepts["m0017"]["pilot"]
+    assert "non_ferrous" not in concepts["m0012"]["pilot"]
+
+
+def pilot_fixture(materials: dict, pilot_mappings: dict) -> Schemes:
+    return {
+        "m": scheme.Scheme("m", {"title": "m", "id_letter": "m"}, materials),
+        "p": scheme.Scheme(
+            "p",
+            {"title": "p", "id_letter": "p", "collection": "p"},
+            {"p01": {"label": "x", "notation": "x", "mappings": pilot_mappings}},
+        ),
+    }
+
+
+def test_broad_and_related_pilot_mappings_give_no_pilot_key():
+    schemes = pilot_fixture({"m01": {"label": "a"}}, {"broad": ["m:m01"], "related": ["m:m01"]})
+    assert scheme.labels(schemes)[0]["concepts"][0]["pilot"] == []
+
+
+def test_pilot_keys_come_from_every_broader_parent():
+    schemes = pilot_fixture(
+        {"m01": {"label": "a"}, "m02": {"label": "b"}, "m03": {"label": "c", "broader": ["m01", "m02"]}},
+        {"exact": ["m:m01"], "narrow": ["m:m02"]},
+    )
+    schemes["q"] = scheme.Scheme(
+        "q",
+        {"title": "q", "id_letter": "q", "collection": "q"},
+        {"q01": {"label": "y", "notation": "y", "mappings": {"exact": ["m:m02"]}}},
+    )
+    m03 = {c["id"]: c for c in scheme.labels(schemes)[0]["concepts"]}["m03"]
+    assert m03["pilot"] == ["x", "y"]
+    assert m03["path"] == ["a", "c"]
+
+
+def test_labels_md_escapes_a_pipe_in_any_cell(tmp_path: Path):
+    schemes = one({"t01": {"label": "a|b", "definition": "c | d"}})
+    _, md_path = scheme.write_labels(schemes, "test", tmp_path)
+    assert "| t01 | a\\|b | a\\|b | c \\| d |  |" in md_path.read_text(encoding="utf-8")

@@ -431,12 +431,15 @@ def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str
     return path
 
 
-def _pilot_keys(schemes: dict[str, Scheme]) -> dict[tuple[str, str], set[str]]:
-    """(slug, id) -> the keys of the collection members that map onto it as exact, close or narrow.
+def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[str]], dict[tuple[str, str], set[str]]]:
+    """Two maps of (slug, id) -> the keys of the collection members that map onto that concept.
 
-    A member's key is its notation, and a member carries its own key.
+    The first holds `exact` and `narrow` targets, whose descendants inherit the key; the second
+    `close` targets, which carry it alone (SKOS closeMatch says nothing about the narrower
+    concepts). A member's key is its notation, and a member carries its own key.
     """
-    out: dict[tuple[str, str], set[str]] = {}
+    inherited: dict[tuple[str, str], set[str]] = {}
+    own: dict[tuple[str, str], set[str]] = {}
     for slug, s in schemes.items():
         if not s.meta.get("collection"):
             continue
@@ -444,20 +447,33 @@ def _pilot_keys(schemes: dict[str, Scheme]) -> dict[tuple[str, str], set[str]]:
             if c.get("deprecated"):
                 continue
             key = str(c.get("notation", cid))
-            out.setdefault((slug, cid), set()).add(key)
+            inherited.setdefault((slug, cid), set()).add(key)
             for relation, prefix, local in mappings(c):
-                if relation in {"exact", "close", "narrow"} and prefix in schemes:
-                    out.setdefault((prefix, local), set()).add(key)
-    return out
+                target = {"exact": inherited, "narrow": inherited, "close": own}.get(relation)
+                if target is not None and prefix in schemes:
+                    target.setdefault((prefix, local), set()).add(key)
+    return inherited, own
+
+
+def _ancestors(s: Scheme, cid: str) -> set[str]:
+    """`cid` and every concept above it, through all its `broader` parents."""
+    seen, todo = set(), [cid]
+    while todo:
+        node = todo.pop()
+        if node not in seen:
+            seen.add(node)
+            todo.extend(s.concepts[node].get("broader") or [])
+    return seen
 
 
 def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
     """Per scheme, each non-deprecated concept by id: IRI, label, label path from its root, definition, pilot keys.
 
-    The path follows the first `broader`. `pilot` holds the key of each pilot class that maps
-    onto the concept or one of its ancestors.
+    The path follows the first `broader` only. `pilot` holds the key of each pilot class that
+    maps onto the concept, or as `exact` or `narrow` onto any of its ancestors through every
+    `broader` parent; a `close` mapping marks its target alone.
     """
-    pilot = _pilot_keys(schemes)
+    inherited, own = _pilot_keys(schemes)
     out = []
     for slug, s in schemes.items():
         concepts = []
@@ -467,6 +483,7 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
                 chain.insert(0, node["broader"][0])
                 node = s.concepts[chain[0]]
             definition = s.concepts[cid].get("definition")
+            pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in _ancestors(s, cid)))
             concepts.append(
                 {
                     "id": cid,
@@ -474,7 +491,7 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
                     "label": s.concepts[cid]["label"],
                     "path": [s.concepts[a]["label"] for a in chain],
                     "definition": definition.strip() if definition else None,
-                    "pilot": sorted(set().union(*(pilot.get((slug, a), set()) for a in chain))),
+                    "pilot": sorted(pilot),
                 }
             )
         out.append({"slug": slug, "title": s.meta["title"], "iri": s.iri, "concepts": concepts})
@@ -492,13 +509,8 @@ def write_labels(schemes: dict[str, Scheme], version: str, out: Path) -> list[Pa
     lines = [f"# R9lab vocabulary labels {version}"]
     for s in data:
         lines += ["", f"## {s['title']}", "", "| id | label | path | definition | pilot |", "|---|---|---|---|---|"]
-        lines += [
-            "| "
-            + " | ".join(
-                (c["id"], c["label"], " > ".join(c["path"]), c["definition"] or "", ", ".join(c["pilot"]))
-            ).replace("\n", " ")
-            + " |"
-            for c in s["concepts"]
-        ]
+        for c in s["concepts"]:
+            cells = (c["id"], c["label"], " > ".join(c["path"]), c["definition"] or "", ", ".join(c["pilot"]))
+            lines.append("| " + " | ".join(v.replace("|", "\\|").replace("\n", " ") for v in cells) + " |")
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return [json_path, md_path]

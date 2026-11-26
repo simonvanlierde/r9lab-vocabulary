@@ -28,4 +28,4 @@ test-full: pipeline rdf sssom-validate
 
 # Check dist/r9lab-vocabulary.sssom.tsv against the SSSOM schema with sssom-py, run by uvx so it stays out of the lock. Needs `just rdf` first.
 sssom-validate:
-    uvx --from sssom==0.4.23 sssom validate dist/r9lab-vocabulary.sssom.tsv
+    uvx --exclude-newer "1 week" --from sssom==0.4.22 sssom validate dist/r9lab-vocabulary.sssom.tsv
