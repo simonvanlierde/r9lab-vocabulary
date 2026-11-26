@@ -22,20 +22,37 @@ write the same files from the same commit.
 
 Chosen: per release. `owl:versionIRI` is `https://w3id.org/r9lab/vocabulary/<version>/` plus the
 scheme's path, such as `.../0.1.0/materials/`. One w3id rule per release, or one rule with the
-version as a group, can send the whole prefix to that release's files. Concept ids start with a
-letter, so a version path never collides with a concept IRI.
+version as a group, can send the whole prefix to that release's files. The version takes the
+path segment right after the base, where scheme slugs also sit. A version starts with a digit and
+`just rdf` refuses a slug that does not start with a lower-case letter, so the two never collide.
+
+That rule does not exist yet. The pending w3id rule sends everything under the base to the
+repository, so a version IRI resolves to the repository, not to its release. Adding the
+per-release rule is a follow-up once the first release is tagged.
 
 * `dct:created` is the `created` date in each scheme's YAML: the date of the commit that added
   the file. The vocabulary node and the code-only schemes take the earliest of them.
-* `dct:modified` is the date of the commit built (`git log -1`), not the build date, so two
-  builds of one commit are the same files. Outside a git checkout it is left out.
+* `dct:modified` is `SOURCE_DATE_EPOCH` when set, else the date of the commit built (`git log
+  -1` in the package's own checkout, never in a repository around it), not the build date, so
+  two builds of one commit are the same files. With neither, `just rdf` stops with an error,
+  because the shapes require the date.
 * `dct:creator` and `dct:publisher` are the ORCID iDs of the authors in `CITATION.cff`, and
   `dcat:landingPage` its `repository-code`, so the build repeats no fact `CITATION.cff` holds.
+  The publisher is the first author only.
+
+### PyST and releases
+
+PyST's examples load each release of a vocabulary as its own concept scheme. Here the concept
+IRIs carry no version, by design: a concept IRI must stay the same across releases to stay
+persistent, and only the scheme's `owl:versionIRI` names the release. How to load several
+releases into PyST is open, and left to the PyST round-trip task.
 
 ### Consequences
 
 * Good: one redirect rule covers every versioned IRI of a release.
-* Bad: until the w3id redirect is registered, the version IRIs do not resolve.
+* Bad: until the per-release w3id rule exists, the version IRIs resolve to the repository, not
+  to the release.
+* Open: how PyST should hold more than one release of a scheme whose concept IRIs are unversioned.
 * Bad: a build of uncommitted edits carries the date of the last commit.
 
 ### Confirmation

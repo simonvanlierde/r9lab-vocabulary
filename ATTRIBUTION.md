@@ -19,6 +19,9 @@ the identifiers, except where a concept's own label is the common name of the th
 | SKOS SHACL shapes (`skos.shacl.ttl` at commit ce46984), trailing whitespace trimmed | [skohub-io/skohub-shapes](https://github.com/skohub-io/skohub-shapes) | Apache-2.0 | `shapes/skohub-skos.shacl.ttl` |
 | BAFU activity names, as regular expressions | Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 and BAFU:2026 v1 | Patterns only, no data | `names.bafu` fields |
 
+The code-only schemes (`unu-key-v1`, `r9lab-cpv`) are CC0 like the rest of the vocabulary,
+because they keep only the codes and copy no names.
+
 ## Source data
 
 This repository doesn't redistribute source data. `data/raw/` and
