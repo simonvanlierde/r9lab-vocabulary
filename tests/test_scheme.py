@@ -29,7 +29,8 @@ PILOT_KEYS = {
 }
 
 # Concepts still waiting for a definition, example and scope note, written in batches of
-# about ten. The list only shrinks; once it is empty, validate requires the three on every concept.
+# about ten. A new concept must come with all three. The list only shrinks; once it is
+# empty, the rule moves into validate.
 PENDING_TEXT = set((ROOT / "tests" / "pending-text.txt").read_text(encoding="utf-8").split())
 
 
@@ -172,7 +173,13 @@ def test_text_fields_are_written_as_skos_notes():
         "editorial_note": "No BAFU dataset.",
         "source": "https://www.wikidata.org/wiki/Q1",
     }
-    schemes = one({"t01": concept, "t02": {"label": "b", "definition": "A b.", "source": "Ashby 2017, sec. 2.2"}})
+    schemes = one(
+        {
+            "t01": concept,
+            "t02": {"label": "b", "definition": "A b.", "source": "Ashby 2017, sec. 2.2"},
+            "t03": {"label": "c", "definition": "A c.", "source": "http://example.org/c"},
+        }
+    )
     assert scheme.validate(schemes, VERSIONS) == []
     g = scheme.to_graph(schemes, "test")
     a, b = URIRef(schemes["t"].iri + "t01"), URIRef(schemes["t"].iri + "t02")
@@ -181,6 +188,7 @@ def test_text_fields_are_written_as_skos_notes():
     assert g.value(a, SKOS.editorialNote) == Literal("No BAFU dataset.", lang="en")
     assert g.value(a, DCTERMS.source) == URIRef("https://www.wikidata.org/wiki/Q1")
     assert g.value(b, DCTERMS.source) == Literal("Ashby 2017, sec. 2.2")
+    assert g.value(URIRef(schemes["t"].iri + "t03"), DCTERMS.source) == URIRef("http://example.org/c")
 
 
 def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Schemes):

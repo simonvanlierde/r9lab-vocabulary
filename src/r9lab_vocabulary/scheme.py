@@ -73,8 +73,7 @@ RELATIONS = {
     "narrow": SKOS.narrowMatch,
     "related": SKOS.relatedMatch,
 }
-# A concept's text fields. `note` is the scope note: what the concept leaves out and the
-# concept it is told apart from. `editorial_note` is for maintainers (a missing dataset, a proxy).
+# A concept's text fields; README "Write a concept's text" says what each holds.
 TEXT_FIELDS = {
     "definition": SKOS.definition,
     "example": SKOS.example,
@@ -82,7 +81,7 @@ TEXT_FIELDS = {
     "editorial_note": SKOS.editorialNote,
 }
 MANY_TEXTS = {"example"}
-# Where the definition comes from: a URL (written as an IRI) or a citation such as "Ashby 2017, sec. 2.2".
+# Where the definition comes from: a URL, written as an IRI, or a citation.
 SOURCE = "source"
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A match: (scheme slug, concept id, family, version, pattern, matched names).
@@ -186,7 +185,7 @@ def _validate_text(where: str, c: dict[str, Any]) -> list[str]:
     errors = [
         f"{where}: {field} must be non-empty text"
         for field in (*TEXT_FIELDS, SOURCE)
-        if field in c and not (_texts(c, field) and all(isinstance(t, str) and t.strip() for t in _texts(c, field)))
+        if field in c and not ((values := _texts(c, field)) and all(isinstance(t, str) and t.strip() for t in values))
     ]
     if SOURCE in c and not c.get("definition"):
         errors.append(f"{where}: {SOURCE} needs a definition to cite")
@@ -415,7 +414,7 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
         for text in _texts(c, field):
             g.add((node, prop, Literal(text.strip(), lang=LANG)))
     if source := c.get(SOURCE):
-        g.add((node, DCTERMS.source, URIRef(source) if source.startswith("https://") else Literal(source)))
+        g.add((node, DCTERMS.source, URIRef(source) if source.startswith(("http://", "https://")) else Literal(source)))
     if (notation := c.get("notation")) is not None:
         g.add((node, SKOS.notation, Literal(str(notation))))
     broader = c.get("broader") or []
