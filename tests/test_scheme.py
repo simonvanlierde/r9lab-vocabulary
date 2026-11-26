@@ -92,6 +92,9 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "broader": ["t09"]}}, "broader t09 does not exist"),
         ({"t01": {"label": "a"}, "t02": {"label": "A"}}, "label 'A' is also t01's"),
         ({"x01": {"label": "a"}}, "id must be t"),
+        ({"t1": {"label": "a"}}, "id must be t"),
+        ({"t00001": {"label": "a"}}, "id must be t"),
+        ({"t01": {"label": "a", "broader": ["t01"]}}, "loops back"),
         ({"t01": {"label": "a", "mappings": {"exact": ["wd:Q1"], "broad": ["wd:Q1"]}}}, "both exact and broad"),
         ({"t01": {"label": "a", "mappings": {"exact": ["zz:1"]}}}, "unknown prefix"),
         ({"t01": {"label": "a", "mappings": {"same": ["wd:Q1"]}}}, "unknown mapping relation"),
@@ -120,6 +123,14 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             "must be a non-empty pattern",
         ),
         ({"t01": {"label": "a", "mappings": {"exact": "wd:Q1"}}}, "mappings must map each relation to a list"),
+        ({"t01": {}}, "t/t01: no label"),
+        ({"t01": {"label": "a", "related": ["t09"]}}, "related t09 does not exist"),
+        ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t09"]}}, "replaced_by t09 does not exist"),
+        ({"t01": {"label": "a", "mappings": {"close": ["t:t09"]}}}, "t:t09 does not exist"),
+        (
+            {"t01": {"label": "a", "notation": "x"}, "t02": {"label": "b", "notation": "x"}},
+            "notation 'x' is also t01's",
+        ),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
@@ -172,3 +183,29 @@ def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
     (tmp_path / "t.yaml").write_text("scheme: {slug: t, title: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
     with pytest.raises(ConstructorError, match="repeated key t01"):
         scheme.load(tmp_path)
+
+
+@pytest.mark.parametrize("slug", ["t", "wd"])
+def test_a_scheme_slug_taken_by_another_scheme_or_prefix_is_an_error(tmp_path: Path, slug: str):
+    (tmp_path / "a.yaml").write_text("scheme: {slug: t, title: a}\n")
+    (tmp_path / "b.yaml").write_text(f"scheme: {{slug: {slug}, title: b}}\n")
+    with pytest.raises(ValueError, match=rf"b\.yaml: scheme slug '{slug}' is already taken"):
+        scheme.load(tmp_path)
+
+
+@pytest.mark.parametrize(
+    "concepts",
+    [
+        {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "deprecated": True, "broader": ["t01"]}},
+        {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "a"}},
+        {"t01": {"label": "a", "notation": ""}, "t02": {"label": "b", "notation": ""}},
+    ],
+    ids=["deprecated-under-deprecated", "deprecated-label-reused", "empty-notations"],
+)
+def test_validate_accepts(concepts: dict):
+    assert scheme.validate(one(concepts), VERSIONS) == []
+
+
+def test_an_id_in_a_scheme_without_a_letter_needs_any_letter():
+    errors = scheme.validate(one({"01": {"label": "a"}}, {"title": "t"}), VERSIONS)
+    assert any("id must be a letter plus 2-4 digits" in e for e in errors), errors
