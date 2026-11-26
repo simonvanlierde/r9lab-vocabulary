@@ -329,24 +329,37 @@ def check_codes(schemes: dict[str, Scheme], known: dict[str, set[str]]) -> list[
 
 
 NO_TERM = "sssom:NoTermFound"
+LITERAL_COLUMNS = ("subject_label", "predicate_id", "object_id", "mapping_justification")
 
 
 def check_literal_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     """Rows of an SSSOM literal-mapping file (`subject_label` to concept) that break a rule.
 
-    A label is lower case, as the tags are matched, and appears once. Its predicate is one of
-    `RELATIONS`, and its object is a live concept here or `sssom:NoTermFound`.
+    A label is lower case, as the tags are matched, and appears once. Its predicate is a SKOS
+    match property (`skos:exactMatch`, as `write_sssom` writes it), its justification a semapv
+    term, and its object a live concept here or `sssom:NoTermFound`. Every CURIE's prefix is in
+    the file's `curie_map`.
     """
-    lines = [line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
+    prefixes = set(meta.get("curie_map") or {})
+    reader = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
+    if missing := [c for c in LITERAL_COLUMNS if c not in (reader.fieldnames or [])]:
+        return [f"{path.name}: no {', '.join(missing)} column"]
+    predicates = {f"skos:{p.fragment}" for p in RELATIONS.values()}
     errors, seen = [], set()
-    for row in csv.DictReader(lines, delimiter="\t"):
+    for row in reader:
         label, obj = row["subject_label"], row["object_id"]
         where = f"{path.name}: {label!r}"
         if label != label.strip().lower() or label in seen:
             errors.append(f"{where} is not lower case or appears twice")
         seen.add(label)
-        if row["predicate_id"].removeprefix("skos:").removesuffix("Match") not in RELATIONS:
+        if row["predicate_id"] not in predicates:
             errors.append(f"{where}: unknown predicate {row['predicate_id']}")
+        if not row["mapping_justification"].startswith("semapv:"):
+            errors.append(f"{where}: justification {row['mapping_justification']!r} is not a semapv term")
+        curies = [row[c] for c in LITERAL_COLUMNS[1:]] + [r for r in [row.get("reviewer_id")] if r]
+        errors += [f"{where}: prefix of {c} is not in the curie_map" for c in curies if c.split(":")[0] not in prefixes]
         slug, _, cid = obj.partition(":")
         concept = schemes[slug].concepts.get(cid) if slug in schemes else None
         if obj != NO_TERM and (concept is None or concept.get("deprecated")):

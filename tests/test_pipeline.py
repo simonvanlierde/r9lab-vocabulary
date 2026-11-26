@@ -9,7 +9,7 @@ import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from r9lab_vocabulary import pipeline
+from r9lab_vocabulary import pipeline, scheme
 
 if TYPE_CHECKING:
     import pytest
@@ -125,7 +125,8 @@ def test_rdf_reports_a_broken_pattern_instead_of_crashing(
         "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, names: {bafu: ['(']}}\n"
     )
     (tmp_path / "mappings").mkdir()
-    (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text("subject_label\tpredicate_id\tobject_id\n")
+    header = "\t".join(scheme.LITERAL_COLUMNS)
+    (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text(f"{header}\n")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": set(), "pmdco": set()})
     monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {"2026-v1": ["Brass, at plant"]}})

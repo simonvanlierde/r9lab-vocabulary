@@ -89,19 +89,34 @@ def test_the_tag_mappings_break_no_rule(schemes: Schemes):
 def test_check_literal_mappings_catches(schemes: Schemes, tmp_path: Path):
     path = tmp_path / "t.sssom.tsv"
     path.write_text(
-        "#subject_type: rdfs literal\n"
-        "subject_label\tpredicate_id\tobject_id\n"
-        "steel\tskos:broadMatch\tmaterials:m0002\n"
-        "steel\tskos:exactMatch\tmaterials:m0003\n"
-        "Glass\tskos:sameAs\tmaterials:m9999\n"
-        "fan blades\tskos:exactMatch\tsssom:NoTermFound\n"
+        "#curie_map:\n#  materials: https://example.org/m/\n#  semapv: https://w3id.org/semapv/vocab/\n"
+        "#  skos: http://www.w3.org/2004/02/skos/core#\n#  sssom: https://w3id.org/sssom/\n"
+        "subject_label\tpredicate_id\tobject_id\tmapping_justification\n"
+        "steel\tskos:broadMatch\tmaterials:m0002\tsemapv:AgentBasedMatching\n"
+        "steel\tskos:exactMatch\tmaterials:m0003\tsemapv:AgentBasedMatching\n"
+        "Glass\tskos:sameAs\tmaterials:m9999\tsemapv:AgentBasedMatching\n"
+        "pe\texact\tmaterials:m0022\tby hand\n"
+        "pp\tskos:exactMatch\tcomponents:c0001\tsemapv:AgentBasedMatching\n"
+        "fan blades\tskos:exactMatch\tsssom:NoTermFound\tsemapv:AgentBasedMatching\n"
     )
-    errors = scheme.check_literal_mappings(schemes, path)
-    assert errors == [
+    assert scheme.check_literal_mappings(schemes, path) == [
         "t.sssom.tsv: 'steel' is not lower case or appears twice",
         "t.sssom.tsv: 'Glass' is not lower case or appears twice",
         "t.sssom.tsv: 'Glass': unknown predicate skos:sameAs",
         "t.sssom.tsv: 'Glass': materials:m9999 is not a live concept",
+        "t.sssom.tsv: 'pe': unknown predicate exact",
+        "t.sssom.tsv: 'pe': justification 'by hand' is not a semapv term",
+        "t.sssom.tsv: 'pe': prefix of exact is not in the curie_map",
+        "t.sssom.tsv: 'pe': prefix of by hand is not in the curie_map",
+        "t.sssom.tsv: 'pp': prefix of components:c0001 is not in the curie_map",
+    ]
+
+
+def test_check_literal_mappings_needs_its_columns(schemes: Schemes, tmp_path: Path):
+    path = tmp_path / "t.sssom.tsv"
+    path.write_text("subject_label\tobject_id\nsteel\tmaterials:m0002\n")
+    assert scheme.check_literal_mappings(schemes, path) == [
+        "t.sssom.tsv: no predicate_id, mapping_justification column"
     ]
 
 
