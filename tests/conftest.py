@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from r9lab_vocabulary import pipeline, scheme
+from r9lab_vocabulary import checks, pipeline, scheme
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -18,6 +18,20 @@ if TYPE_CHECKING:
 ROOT = Path(__file__).resolve().parent.parent
 # A code set that holds every code, for a test that does not check codes.
 EVERYTHING = type("All", (set,), {"__contains__": lambda *_: True})()
+Schemes = dict[str, scheme.Scheme]
+VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
+
+
+@pytest.fixture(scope="module")
+def schemes() -> dict[str, scheme.Scheme]:
+    """The real vocabulary, loaded once per module."""
+    return scheme.load(ROOT / "vocabulary")
+
+
+def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
+    """One scheme `t` (or `meta`'s slug) holding `concepts`, with `meta` over a title and id letter `t`."""
+    meta = {"title": "t", "id_letter": "t", **(meta or {})}
+    return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 
 
 def _git(cwd: Path, *args: str, day: str = "2026-01-01") -> None:
@@ -70,7 +84,7 @@ def stub_sources(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Callable[..
         text = f"scheme: {{slug: t, title: t, id_letter: t}}\nconcepts:\n  {concepts}\n"
         (tmp_path / "vocabulary" / "t.yaml").write_text(text)
         (tmp_path / "mappings").mkdir()
-        (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text("\t".join(scheme.TAG_COLUMNS) + "\n")
+        (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text("\t".join(checks.TAG_COLUMNS) + "\n")
         monkeypatch.chdir(tmp_path)
 
     return stub

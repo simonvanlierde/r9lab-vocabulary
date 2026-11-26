@@ -18,7 +18,7 @@ from pathlib import Path
 
 import yaml
 
-from r9lab_vocabulary.scheme import read_sssom
+from r9lab_vocabulary.checks import read_sssom
 
 PREDICTIONS = Path("mappings/r9lab-tags/predictions.sssom.tsv")
 REVIEWS = Path("mappings/r9lab-tags/reviews.sssom.tsv")
@@ -143,7 +143,7 @@ def orphaned(root: Path = Path()) -> list[str]:
 def check_predictions(predictions: list[dict[str, str]]) -> list[str]:
     """A tag has one proposal, and it carries a machine justification.
 
-    One per tag, because the published file may hold a tag once (`scheme.check_tag_mappings`).
+    One per tag, because the published file may hold a tag once (`checks.check_tag_mappings`).
     """
     errors, proposed, tags = [], set(), set()
     for row in predictions:
