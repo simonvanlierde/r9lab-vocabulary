@@ -20,13 +20,15 @@ graph:
 | Scheme | Concepts | Top level |
 | --- | --- | --- |
 | [Material classes](vocabulary/materials.yaml) | 58 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
-| [Component classes](vocabulary/components.yaml) | 23 | Battery, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
+| [Component classes](vocabulary/components.yaml) | 24 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
 | [Pilot classes](vocabulary/pilot-classes.yaml) | 10 | The ten coarse material classes a photo study scores, kept as a `skos:Collection` |
 
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
-PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and R9lab CPV codes. Materials and components also
+PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and v2 and R9lab CPV codes. Each product type also has a
+`broadMatch` to its category in Annex III to the WEEE Directive 2012/19/EU (`weee6:1` to
+`weee6:6`), a fragment on the directive's ELI. Materials and components also
 carry candidate patterns for names in outside lists that have no ids, such as BAFU activity
 names (`names: {bafu: [...]}`). Each pattern is checked against every pinned version of its list,
 today BAFU:2025 v2 and BAFU:2026 v1, and written out as `dist/name-matches.csv` with a match
@@ -60,12 +62,30 @@ just wikidata    # print every Wikidata link beside the item's current label
 ```
 
 `just update` runs `just pipeline` and then `just rdf`, and prints how the match counts in
-`dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes
-`dist/r9lab-vocabulary.ttl`, the same graph as JSON-LD, and `dist/name-matches.csv`.
+`dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes:
+
+- `dist/r9lab-vocabulary.ttl` and `dist/r9lab-vocabulary.jsonld`: the SKOS graph.
+- `dist/name-matches.csv`: each name pattern with its match count per version.
+- `dist/r9lab-vocabulary.sssom.tsv`: every mapping as an [SSSOM](https://mapping-commons.github.io/sssom/)
+  row, for tools that read crosswalks without parsing SKOS. `just sssom-validate` checks it
+  with sssom-py. Mappings from or to a deprecated concept are left out; the SKOS graph keeps
+  them. The file has no `mapping_date` column, because the YAML records no date per mapping.
+- `dist/labels.json` and `dist/labels.md`: per scheme, each non-deprecated concept by id with
+  its IRI, label, label path from its top concept, definition, and the keys of the pilot
+  classes it falls under (`pilot`). A model prompt can quote them. Evaluation answers are
+  not kept in this repository.
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
-missing from the pinned files, or a name pattern that matches no live name in a version.
+missing from the pinned files, a WEEE category other than 1 to 6, or a name pattern that matches no live name in a version.
+
+### Suggested mappings
+
+Every entry under `mappings:` is curated by a person, and the SSSOM file says so
+(`semapv:ManualMappingCuration`, with the curator's ORCID). A mapping a model or matching tool
+suggests never goes there. It goes in a separate SSSOM file under `suggestions/`, with the
+tool's own justification (such as `semapv:LLMBasedMatching`), which the build does not read. A
+person promotes a suggestion by checking it and copying it into `mappings:`.
 
 ### Add a version of a name list
 

@@ -11,11 +11,13 @@ the identifiers, except where a concept's own label is the common name of the th
 
 | Reused | From | License | Where it lives here |
 | --- | --- | --- | --- |
-| The six material families as the top of the material axis | Ashby, *Materials Selection in Mechanical Design*, 5th ed., 2017, ISBN 9780081005996 | Cited, not copied | `vocabulary/materials.yaml` |
+| The six material families as the top of the material axis | Ashby, *Materials Selection in Mechanical Design*, 5th ed., 2017, section 2.2, Fig. 2.1, ISBN 9780081005996 | Cited, not copied | `vocabulary/materials.yaml` |
 | CPC 2.1 subclass codes and IRIs | UN Statistics Division; IRIs as served by [vocab.sentier.dev](https://vocab.sentier.dev) | UN terms of use | `cpc:` mappings |
 | PMDco term IRIs | [materialdigital/core-ontology](https://github.com/materialdigital/core-ontology) v3.1.2 | CC BY 4.0 | `pmdco:` mappings |
 | Wikidata item ids | [Wikidata](https://www.wikidata.org) | CC0 1.0 | `wd:` mappings |
+| WEEE categories 1-6, as fragments on the directive's ELI; each product type's category is taken from its UNU-KEY by the UNU-KEY to EU-6 table | Directive 2012/19/EU, Annex III; Baldé et al., *The Global E-waste Monitor 2017*, Annexes, UNU, ITU and ISWA, 2017, checked against Table 2 of the 2026 E-waste Statistics Guidelines | EU legal text, free reuse; codes only | `weee6:` mappings |
 | UNU-KEY v1 codes (codes only) | Forti et al., *E-waste Statistics: Guidelines on Classification, Reporting and Indicators*, 2nd ed., UNU, 2018 | CC BY-NC-SA 3.0 IGO; names not copied | `unu1:` mappings |
+| UNU-KEY v2 codes (codes only), and the v1 code list | Lysaght et al., *E-waste Statistics: Guidelines on Classifications, Reporting and Indicators*, 3rd ed., UNITAR, 2026, [doi:10.5281/zenodo.18328494](https://doi.org/10.5281/zenodo.18328494), Tables 2 and 19 | CC BY-NC-SA 4.0; names not copied | `unu2:` mappings; `FIXED_CODES` in `scheme.py` |
 | BAFU activity names, as regular expressions | Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 and BAFU:2026 v1 | Patterns only, no data | `names.bafu` fields |
 
 ## Source data
