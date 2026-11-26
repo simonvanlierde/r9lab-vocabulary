@@ -50,8 +50,8 @@ def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
     return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 
 
-def _git(cwd: Path, *args: str, day: str = "2026-01-01") -> None:
-    stamp = f"{day}T12:00:00Z"
+def _git(cwd: Path, *args: str, day: str = "2026-01-01", time: str = "12:00:00Z") -> None:
+    stamp = f"{day}T{time}"
     env = {"GIT_COMMITTER_DATE": stamp, "GIT_AUTHOR_DATE": stamp, "PATH": os.environ["PATH"]}
     subprocess.run(  # noqa: S603
         ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false", *args],  # noqa: S607
@@ -64,7 +64,7 @@ def _git(cwd: Path, *args: str, day: str = "2026-01-01") -> None:
 
 @pytest.fixture
 def git() -> Callable[..., None]:
-    """`git(cwd, *args, day=...)`: git in `cwd` as a throwaway committer, dated noon UTC on `day`, with no HOME."""
+    """`git(cwd, *args, day=..., time=...)`: git in `cwd` as a throwaway committer at `time` (noon UTC) on `day`."""
     return _git
 
 
