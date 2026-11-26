@@ -1,0 +1,13 @@
+# p02 deprecated in favour of p01.
+scheme:
+  slug: parts
+  id_letter: p
+  title: Fasteners
+  created: 2026-01-02
+concepts:
+  p01:
+    label: screw
+  p02:
+    label: nut
+    deprecated: true
+    replaced_by: [p01]

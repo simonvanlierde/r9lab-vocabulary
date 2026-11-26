@@ -280,6 +280,40 @@ def _cycles(scheme: Scheme) -> list[str]:
     return errors
 
 
+def diff(old: dict[str, Scheme], new: dict[str, Scheme]) -> tuple[list[str], bool]:
+    """The concepts added, deprecated, removed, remapped and relabelled from `old` to `new`, as Markdown lines.
+
+    The flag is False when a concept id in `old` is missing from `new`: an id that leaves use stays, deprecated.
+    """
+    before, after = ({f"{s.slug}/{cid}": c for s in v.values() for cid, c in s.concepts.items()} for v in (old, new))
+    sections: dict[str, list[str]] = {t: [] for t in ("Added", "Deprecated", "Removed", "Mappings", "Labels")}
+    for key in sorted(before.keys() | after.keys()):
+        a, b = before.get(key), after.get(key)
+        if a is None:
+            sections["Added"].append(f"- `{key}` {after[key]['label']}")
+            continue
+        if b is None:
+            sections["Removed"].append(
+                f"- `{key}` {a.get('label')}: deprecate it with `replaced_by` instead of deleting it"
+            )
+            continue
+        if b.get("deprecated") and not a.get("deprecated"):
+            slug = key.partition("/")[0]
+            by = ", ".join(f"`{slug}/{ref}`" for ref in b.get("replaced_by") or [])
+            sections["Deprecated"].append(f"- `{key}` {b['label']}" + (f", replaced by {by}" if by else ""))
+        was, now = ({f"{rel} {prefix}:{local}" for rel, prefix, local in mappings(c)} for c in (a, b))
+        if was != now:
+            changes = [f"added {m}" for m in sorted(now - was)] + [f"dropped {m}" for m in sorted(was - now)]
+            sections["Mappings"].append(f"- `{key}` {b['label']}: {'; '.join(changes)}")
+        if a.get("label") != b.get("label"):
+            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b.get('label')}")
+    lines = []
+    for title, items in sections.items():
+        if items:
+            lines += [f"### {title}", "", *items, ""]
+    return lines, not sections["Removed"]
+
+
 def check_codes(schemes: dict[str, Scheme], known: dict[str, set[str]]) -> list[str]:
     """Mappings to an outside scheme whose code is not in that scheme's pinned source.
 

@@ -4,7 +4,7 @@ from datetime import date
 from pathlib import Path
 
 import pytest
-from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, URIRef
+from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Literal, URIRef
 from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
@@ -64,16 +64,11 @@ def test_the_material_axis_is_topped_by_ashbys_six_families(schemes: Schemes):
     assert tops == {"metal", "polymer", "elastomer", "glass", "ceramic", "hybrid material"}
 
 
-# rdflib's JSON-LD parser builds a ConjunctiveGraph internally whatever the caller passes.
-@pytest.mark.filterwarnings("ignore:ConjunctiveGraph is deprecated:DeprecationWarning")
-def test_every_concept_is_in_its_scheme_and_round_trips_through_turtle(schemes: Schemes, tmp_path: Path):
-    scheme.write(schemes, "test", tmp_path, [])
-    g = Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
+def test_every_concept_is_in_its_scheme(schemes: Schemes):
+    g = scheme.to_graph(schemes, "test")
     for s in schemes.values():
         for cid in s.concepts:
             assert (URIRef(s.iri + cid), SKOS.inScheme, URIRef(s.iri)) in g
-    assert len(g) == len(scheme.to_graph(schemes, "test"))
-    assert len(Graph().parse(tmp_path / "r9lab-vocabulary.jsonld")) == len(g)
 
 
 def test_licensed_schemes_keep_codes_only(schemes: Schemes):

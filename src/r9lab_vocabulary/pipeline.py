@@ -302,8 +302,31 @@ def names(source: str | None, *, summary: bool) -> int:
     return 0
 
 
+def diff(ref: str) -> int:
+    """Print, as Markdown, the concepts added, deprecated, removed, remapped and relabelled since git `ref`.
+
+    Exits 1 when a concept id at `ref` is missing now: it must stay, deprecated, with `replaced_by`.
+    """
+    try:
+        archive = subprocess.run(  # noqa: S603
+            ["git", "archive", "--format=tar", ref, str(VOCABULARY)],  # noqa: S607
+            capture_output=True,
+            check=True,
+        ).stdout
+    except subprocess.CalledProcessError as e:
+        sys.stderr.write(f"error: no {VOCABULARY}/ at {ref}: {e.stderr.decode().strip()}\n")
+        return 2
+    with tempfile.TemporaryDirectory() as tmp, tarfile.open(fileobj=io.BytesIO(archive)) as t:
+        t.extractall(tmp, filter="data")
+        old = scheme.load(Path(tmp) / VOCABULARY)
+    lines, ok = scheme.diff(old, scheme.load(VOCABULARY))
+    sys.stdout.write(f"## Vocabulary changes since {ref}\n\n")
+    sys.stdout.writelines(f"{line}\n" for line in lines or ["No concept changed."])
+    return 0 if ok else 1
+
+
 def main(argv: list[str] | None = None) -> int:
-    """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names [...]` or `wikidata`."""
+    """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names`, `wikidata` or `diff REF`."""
     args = sys.argv[1:] if argv is None else argv
     if args[:1] == ["rdf"]:
         p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
@@ -311,6 +334,10 @@ def main(argv: list[str] | None = None) -> int:
         return rdf(p.parse_args(args[1:]).out)
     if args[:1] == ["wikidata"]:
         return wikidata()
+    if args[:1] == ["diff"]:
+        p = argparse.ArgumentParser(prog="r9lab-vocabulary diff", description=diff.__doc__)
+        p.add_argument("ref", help="the git tag (or other ref) to compare against, such as v0.1.0")
+        return diff(p.parse_args(args[1:]).ref)
     if args[:1] == ["names"]:
         p = argparse.ArgumentParser(prog="r9lab-vocabulary names", description=names.__doc__)
         p.add_argument("--source", help="one name-list source, such as bafu-2026-v1 (default: all)")
@@ -322,7 +349,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def entry() -> NoReturn:
     """The `r9lab-vocabulary` command."""
-    if sys.argv[1:2] in (["rdf"], ["wikidata"], ["names"]):
+    if sys.argv[1:2] in (["rdf"], ["wikidata"], ["names"], ["diff"]):
         sys.exit(main())
     sourceledger.entry(parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
 

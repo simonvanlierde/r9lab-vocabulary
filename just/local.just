@@ -12,6 +12,10 @@ names *args:
 wikidata:
     uv run r9lab-vocabulary wikidata
 
+# Print, as Markdown for the release notes, the concepts added, deprecated, removed, remapped and relabelled since a tag (`just diff v0.1.0`). Fails on a concept id that vanished instead of being deprecated.
+diff ref:
+    uv run r9lab-vocabulary diff {{ ref }}
+
 # Fetch, build and check everything, write dist/, and print how the match counts changed since the last run.
 update:
     #!/usr/bin/env bash

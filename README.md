@@ -55,7 +55,12 @@ or build them:
 just update      # fetch the pinned CPC 2.1, PMDco and BAFU files, then write dist/
 just names       # print every name each pattern matches (--summary for counts)
 just wikidata    # print every Wikidata link beside the item's current label
+just diff v0.1.0 # what changed since a release, as Markdown for its notes
 ```
+
+`just diff <tag>` reads `vocabulary/` at the tag and lists the concepts added, deprecated and
+removed since, and those whose mappings or label changed. It exits 1 when a concept id at the
+tag is gone: deprecate a concept with `replaced_by`, never delete it.
 
 `just update` runs `just pipeline` and then `just rdf`, and prints how the match counts in
 `dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes
@@ -102,6 +107,10 @@ just data-release   # write the folder to publish: the redistributable data, dat
 
 `just check` skips the tests that read the pipeline output when it is missing. `just test-full`
 runs the pipeline first and then every test, as CI does.
+
+`tests/test_golden.py` pins the Turtle a small fixture in `tests/fixtures/golden/` builds to. After
+a deliberate change to the output, rewrite it with `UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py`
+and read the diff.
 
 ## Pipeline
 
