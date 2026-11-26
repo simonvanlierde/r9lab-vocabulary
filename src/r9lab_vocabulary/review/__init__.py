@@ -25,7 +25,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from r9lab_vocabulary import curate, scheme
+from r9lab_vocabulary import checks, curate, scheme
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -88,7 +88,7 @@ class Session:
             "i": str(queue[0]),
             "tag": row["subject_label"],
             "relation": RELATION_WORDS.get(row["predicate_id"], row["predicate_id"]),
-            "no_term": row["object_id"] == scheme.NO_TERM,
+            "no_term": row["object_id"] == checks.NO_TERM,
             "concept": row["object_label"],
             "concept_id": row["object_id"],
             "definition": concept.get("definition", ""),
