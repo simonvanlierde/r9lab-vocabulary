@@ -735,7 +735,7 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
                 {
                     "id": cid,
                     "iri": s.iri + cid,
-                    "label": s.concepts[cid]["label"],
+                    "label": c["label"],
                     "path": [s.concepts[a]["label"] for a in chain],
                     "definition": c["definition"].strip() if c.get("definition") else None,
                     "note": c["note"].strip() if c.get("note") else None,

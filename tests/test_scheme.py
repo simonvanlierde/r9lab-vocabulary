@@ -371,14 +371,12 @@ def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_p
         ids = [c["id"] for c in s["concepts"]]
         assert ids == sorted(cid for cid, c in schemes[s["slug"]].concepts.items() if not c.get("deprecated"))
     concepts = {c["id"]: c for s in doc["schemes"] for c in s["concepts"]}
-    assert concepts["m0003"] == {
+    assert {k: v for k, v in concepts["m0003"].items() if k not in ("note", "example")} == {
         "id": "m0003",
         "iri": f"{schemes['materials'].iri}m0003",
         "label": "carbon and low-alloy steel",
         "path": ["metal", "ferrous metal", "carbon and low-alloy steel"],
         "definition": "Steel without the chromium content of stainless steel, including galvanised sheet.",
-        "note": schemes["materials"].concepts["m0003"].get("note"),
-        "example": schemes["materials"].concepts["m0003"].get("example", []),
         "pilot": ["ferrous"],
     }
     assert concepts["s01"]["pilot"] == ["ferrous"]

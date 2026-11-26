@@ -84,9 +84,10 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
   with sssom-py. Mappings from or to a deprecated concept are left out; the SKOS graph keeps
   them. The file has no `mapping_date` column, because the YAML records no date per mapping.
 - `dist/labels.json` and `dist/labels.md`: per scheme, each non-deprecated concept by id with
-  its IRI, label, label path from its top concept, definition, scope note, examples, and the keys of the pilot
-  classes it falls under (`pilot`). A model prompt can quote them. Evaluation answers are
-  not kept in this repository.
+  its IRI, label, label path from its top concept, definition, and the keys of the pilot
+  classes it falls under (`pilot`). A model prompt can quote them. `labels.json` also carries
+  each scope note and example; the editorial note stays out. Evaluation answers are not kept
+  in this repository.
 
 The shapes require an English `prefLabel` and an `inScheme` on every concept, IRIs as mapping
 targets, a replacement in use for a deprecated concept, and the release metadata above on every

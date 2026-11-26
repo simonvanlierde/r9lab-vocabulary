@@ -35,7 +35,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `lithium-ion battery` now matches battery packs only, including "Battery, rechargeable, prismatic, LiNCM"; the cells moved to `lithium-ion cell`.
 - The BAFU patterns for wood, polystyrene and liquid-crystal display no longer match cement-bonded particle board, polystyrene scrap or the 17-inch LCD monitor.
 - GPS navigation device is UNU-KEY 0402 (WEEE category 5), not 0305 (category 6), and radio is 0402 (v2: 0403), not 0201, as the guidelines' key descriptions and HS tables place them.
-- Laptop charger is UNU-KEY 0201 (WEEE category 5), not 0301, because the 0201 description lists adapters, and graphics card is 0301, not 0302 (desktops). Where a key description names a product, it wins over the HS and CPC tables.
+- Laptop charger is UNU-KEY 0201 (WEEE category 5), not 0301, because the 0201 description lists adapters: where a key description names a product, it wins over the HS and CPC tables. Graphics card is 0301, the nearest key for a PC part, not 0302 (desktops).
 - Steel, stainless steel, aluminium and copper no longer match the BAFU sheet-rolling and wire-drawing services.
 
 ### Fixed
