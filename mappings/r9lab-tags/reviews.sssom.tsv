@@ -1,0 +1,16 @@
+#curie_map:
+#  components: https://w3id.org/r9lab/vocabulary/components/
+#  materials: https://w3id.org/r9lab/vocabulary/materials/
+#  orcid: https://orcid.org/
+#  r9lab-tag: https://w3id.org/r9lab/vocabulary/tags/
+#  semapv: https://w3id.org/semapv/vocab/
+#  skos: http://www.w3.org/2004/02/skos/core#
+#  sssom: https://w3id.org/sssom/
+#mapping_set_id: https://w3id.org/r9lab/vocabulary/r9lab-tags/reviews.sssom.tsv
+#mapping_set_title: Reviews of the R9lab tag mappings, one row per rater per verdict
+#license: https://creativecommons.org/publicdomain/zero/1.0/
+#extension_definitions:
+#- slot_name: review_seconds
+#  property: https://w3id.org/r9lab/vocabulary/review_seconds
+#  type_hint: http://www.w3.org/2001/XMLSchema#double
+subject_id	predicate_id	object_id	mapping_justification	reviewer_id	reviewer_agreement	review_seconds	comment	review_date
