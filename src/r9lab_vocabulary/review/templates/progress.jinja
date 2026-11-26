@@ -1,0 +1,1 @@
+<p id="progress">{% for rater, n in progress.items() if rater != "of" %}{{ rater }}: {{ n }} of {{ progress.of }}{% if not loop.last %} · {% endif %}{% else %}No verdicts yet ({{ progress.of }} proposals){% endfor %}</p>

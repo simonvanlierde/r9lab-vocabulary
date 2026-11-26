@@ -21,11 +21,21 @@ classifiers = ["Private :: Do Not Upload"]
 [project.scripts]
 "r9lab-vocabulary" = "r9lab_vocabulary.pipeline:entry"
 
+[project.optional-dependencies]
+review = [
+    "fastapi>=0.165.0",
+    "jinja2>=3.1.6",
+    "python-multipart>=0.0.34",
+    "uvicorn>=0.54.0",
+]
+
 [dependency-groups]
 dev = [
+  "httpx2>=2.16.2",
   "pyshacl>=0.40.2",
   "pytest>=9.2.0",
   "pytest-cov>=7.1.0",
+  "r9lab-vocabulary[review]",
   "ruff>=0.17.3",
   "ty>=0.0.93",
 ]
@@ -50,6 +60,9 @@ exclude-newer-package = { sourceledger = false }
 # for a module_name that differs.
 [tool.uv.build-backend]
 module-name = "r9lab_vocabulary"
+
+[tool.uv.sources]
+r9lab-vocabulary = { workspace = true }
 
 # NOTE: self-contained ruff config, deliberately not extended from any shared base.
 # No target-version: ruff derives it from requires-python above.

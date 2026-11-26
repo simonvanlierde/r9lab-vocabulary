@@ -16,4 +16,5 @@ caf = "caf"
 
 # R9lab tags are kept as users typed them, misspellings included.
 [files]
-extend-exclude = ["mappings/**"]
+# Vendored, minified htmx.
+extend-exclude = ["mappings/**", "*.min.js"]

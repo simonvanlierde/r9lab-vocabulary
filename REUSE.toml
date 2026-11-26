@@ -33,3 +33,9 @@ SPDX-License-Identifier = "CC0-1.0"
 path = ["vocabulary/**", "mappings/**"]
 SPDX-FileCopyrightText = "2026 Simon van Lierde"
 SPDX-License-Identifier = "CC0-1.0"
+
+# htmx 4.0.2 and its SSE extension, copied from the htmx.org npm package with a trailing newline added.
+[[annotations]]
+path = ["src/r9lab_vocabulary/review/static/htmx.min.js", "src/r9lab_vocabulary/review/static/hx-sse.min.js"]
+SPDX-FileCopyrightText = "htmx contributors <https://github.com/bigskysoftware/htmx>"
+SPDX-License-Identifier = "0BSD"

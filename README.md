@@ -55,6 +55,8 @@ against stays, without a reviewer, until the rater against it changes their verd
 only proposal every rater rejected fails `just check` until it gets a new proposal, or
 `sssom:NoTermFound`. Verdicts on a withdrawn proposal stay in the log, and `just check` warns about them.
 [ADR 0005](docs/decisions/0005-mapping-review-log.md) says why it is a log.
+`just review` serves a page for adding verdicts, one blind card at a time, on this machine only;
+[`docs/review-protocol.md`](docs/review-protocol.md) has the rules a rater follows.
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code

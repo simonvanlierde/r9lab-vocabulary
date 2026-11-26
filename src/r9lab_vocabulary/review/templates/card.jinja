@@ -1,0 +1,23 @@
+{% if card %}
+<form id="card" method="post" action="/verdict" hx-post="/verdict" hx-target="this" hx-swap="outerHTML" aria-labelledby="card-tag">
+  <h1 class="tag" id="card-tag">{{ card.tag }}</h1>
+  {% if card.no_term %}
+  <p class="relation">has no concept in the vocabulary</p>
+  {% else %}
+  <p class="relation">{{ card.relation }}</p>
+  <p class="concept">{{ card.concept }} <small>{{ card.concept_id }}</small></p>
+  {% if card.definition %}<p class="definition">{{ card.definition }}</p>{% endif %}
+  {% if card.note %}<p class="note">{{ card.note }}</p>{% endif %}
+  {% endif %}
+  <input type="hidden" name="i" value="{{ card.i }}">
+  <input type="hidden" name="token" value="{{ s.csrf }}">
+  <div class="verdicts">
+    {#- The ids let htmx put focus back on the same button in the next card. #}
+    <button id="verdict-agree" name="verdict" value="agree" data-key="a" aria-keyshortcuts="a">Agree</button>
+    <button id="verdict-unsure" name="verdict" value="unsure" data-key="u" aria-keyshortcuts="u">Unsure</button>
+    <button id="verdict-disagree" name="verdict" value="disagree" data-key="d" aria-keyshortcuts="d">Disagree</button>
+  </div>
+</form>
+{% else %}
+<p id="card">Nothing left to review. Stop the page with Ctrl-C to rebuild the published file.</p>
+{% endif %}
