@@ -348,10 +348,10 @@ def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     """Rows of the SSSOM file that maps R9lab tags to concepts that break a rule.
 
     A tag (`subject_label`) is lower case, as tags are matched, and appears once; its
-    `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is a SKOS match
-    property (`skos:exactMatch`, as `export.write_sssom` writes it), its justification a semapv
-    term, and its object a live concept here, under its current label, or
-    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`. A missing file is one error.
+    `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is one of the five SKOS
+    match properties, its justification a semapv term, and its object a live concept here,
+    under its current label, or `sssom:NoTermFound`. Every CURIE's prefix is in the file's
+    `curie_map`. A missing file is one error.
     """
     try:
         meta, reader = read_sssom(path)
