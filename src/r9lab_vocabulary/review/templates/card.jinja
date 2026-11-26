@@ -1,8 +1,11 @@
+<div id="card">
 {% if card %}
-<form id="card" method="post" action="/verdict" hx-post="/verdict" hx-target="this" hx-swap="outerHTML" aria-labelledby="card-tag">
-  <h1 class="tag" id="card-tag">{{ card.tag }}</h1>
+<form method="post" action="/verdict" hx-post="/verdict" hx-target="#card" hx-swap="outerHTML" hx-disable="find button" aria-labelledby="card-tag">
+  {#- Focus goes to the tag after each card, never to a button: a focused button would look preselected. #}
+  <h1 class="tag" id="card-tag" tabindex="-1">{{ card.tag }}</h1>
   {% if card.no_term %}
   <p class="relation">has no concept in the vocabulary</p>
+  <p class="hint">Agree: no concept fits this tag. Disagree: some concept does.</p>
   {% else %}
   <p class="relation">{{ card.relation }}</p>
   <p class="concept">{{ card.concept }} <small>{{ card.concept_id }}</small></p>
@@ -11,13 +14,21 @@
   {% endif %}
   <input type="hidden" name="card" value="{{ card.card }}">
   <input type="hidden" name="token" value="{{ s.csrf }}">
+  <input type="hidden" name="away" value="0">
   <div class="verdicts">
-    {#- The ids let htmx put focus back on the same button in the next card. #}
-    <button id="verdict-agree" name="verdict" value="agree" data-key="a" aria-keyshortcuts="a">Agree</button>
-    <button id="verdict-unsure" name="verdict" value="unsure" data-key="u" aria-keyshortcuts="u">Unsure</button>
-    <button id="verdict-disagree" name="verdict" value="disagree" data-key="d" aria-keyshortcuts="d">Disagree</button>
+    <button name="verdict" value="agree" data-key="a" aria-keyshortcuts="a">Agree</button>
+    <button name="verdict" value="unsure" data-key="u" aria-keyshortcuts="u">Unsure</button>
+    <button name="verdict" value="disagree" data-key="d" aria-keyshortcuts="d">Disagree</button>
   </div>
 </form>
 {% else %}
-<p id="card">Nothing left to review. Stop the page with Ctrl-C to rebuild the published file.</p>
+<p class="done" id="card-tag" tabindex="-1">You have judged every card ({{ s.progress()[s.reviewer] }}). Stop the page with Ctrl-C in its terminal to rebuild the published file.</p>
 {% endif %}
+{% if s.last %}
+<form class="last" method="post" action="/undo" hx-post="/undo" hx-target="#card" hx-swap="outerHTML">
+  <input type="hidden" name="token" value="{{ s.csrf }}">
+  <p role="status">Recorded: {{ s.proposed[s.last[0]].subject_label }}, {{ s.last[1] }}.
+    <button data-key="z" aria-keyshortcuts="z">Undo</button></p>
+</form>
+{% endif %}
+</div>

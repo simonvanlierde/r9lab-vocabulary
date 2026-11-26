@@ -17,6 +17,7 @@ from r9lab_vocabulary.review import Session, create_app
 from r9lab_vocabulary.review.__main__ import main
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
     from pathlib import Path
 
 RATER, OTHER = "orcid:0000-0002-1825-0097", "orcid:0000-0001-5109-3700"
@@ -244,7 +245,7 @@ def test_a_judged_card_does_not_come_back_and_the_queue_ends(tmp_path: Path):
     c = client(make_root(tmp_path))
     for _ in PROPOSALS:
         c.post("/verdict", data=form(c.get("/").text) | {"verdict": "agree"})
-    assert "Nothing left to review" in c.get("/").text
+    assert "You have judged every card (2)" in c.get("/").text
     assert client(tmp_path).get("/").text.count('name="verdict"') == 0  # after a restart too
 
 
@@ -262,7 +263,7 @@ def test_forged_and_stale_verdicts_are_refused(tmp_path: Path):
     assert c.post("/verdict", data=good, headers=hx).status_code == 200
     stale = c.post("/verdict", data=good, headers=hx)
     assert stale.status_code == 409
-    assert '<p id="card" role="alert">this card was already judged' in stale.text  # takes the card's place
+    assert '<p id="card" role="alert">This card was already judged.' in stale.text  # takes the card's place
 
 
 def test_every_response_carries_the_security_headers(tmp_path: Path):
@@ -316,3 +317,85 @@ def test_the_page_serves_on_this_machine_only(monkeypatch: pytest.MonkeyPatch, t
     assert main(["--port", "9999"]) == 0
     assert main([]) == 0
     assert calls == [{"host": "127.0.0.1", "port": port, "timeout_graceful_shutdown": 2} for port in (9999, 8740)]
+
+
+def test_undo_shows_the_last_card_again_and_its_new_verdict_counts(tmp_path: Path):
+    root = make_root(tmp_path)
+    c = client(root)
+    hx = {"HX-Request": "true"}
+    first = form(c.get("/").text)
+    after = c.post("/verdict", data=first | {"verdict": "agree"}, headers=hx).text
+    assert "Recorded:" in after
+    assert 'data-key="z"' in after
+    again = c.post("/undo", data={"token": first["token"]}, headers=hx)
+    assert form(again.text)["card"] == first["card"]
+    assert 'data-key="z"' not in again.text  # one step only
+    c.post("/verdict", data=first | {"verdict": "disagree"}, headers=hx)
+    rows = curate.read(root / curate.REVIEWS)[2]
+    assert [r["reviewer_agreement"] for r in rows] == ["1", "-1"]  # appended, the latest counts
+    assert c.post("/undo", data={"token": first["token"]}).status_code == 200  # the disagree, undone in turn
+    assert c.post("/undo", data={"token": first["token"]}, headers=hx).status_code == 409
+
+
+def test_undo_needs_the_form_token(tmp_path: Path):
+    c = client(make_root(tmp_path))
+    first = form(c.get("/").text)
+    c.post("/verdict", data=first | {"verdict": "agree"})
+    assert c.post("/undo", data={"token": "guess"}).status_code == 403
+    assert c.post("/undo", data=first, headers={"Sec-Fetch-Site": "cross-site"}).status_code == 403
+
+
+def test_time_hidden_or_paused_is_left_out(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    clock = iter([10.0, 17.0, 20.0, 21.0])  # card one shown, judged; card two shown, judged
+    monkeypatch.setattr(review, "time", SimpleNamespace(monotonic=lambda: next(clock)))
+    session = Session(make_root(tmp_path), RATER)
+    for away in (5.0, 9.0):  # 9 s away from a 1 s card is a page that lies: no negative time
+        card = session.card()
+        assert card
+        session.record(str(card["card"]), "agree", away)
+    assert [r["review_seconds"] for r in curate.read(tmp_path / curate.REVIEWS)[2]] == ["2.0", "0.0"]
+
+
+@pytest.mark.parametrize("away", ["-1", "nan", "inf", "soon"])
+def test_a_bad_away_time_is_refused(tmp_path: Path, away: str):
+    c = client(make_root(tmp_path))
+    assert c.post("/verdict", data=form(c.get("/").text) | {"verdict": "agree", "away": away}).status_code == 422
+
+
+@pytest.mark.parametrize("path", ["/", "/progress"])
+def test_another_site_cannot_load_the_page_or_its_stream(tmp_path: Path, path: str, monkeypatch: pytest.MonkeyPatch):
+    async def one_event(*_: object) -> AsyncIterator[str]:
+        yield "data: x\n\n"  # the real stream never ends, so a missing check would hang the test
+
+    monkeypatch.setattr(review, "progress_stream", one_event)
+    root = make_root(tmp_path)
+    c = client(root)
+    assert c.get(path).status_code == 200
+    assert c.get(path, headers={"Sec-Fetch-Site": "cross-site"}).status_code == 403
+    assert Session(root, RATER).shown_at == {}
+
+
+def test_the_progress_event_names_you_and_the_others(tmp_path: Path):
+    root = make_root(tmp_path)
+    verdict_rows(root, [(RATER, PROPOSALS[0]), (OTHER, PROPOSALS[0])])
+    event = review.progress_event(Session(root, RATER))
+    assert event.startswith('data: <p id="progress">')
+    assert event.endswith("\n\n")
+    assert f"{OTHER}: 1 of 2" in event
+    assert "You: 1 of 2" in event
+
+
+@pytest.mark.parametrize("log", [None, ""])
+def test_the_page_will_not_start_without_a_review_log(
+    log: str | None, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    root = make_root(tmp_path)
+    if log is None:
+        (root / curate.REVIEWS).unlink()
+    else:
+        (root / curate.REVIEWS).write_text(log)
+    monkeypatch.setenv("R9LAB_REVIEWER", RATER)
+    monkeypatch.chdir(root)
+    monkeypatch.setattr("uvicorn.run", lambda *_, **__: pytest.fail("the server started"))
+    assert main([]) == 2
+    assert "missing or empty" in capsys.readouterr().err

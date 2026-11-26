@@ -12,8 +12,12 @@
 <body>
 <header>
   <div hx-sse:connect="/progress" hx-swap="innerHTML">{% include "progress.jinja" %}</div>
-  <small>Reviewing as {{ s.reviewer }}. Keys: <kbd>a</kbd> agree, <kbd>u</kbd> unsure, <kbd>d</kbd> disagree.</small>
+  <button type="button" id="pause" aria-pressed="false" aria-keyshortcuts="p" hidden>Pause</button>
+  <p class="help">Reviewing as {{ s.reviewer }}, by the
+    <a href="https://github.com/simonvanlierde/r9lab-vocabulary/blob/main/docs/review-protocol.md" target="_blank" rel="noopener">review protocol</a>.
+    Keys: <kbd>a</kbd> agree, <kbd>u</kbd> unsure, <kbd>d</kbd> disagree, <kbd>z</kbd> undo, <kbd>p</kbd> pause.</p>
 </header>
-<main aria-live="polite">{% include "card.jinja" %}</main>
+<p id="paused" role="status" hidden>Paused. The clock is stopped and the card is hidden; press <kbd>p</kbd> or Resume to go on.</p>
+<main>{% include "card.jinja" %}</main>
 </body>
 </html>

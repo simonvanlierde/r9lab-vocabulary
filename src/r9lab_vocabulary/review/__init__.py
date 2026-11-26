@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import datetime as dt
 import hashlib
+import math
 import secrets
 import threading
 import time
@@ -45,10 +46,11 @@ RELATION_WORDS = {
     "skos:relatedMatch": "is related to",
 }
 # Escape every template: tags are user-typed text, and the default escapes only `.html` names.
-# The page must not be framed by another site, which could trick a click on a verdict.
+# The page must not be framed by another site, which could trick a click on a verdict, and loads
+# nothing from elsewhere.
 SECURITY_HEADERS = [
     (b"x-frame-options", b"DENY"),
-    (b"content-security-policy", b"frame-ancestors 'none'"),
+    (b"content-security-policy", b"default-src 'self'; frame-ancestors 'none'"),
     (b"x-content-type-options", b"nosniff"),
 ]
 TEMPLATES = Jinja2Templates(env=jinja2.Environment(loader=jinja2.FileSystemLoader(HERE / "templates"), autoescape=True))
@@ -70,6 +72,8 @@ class Session:
         # Sorting on a hash of ORCID and key gives each rater their own order, the same after a
         # restart, and a new proposal slots in without moving the others.
         self.order = sorted(self.proposed, key=self.card_id)
+        self.last: tuple[tuple[str, str, str], str] | None = None  # this page's last verdict, for undo
+        self.again: tuple[str, str, str] | None = None  # an undone card, shown before the queue
 
     def card_id(self, key: tuple[str, str, str]) -> str:
         """The card's name in the form: says nothing about where the proposal sits in the file."""
@@ -84,16 +88,20 @@ class Session:
         done = {curate.key(r) for r in self.reviews() if r["reviewer_id"] == self.reviewer}
         return [k for k in self.order if k not in done]
 
+    def current(self) -> tuple[str, str, str] | None:
+        """The key of the card this rater is on: an undone one, else the first in their queue."""
+        return self.again or next(iter(self.queue()), None)
+
     def card(self) -> dict[str, str | bool] | None:
         """The next proposal, blinded: no justification, tool, confidence or comment. Notes when it was shown."""
-        queue = self.queue()
-        if not queue:
+        key = self.current()
+        if key is None:
             return None
-        row = self.proposed[queue[0]]
-        self.shown_at.setdefault(queue[0], time.monotonic())
+        row = self.proposed[key]
+        self.shown_at.setdefault(key, time.monotonic())
         concept = self.concepts.get(row["object_id"], {})
         return {
-            "card": self.card_id(queue[0]),
+            "card": self.card_id(key),
             "tag": row["subject_label"],
             "relation": RELATION_WORDS.get(row["predicate_id"], row["predicate_id"]),
             "no_term": row["object_id"] == checks.NO_TERM,
@@ -111,31 +119,53 @@ class Session:
                 done.setdefault(r["reviewer_id"], set()).add(curate.key(r))
         return {rater: len(keys) for rater, keys in sorted(done.items())} | {"of": len(self.predictions)}
 
-    def record(self, card: str, verdict: str) -> None:
-        """Append the verdict on `card`; 409 when it is not the card this rater is on, 500 when the log refuses it."""
+    def record(self, card: str, verdict: str, away: float = 0.0) -> None:
+        """Append the verdict on `card`, its seconds less the `away` the page reports (hidden or paused).
+
+        409 when `card` is not the card this rater is on, 500 when the log refuses the row.
+        """
         with self.lock:
-            queue = self.queue()
-            if not queue or self.card_id(queue[0]) != card:
-                raise HTTPException(409, "this card was already judged; reload the page")
-            row = self.proposed[queue[0]]
-            shown = self.shown_at.get(queue[0])
+            key = self.current()
+            if key is None or self.card_id(key) != card:
+                raise HTTPException(409, "This card was already judged.")
+            row = self.proposed[key]
+            shown = self.shown_at.get(key)
+            seconds = "" if shown is None else f"{max(time.monotonic() - shown - away, 0):.1f}"
             try:
                 curate.append_review(self.root, {
                     **{c: row[c] for c in (*curate.KEY, "mapping_justification")},
                     "reviewer_id": self.reviewer,
                     "reviewer_agreement": VERDICTS[verdict],
-                    "review_seconds": f"{time.monotonic() - shown:.1f}" if shown is not None else "",
+                    "review_seconds": seconds,
                     "review_date": dt.datetime.now(tz=dt.UTC).date().isoformat(),
                 })  # fmt: skip
             except ValueError as e:
                 raise HTTPException(500, str(e)) from e
-            self.shown_at.pop(queue[0], None)  # only now: a failed write keeps the time for the retry
+            self.shown_at.pop(key, None)  # only now: a failed write keeps the time for the retry
+            self.last, self.again = (key, verdict), None
+
+    def undo(self) -> None:
+        """Show the last judged card again; its new verdict is a new row, and the latest row counts."""
+        with self.lock:
+            if self.last is None:
+                raise HTTPException(409, "Nothing to undo.")
+            if (showing := self.current()) is not None:
+                self.shown_at.pop(showing, None)  # its clock starts again when it comes back
+            self.again, self.last = self.last[0], None
+
+
+def not_cross_site(request: Request) -> None:
+    """Refuse a request another site's page made: browsers mark it in Sec-Fetch-Site.
+
+    A cross-site GET of the page would start a card's clock, and of the stream would hold it open.
+    """
+    if request.headers.get("sec-fetch-site", "same-origin") not in ("same-origin", "none"):
+        raise HTTPException(403, "cross-site request")
 
 
 def same_origin(request: Request, session: Session, token: str) -> None:
-    """Refuse a verdict from another site: browsers mark it in Sec-Fetch-Site, and it cannot read the token."""
-    if request.headers.get("sec-fetch-site", "same-origin") not in ("same-origin", "none"):
-        raise HTTPException(403, "cross-site request")
+    """Refuse a verdict from another site: it is marked cross-site, and it cannot read the token."""
+    not_cross_site(request)
     if not secrets.compare_digest(token, session.csrf):
         raise HTTPException(403, "bad form token; reload the page")
 
@@ -165,6 +195,33 @@ async def error_in_place_of_card(request: Request, exc: HTTPException) -> Respon
     return HTMLResponse(html, status_code=exc.status_code)
 
 
+def next_card(request: Request, session: Session, hx_request: str | None) -> Response:
+    """After a verdict or an undo: the card that is up now for htmx, or back to the page without JavaScript."""
+    if not hx_request:
+        return RedirectResponse("/", status_code=303)
+    return TEMPLATES.TemplateResponse(request, "card.jinja", {"s": session, "card": session.card()})
+
+
+def progress_event(session: Session) -> str:
+    """One server-sent event carrying the progress line."""
+    html = TEMPLATES.get_template("progress.jinja").render(progress=session.progress(), s=session)
+    return f"data: {html.replace(chr(10), '')}\n\n"
+
+
+async def progress_stream(request: Request, session: Session) -> AsyncIterator[str]:
+    """A progress event now and after each change to the log, until the page closes or the server stops."""
+    seen = None
+    try:
+        while not await request.is_disconnected():
+            stat = (session.root / curate.REVIEWS).stat()
+            if (stat.st_mtime_ns, stat.st_size) != seen:  # size too: two appends can share an mtime tick
+                seen = stat.st_mtime_ns, stat.st_size
+                yield progress_event(session)
+            await asyncio.sleep(1)
+    except asyncio.CancelledError:
+        return  # the server is stopping; nothing to report
+
+
 def create_app(root: Path, reviewer: str) -> FastAPI:
     """The review page for the log under `root`, recording verdicts as `reviewer` (an ORCID CURIE)."""
     session = Session(root, reviewer)
@@ -178,6 +235,7 @@ def create_app(root: Path, reviewer: str) -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse)
     def page(request: Request) -> HTMLResponse:
+        not_cross_site(request)
         context = {"s": session, "card": session.card(), "progress": session.progress()}
         return TEMPLATES.TemplateResponse(request, "page.jinja", context)
 
@@ -187,30 +245,29 @@ def create_app(root: Path, reviewer: str) -> FastAPI:
         card: Annotated[str, Form()],
         verdict: Annotated[str, Form()],
         token: Annotated[str, Form()],
+        away: Annotated[float, Form()] = 0.0,
         hx_request: Annotated[str | None, Header()] = None,
     ) -> Response:
         same_origin(request, session, token)
         if verdict not in VERDICTS:
             raise HTTPException(422, f"verdict must be one of {', '.join(VERDICTS)}")
-        session.record(card, verdict)
-        if not hx_request:  # a plain form post, without JavaScript
-            return RedirectResponse("/", status_code=303)
-        return TEMPLATES.TemplateResponse(request, "card.jinja", {"s": session, "card": session.card()})
+        if not math.isfinite(away) or away < 0:
+            raise HTTPException(422, "away must be a number of seconds, 0 or more")
+        session.record(card, verdict, away)
+        return next_card(request, session, hx_request)
+
+    @app.post("/undo")
+    def undo(
+        request: Request, token: Annotated[str, Form()], hx_request: Annotated[str | None, Header()] = None
+    ) -> Response:
+        same_origin(request, session, token)
+        session.undo()
+        return next_card(request, session, hx_request)
 
     @app.get("/progress")
     async def progress(request: Request) -> StreamingResponse:
         """Every rater's count, sent again whenever the review log changes (another rater's page included)."""
-
-        async def stream() -> AsyncIterator[str]:
-            seen = None
-            while not await request.is_disconnected():
-                mtime = (root / curate.REVIEWS).stat().st_mtime_ns
-                if mtime != seen:
-                    seen = mtime
-                    html = TEMPLATES.get_template("progress.jinja").render(progress=session.progress())
-                    yield f"data: {html.replace(chr(10), '')}\n\n"
-                await asyncio.sleep(1)
-
-        return StreamingResponse(stream(), media_type="text/event-stream")
+        not_cross_site(request)
+        return StreamingResponse(progress_stream(request, session), media_type="text/event-stream")
 
     return app
