@@ -47,11 +47,11 @@ concepts:
   s05:
     label: battery
     notation: battery
-    definition: One or more electrochemical cells fitted with what they need for use, such as a case, terminals and protective devices.
+    definition: 'A battery or a bare cell: one or more electrochemical cells, with or without the case, terminals and protective devices a battery has.'
     source: IEC 60050-482:2004, 482-01-04
-    example: [a phone's lithium-ion pouch battery, a laptop battery pack, an AA cell, a coin cell]
-    note: 'Not electronics: a pack''s protection board stays with the battery. A single AA or coin cell is a battery too.'
-    mappings: {exact: ['components:c0001']}
+    example: [a phone's lithium-ion pouch battery, a laptop battery pack, an AA cell, an 18650 cell cut from a pack]
+    note: 'Not electronics: a pack''s protection board stays with the battery. Wider than the IEC battery, which needs the cells fitted for use: here a bare cell counts too.'
+    mappings: {close: ['components:c0001']}
   s06:
     label: display or glass
     notation: display_glass
@@ -77,7 +77,7 @@ concepts:
     example: [a power cord, a USB cable, an internal wire harness, a ribbon cable]
     mappings: {exact: ['components:c0017']}
   s09:
-    label: magnet
+    label: permanent magnet
     notation: magnet
     definition: 'A permanent magnet: material that keeps its own magnetic field without an electric current, such as a ferrite or neodymium (NdFeB) magnet.'
     source: https://www.wikidata.org/wiki/Q11421

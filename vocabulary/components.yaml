@@ -131,7 +131,7 @@ concepts:
     definition: Material or object that produces a magnetic field, permanent or electromagnetic.
     source: https://www.wikidata.org/wiki/Q11421
     note: 'Not ferrous metal: a steel part a magnet sticks to is not a magnet. Not electric motor, which holds magnets but is a concept of its own.'
-    editorial_note: Pilot class s09 (magnet) maps to permanent magnet (c0019), not here.
+    editorial_note: Pilot class s09 (permanent magnet) maps to permanent magnet (c0019), not here.
     mappings: {exact: ['wd:Q11421'], broad: ['cpc:4693']}
   c0019:
     label: permanent magnet
