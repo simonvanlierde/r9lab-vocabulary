@@ -14,46 +14,79 @@ concepts:
   s01:
     label: ferrous
     notation: ferrous
-    definition: Steel or iron.
+    definition: A component made mainly, by mass, of iron or an iron-based alloy, such as steel or cast iron.
+    source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017
+    example: a steel chassis, a screw, a hard-drive cover plate, a transformer core
+    note: 'Not non-ferrous: stainless and plated steel are ferrous even when they look bright. Alloys based on chromium, manganese, cobalt or nickel are non-ferrous.'
     mappings: {exact: ['materials:m0002']}
   s02:
     label: non-ferrous
     notation: non_ferrous
-    definition: Aluminium, copper or brass.
+    definition: A component made mainly, by mass, of a metal or alloy not based on iron, such as aluminium, copper, brass or die-cast magnesium.
+    source: https://www.wikidata.org/wiki/Q5679431
+    example: an aluminium heat sink, a copper bus bar, a brass connector pin, a magnesium laptop frame
+    note: 'Not ferrous: every steel is ferrous, stainless included, though some stainless steel is not magnetic. Not cable: insulated copper wire is a cable.'
     mappings: {close: ['materials:m0006']}
   s03:
     label: plastic
     notation: plastic
+    definition: A component made mainly, by mass, of a rigid or flexible plastic, thermoplastic or thermoset.
+    source: https://www.wikidata.org/wiki/Q11474
+    example: an ABS housing, a polycarbonate cover, a nylon gear, a foam insert
+    note: 'Not rubber: a soft part that stretches and springs back is rubber. Not cable, even though a cable''s sheath is plastic.'
     mappings: {close: ['materials:m0020']}
   s04:
     label: electronics
     notation: electronics
-    definition: A printed circuit board or electronic component.
+    definition: A printed circuit board, bare or populated, or a loose electronic component.
+    source: https://www.wikidata.org/wiki/Q173350
+    example: a motherboard, a phone logic board, a power-supply board, a loose capacitor or chip
+    note: 'Not display or glass: a display keeps its own driver board. Batteries, cables and magnets have their own classes. A flexible printed circuit counts here.'
     mappings: {narrow: ['components:c0005', 'components:c0006', 'components:c0007']}
   s05:
     label: battery
     notation: battery
+    definition: One or more electrochemical cells fitted with what they need for use, such as a case, terminals and protective devices.
+    source: IEC 60050-482:2004, 482-01-04
+    example: a phone's lithium-ion pouch battery, a laptop battery pack, an AA cell, a coin cell
+    note: 'Not electronics: a pack''s protection board stays with the battery. A single loose cell is a battery too.'
     mappings: {exact: ['components:c0001']}
   s06:
     label: display or glass
     notation: display_glass
-    definition: Glass or an LCD screen.
+    definition: A component made mainly of glass, or a display panel or module such as an LCD.
+    source: https://www.wikidata.org/wiki/Q11469
+    example: a phone screen assembly, an LCD panel, a glass cover or lens, a light bulb
+    note: 'Not plastic: a clear plastic window or light guide is plastic. Not electronics: a display keeps its driver board.'
     mappings: {narrow: ['materials:m0043', 'components:c0014']}
   s07:
     label: rubber
     notation: rubber
+    definition: 'A component made mainly of an elastomer, a soft material that stretches and springs back: natural or synthetic rubber, silicone or TPE.'
+    source: https://www.wikidata.org/wiki/Q252266
+    example: a rubber foot, a gasket or seal, a keypad membrane, a drive belt
+    note: 'Not plastic: a hard part that does not spring back is plastic. Not cable: a rubber-sheathed cable is a cable.'
     mappings: {close: ['materials:m0038']}
   s08:
     label: cable
     notation: cable
-    definition: An electric cable or wire.
+    definition: 'An electric cable or wire: one or more insulated conductors, with or without plugs.'
+    source: https://www.wikidata.org/wiki/Q188447
+    example: a power cord, a USB cable, an internal wire harness, a ribbon cable
+    note: 'Not electronics: a flexible printed circuit is a printed board. Not non-ferrous: a bare copper strip has no insulation.'
     mappings: {exact: ['components:c0017']}
   s09:
     label: magnet
     notation: magnet
+    definition: 'A permanent magnet: material that keeps its own magnetic field, such as a ferrite or NdFeB magnet.'
+    source: https://www.wikidata.org/wiki/Q11421
+    example: a loudspeaker magnet, a hard-drive voice-coil magnet, a motor rotor magnet, a magnetic catch
+    note: 'Not ferrous: a steel part a magnet sticks to is ferrous. A motor or an electromagnet is not a magnet; it takes its main material''s class.'
     mappings: {exact: ['components:c0018']}
   s10:
     label: other
     notation: other
-    definition: Paper, cardboard, wood or fabric.
+    definition: A component whose main material fits none of the other nine classes, such as paper, cardboard, wood, fabric or ceramic.
+    example: a cardboard insert, a wooden case, a fabric speaker grille, a ceramic insulator
+    note: 'Only when no other class fits: a paper or fabric part that is mostly plastic by mass is plastic.'
     mappings: {narrow: ['materials:m0055', 'materials:m0056', 'materials:m0057']}
