@@ -245,17 +245,17 @@ concepts:
     label: epoxy resin
     definition: Thermoset made by curing an epoxide resin with a hardener, used as adhesive, potting, coating and laminate binder.
     source: https://www.wikidata.org/wiki/Q143983
-    example: [epoxy potting in a power supply, an epoxy-encapsulated chip package, two-part epoxy adhesive, epoxy powder coating]
-    note: 'Not FR-4 laminate: epoxy reinforced with glass fibre is a composite. Wikidata''s epoxy resins are described as adhesives; here cured epoxy in any use is included.'
+    example: [epoxy potting in a power supply, a cast epoxy insulator, two-part epoxy adhesive, epoxy powder coating]
+    note: 'Not FR-4 laminate: epoxy reinforced with glass fibre is a composite. Wikidata describes epoxy resin as an adhesive; here cured epoxy in any use counts.'
     broader: [m0034]
     mappings: {exact: ['pmdco:PMD_0050023', 'wd:Q143983'], broad: ['cpc:34740']}
     names:
       bafu: ['^epoxy resin, ']
   m0036:
     label: phenolic resin
-    definition: Thermoset made from phenol and formaldehyde, hard, brittle and heat resistant.
+    definition: Hard, brittle and heat-resistant thermoset made from phenol and formaldehyde.
     source: https://www.wikidata.org/wiki/Q145897
-    example: [a Bakelite plug body, a phenolic lamp socket, a brown switch housing, a phenolic pan handle]
+    example: [a brown phenolic plug body, a phenolic lamp socket, a brown switch housing, a phenolic pan handle]
     note: 'Phenol formaldehyde (PF), Bakelite. Not composite: paper-phenolic circuit board (FR-2) is a composite, like FR-4.'
     broader: [m0034]
     mappings: {exact: ['wd:Q145897'], broad: ['cpc:34790']}
@@ -263,8 +263,8 @@ concepts:
     label: polyurethane
     definition: Polymer whose chains are joined by urethane links, rigid or flexible, as foam or solid.
     source: https://www.wikidata.org/wiki/Q146322
-    example: [rigid PUR insulation foam from a fridge, flexible PUR foam padding, a polyurethane cable sheath, polyurethane varnish]
-    note: 'Rigid and flexible PUR, as foam or solid. PUR foam goes here, not foam. Not thermoplastic elastomer: thermoplastic polyurethane (TPU) is a thermoplastic elastomer.'
+    example: [rigid PUR insulation foam from a fridge, flexible PUR foam padding, a polyurethane potting compound, polyurethane varnish]
+    note: 'PUR. Not foam: PUR foam goes here. Not thermoplastic elastomer: thermoplastic polyurethane (TPU) is a thermoplastic elastomer.'
     broader: [m0020]
     mappings: {exact: ['wd:Q146322'], broad: ['cpc:34790']}
     names:
@@ -288,8 +288,8 @@ concepts:
     label: synthetic rubber
     definition: Elastomer made by polymerising petrochemical monomers, such as SBR, EPDM, NBR and neoprene.
     source: https://www.wikidata.org/wiki/Q6714735
-    example: [an EPDM door seal, an NBR O-ring, a neoprene gasket, an SBR rubber foot]
-    note: 'Not silicone rubber or thermoplastic elastomer: both have their own concepts here. Wikidata''s synthetic rubber is any artificial elastomer and includes silicone rubber; here it is narrower.'
+    example: [an EPDM door seal, an NBR O-ring, a chloroprene rubber gasket, an SBR rubber foot]
+    note: 'Not silicone rubber or thermoplastic elastomer: both have their own concepts here. Wikidata''s synthetic rubber also counts silicone rubber.'
     broader: [m0038]
     mappings: {exact: ['pmdco:PMD_0050032'], close: ['cpc:34800', 'wd:Q6714735']}
     names:
@@ -298,8 +298,8 @@ concepts:
     label: silicone rubber
     definition: Elastomer with a silicon-oxygen backbone, heat resistant and flexible over a wide temperature range.
     source: https://www.wikidata.org/wiki/Q4115245
-    example: [a silicone keypad, a silicone oven door seal, a silicone cable sheath, a silicone thermal pad]
-    note: 'Not synthetic rubber: Wikidata counts silicone rubber as a synthetic rubber, but here it is a sibling. Silicone grease and oil are not rubbers and go elsewhere.'
+    example: [a silicone keypad, a silicone oven door seal, a silicone cable sheath, a silicone hose from a coffee machine]
+    note: Not synthetic rubber, though Wikidata counts silicone rubber as one. Silicone grease and oil are not rubber.
     editorial_note: BAFU's silicone product is a proxy for silicone rubber.
     broader: [m0038]
     mappings: {exact: ['pmdco:PMD_0090052', 'wd:Q4115245']}
@@ -325,7 +325,7 @@ concepts:
     definition: Glass of silica, soda and lime, the common glass of windows, bottles, lamp bulbs and appliance panels.
     source: https://www.wikidata.org/wiki/Q745127
     example: [a microwave door pane, a lamp bulb, a scanner glass plate, window glass]
-    note: 'Not glass: borosilicate, aluminosilicate cover glass and leaded CRT glass go under the parent glass. Tempered soda-lime glass, as in an oven door, is included.'
+    note: 'Not other glass: borosilicate glass, aluminosilicate cover glass and leaded CRT glass stay at glass. Tempered soda-lime glass, as in an oven door, is included.'
     broader: [m0043]
     mappings: {exact: ['pmdco:PMD_0050102', 'wd:Q745127'], broad: ['cpc:3711']}
     names:
@@ -335,7 +335,7 @@ concepts:
     definition: Glass drawn into fine filaments, loose or as wool, mat, yarn or fabric.
     source: https://www.wikidata.org/wiki/Q5861
     example: [glass wool insulation, a glass fibre sleeve on a heating element, a glass fibre mat, chopped glass fibre]
-    note: 'Not glass-fibre reinforced polymer: fibres set in resin, as in FR-4, are a composite. Not textile: woven glass fabric goes here, not textile.'
+    note: 'Not glass-fibre reinforced polymer: fibres set in resin, as in FR-4, are a composite. Not textile: woven glass fabric goes here.'
     broader: [m0043]
     mappings: {exact: ['wd:Q5861'], close: ['cpc:3712']}
     names:
