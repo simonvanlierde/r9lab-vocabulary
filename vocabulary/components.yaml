@@ -4,6 +4,7 @@ scheme:
   slug: components
   id_letter: c
   title: R9lab component classes
+  created: 2026-11-17
   description: >
     Component classes for parts recovered from disassembled products, with crosswalks to
     CPC 2.1, Wikidata and BAFU activity names.

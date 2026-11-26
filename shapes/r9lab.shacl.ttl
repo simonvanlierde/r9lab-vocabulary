@@ -1,0 +1,37 @@
+# r9lab-vocabulary's own rules, run with skohub-shapes' SKOS rules (skohub-skos.shacl.ttl).
+# Check a copy: pyshacl -s r9lab.shacl.ttl r9lab-vocabulary.ttl
+@prefix : <https://w3id.org/r9lab/vocabulary/shapes#> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+:Concept a sh:NodeShape ; sh:targetClass skos:Concept ;
+    sh:property [ sh:path skos:prefLabel ; sh:languageIn ("en") ; sh:minCount 1 ; sh:message "A concept has an English prefLabel." ] ,
+        [ sh:path skos:inScheme ; sh:class skos:ConceptScheme ; sh:minCount 1 ; sh:message "A concept is in a concept scheme." ] ,
+        [ sh:path [ sh:alternativePath (skos:exactMatch skos:closeMatch skos:broadMatch skos:narrowMatch skos:relatedMatch) ] ;
+            sh:nodeKind sh:IRI ; sh:message "A mapping points at an IRI." ] ,
+        [ sh:path dct:isReplacedBy ; sh:class skos:Concept ; sh:not [ sh:path owl:deprecated ; sh:hasValue true ] ;
+            sh:message "A deprecated concept is replaced by a concept in use." ] ,
+        [ sh:path bibo:status ; sh:in ( <http://purl.org/ontology/bibo/status/draft> <http://purl.org/ontology/bibo/status/accepted> <http://purl.org/ontology/bibo/status/rejected> ) ;
+            sh:minCount 1 ; sh:maxCount 1 ; sh:message "A concept has one bibo:status PyST accepts." ] .
+
+# What PyST needs of a concept scheme beyond :Scheme: https://docs.pyst.dev/data-model/
+:PySTScheme a sh:NodeShape ; sh:targetClass skos:ConceptScheme ;
+    sh:property [ sh:path bibo:status ; sh:in ( <http://purl.org/ontology/bibo/status/draft> <http://purl.org/ontology/bibo/status/accepted> <http://purl.org/ontology/bibo/status/rejected> ) ;
+            sh:minCount 1 ; sh:maxCount 1 ; sh:message "A concept scheme has one bibo:status PyST accepts." ] ,
+        [ sh:path skos:definition ; sh:languageIn ("en") ; sh:minCount 1 ; sh:message "A concept scheme has a skos:definition." ] ,
+        [ sh:path owl:versionInfo ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "A concept scheme has exactly one owl:versionInfo." ] .
+
+:Scheme a sh:NodeShape ; sh:targetClass skos:ConceptScheme , dcat:Dataset ;
+    sh:property [ sh:path dct:creator ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:message "A scheme names its creator by IRI." ] ,
+        [ sh:path dct:publisher ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:message "A scheme names its publisher by IRI." ] ,
+        [ sh:path dct:created ; sh:datatype xsd:date ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "A scheme has a dct:created date." ] ,
+        [ sh:path dct:modified ; sh:datatype xsd:date ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "A scheme has a dct:modified date." ] ,
+        [ sh:path dct:title ; sh:languageIn ("en") ; sh:minCount 1 ; sh:message "A scheme has an English dct:title." ] ,
+        [ sh:path owl:versionIRI ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "A scheme has an owl:versionIRI." ] ,
+        [ sh:path dct:language ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:message "A scheme names its language by IRI." ] ,
+        [ sh:path dcat:landingPage ; sh:nodeKind sh:IRI ; sh:minCount 1 ; sh:message "A scheme has a dcat:landingPage." ] .

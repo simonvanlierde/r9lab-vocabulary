@@ -16,6 +16,12 @@ path = ".github/CODE_OF_CONDUCT.md"
 SPDX-FileCopyrightText = "Organization for Ethical Source"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
 
+# skohub-shapes' SKOS shapes, copied from skohub-io/skohub-shapes at ce46984 with trailing whitespace trimmed.
+[[annotations]]
+path = "shapes/skohub-skos.shacl.ttl"
+SPDX-FileCopyrightText = "2022-2024 SkoHub contributors <https://github.com/skohub-io/skohub-shapes>"
+SPDX-License-Identifier = "Apache-2.0"
+
 # Data is licensed apart from the code. The last matching annotation wins.
 [[annotations]]
 path = "data/**"

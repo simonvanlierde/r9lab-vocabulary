@@ -16,6 +16,7 @@ scheme:
   slug: products
   id_letter: p
   title: R9lab product types
+  created: 2026-11-17
   description: >
     Product types for disassembled consumer products, with crosswalks to CPC 2.1, UNU-KEY v1
     and v2 codes, the WEEE Directive categories, the CPV codes R9lab uses and Wikidata.

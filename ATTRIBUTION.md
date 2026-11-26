@@ -17,6 +17,7 @@ the identifiers, except where a concept's own label is the common name of the th
 | Wikidata item ids | [Wikidata](https://www.wikidata.org) | CC0 1.0 | `wd:` mappings |
 | WEEE categories 1-6, as fragments on the directive's ELI; each product type's category is taken from its UNU-KEY by the UNU-KEY to EU-6 table | Directive 2012/19/EU, Annex III; Baldé et al., *The Global E-waste Monitor 2017*, Annexes, UNU, ITU and ISWA, 2017, checked against Table 2 of the 2026 E-waste Statistics Guidelines | EU legal text, free reuse; codes only | `weee6:` mappings |
 | UNU-KEY v1 codes (codes only) | Forti et al., *E-waste Statistics: Guidelines on Classification, Reporting and Indicators*, 2nd ed., UNU, 2018 | CC BY-NC-SA 3.0 IGO; names not copied | `unu1:` mappings |
+| SKOS SHACL shapes (`skos.shacl.ttl` at commit ce46984), trailing whitespace trimmed | [skohub-io/skohub-shapes](https://github.com/skohub-io/skohub-shapes) | Apache-2.0 | `shapes/skohub-skos.shacl.ttl` |
 | UNU-KEY v2 codes (codes only), and the v1 code list | Lysaght et al., *E-waste Statistics: Guidelines on Classifications, Reporting and Indicators*, 3rd ed., UNITAR, 2026, [doi:10.5281/zenodo.18328494](https://doi.org/10.5281/zenodo.18328494), Tables 2 and 19 | CC BY-NC-SA 4.0; names not copied | `unu2:` mappings; `FIXED_CODES` in `scheme.py` |
 | BAFU activity names, as regular expressions | Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 and BAFU:2026 v1 | Patterns only, no data | `names.bafu` fields |
 
