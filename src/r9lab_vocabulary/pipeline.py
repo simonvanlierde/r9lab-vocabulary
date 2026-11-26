@@ -42,7 +42,7 @@ from sourceledger import Source
 from r9lab_vocabulary import scheme
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Iterable, Iterator
 
 ROOT = Path(__file__).resolve().parents[2]  # the checkout this module runs from, for its commit date
 VOCABULARY = Path("vocabulary")
@@ -155,16 +155,15 @@ def parse(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str
     return sourceledger.parse_source(source, payload)
 
 
+# Outside schemes whose codes `rdf` checks against a processed source: prefix -> (source id, code column).
+SOURCE_CODES = {"cpc": (CPC_SOURCE, "code"), "pmdco": (PMDCO_SOURCE, "id")}
+
+
 def known_codes() -> dict[str, set[str]]:
-    """The CPC codes and PMDco ids in the processed sources; error if they were not built."""
-    paths = {"cpc": PROCESSED / "cpc21.parquet", "pmdco": PROCESSED / "pmdco.parquet"}
-    if missing := [str(p) for p in paths.values() if not p.exists()]:
-        msg = f"{', '.join(missing)} missing; run `just pipeline` first"
-        raise FileNotFoundError(msg)
-    return {
-        "cpc": {r["code"] for r in sourceledger.read_output(paths["cpc"])},
-        "pmdco": {r["id"] for r in sourceledger.read_output(paths["pmdco"])},
-    }
+    """The codes of each `SOURCE_CODES` prefix in the processed sources; error if they were not built."""
+    paths = {prefix: PROCESSED / f"{source}.parquet" for prefix, (source, _) in SOURCE_CODES.items()}
+    _built(paths.values())
+    return {prefix: {r[SOURCE_CODES[prefix][1]] for r in sourceledger.read_output(p)} for prefix, p in paths.items()}
 
 
 def name_lists() -> dict[str, dict[str, list[str]]]:
@@ -175,9 +174,7 @@ def name_lists() -> dict[str, dict[str, list[str]]]:
         if s["id"].partition("-")[0] in NAME_LISTS and s.get("status") == IMPLEMENTED
     ]
     paths = {i: PROCESSED / f"{i}.parquet" for i in ids}
-    if missing := [str(p) for p in paths.values() if not p.exists()]:
-        msg = f"{', '.join(missing)} missing; run `just pipeline` first"
-        raise FileNotFoundError(msg)
+    _built(paths.values())
     lists: dict[str, dict[str, list[str]]] = {}
     for i, path in paths.items():
         family, _, ver = i.partition("-")
@@ -186,8 +183,11 @@ def name_lists() -> dict[str, dict[str, list[str]]]:
     return lists
 
 
-def _versions(lists: dict[str, dict[str, list[str]]]) -> dict[str, set[str]]:
-    return {family: set(vs) for family, vs in lists.items()}
+def _built(paths: Iterable[Path]) -> None:
+    """FileNotFoundError naming each of `paths` the pipeline has not built yet."""
+    if missing := [str(p) for p in paths if not p.exists()]:
+        msg = f"{', '.join(missing)} missing; run `just pipeline` first"
+        raise FileNotFoundError(msg)
 
 
 def commit_date() -> date | None:
@@ -233,11 +233,11 @@ def rdf(out: Path) -> int:
     try:
         known = known_codes()
         lists = name_lists()
-        errors = scheme.validate(schemes, _versions(lists)) + scheme.check_codes(schemes, known)
-        errors += scheme.check_tag_mappings(schemes, TAG_MAPPINGS)
     except FileNotFoundError as e:
         sys.stderr.write(f"error: {e}\n")
         return 3
+    errors = scheme.validate(schemes, lists) + scheme.check_codes(schemes, known)
+    errors += scheme.check_tag_mappings(schemes, TAG_MAPPINGS)
     if errors:  # a broken pattern would not compile below
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
@@ -259,12 +259,12 @@ def rdf(out: Path) -> int:
     except ValueError as e:
         sys.stderr.write(f"error: {e}\n")
         return 1
-    ver = version("r9lab-vocabulary")
+    about = scheme.About(version("r9lab-vocabulary"), orcids, repo, modified)
     paths = [
-        *scheme.write(schemes, ver, out, matches, orcids=orcids, landing=repo, modified=modified),
+        *scheme.write(schemes, about, out, matches),
         Path(shutil.copy(SHAPES, out)),
-        scheme.write_sssom(schemes, ver, out, orcids[0]),  # the publisher, as in to_graph
-        *scheme.write_labels(schemes, ver, out),
+        scheme.write_sssom(schemes, about, out),
+        *scheme.write_labels(schemes, about.version, out),
     ]
     sys.stdout.writelines(f"{path}\n" for path in paths)
     return 0
@@ -330,7 +330,7 @@ def names(source: str | None, *, summary: bool) -> int:
             sys.stderr.write(f"error: no name-list source {source!r}; known: {known}\n")
             return 2
     schemes = scheme.load(VOCABULARY)
-    if errors := scheme.validate(schemes, _versions(lists)):
+    if errors := scheme.validate(schemes, lists):
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
     if source is not None:
@@ -361,7 +361,7 @@ def diff(ref: str) -> int:
         t.extractall(tmp, filter="data")
         try:
             old = scheme.load(Path(tmp) / VOCABULARY)
-        except (yaml.YAMLError, ValueError, KeyError, TypeError) as e:
+        except (yaml.YAMLError, ValueError) as e:
             sys.stderr.write(f"error: cannot load {VOCABULARY}/ at {ref}: {e}\n")
             return 2
     lines, ok = scheme.diff(old, scheme.load(VOCABULARY))
@@ -371,31 +371,38 @@ def diff(ref: str) -> int:
     return 0 if ok else 1
 
 
+OWN = ("rdf", "wikidata", "names", "diff")  # the subcommands this module runs; sourceledger runs the rest
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names`, `wikidata` or `diff REF`."""
     args = sys.argv[1:] if argv is None else argv
-    if args[:1] == ["rdf"]:
-        p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
-        p.add_argument("--out", type=Path, default=DIST, help="output directory (default: dist)")
-        return rdf(p.parse_args(args[1:]).out)
-    if args[:1] == ["wikidata"]:
-        return wikidata()
-    if args[:1] == ["diff"]:
-        p = argparse.ArgumentParser(prog="r9lab-vocabulary diff", description=diff.__doc__)
-        p.add_argument("ref", help="the git tag (or other ref) to compare against, such as v0.1.0")
-        return diff(p.parse_args(args[1:]).ref)
-    if args[:1] == ["names"]:
+    if not args or args[0] not in OWN:
+        return sourceledger.main(args, parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
+    try:
+        if args[:1] == ["rdf"]:
+            p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
+            p.add_argument("--out", type=Path, default=DIST, help="output directory (default: dist)")
+            return rdf(p.parse_args(args[1:]).out)
+        if args[:1] == ["wikidata"]:
+            return wikidata()
+        if args[:1] == ["diff"]:
+            p = argparse.ArgumentParser(prog="r9lab-vocabulary diff", description=diff.__doc__)
+            p.add_argument("ref", help="the git tag (or other ref) to compare against, such as v0.1.0")
+            return diff(p.parse_args(args[1:]).ref)
         p = argparse.ArgumentParser(prog="r9lab-vocabulary names", description=names.__doc__)
         p.add_argument("--source", help="one name-list source, such as bafu-2026-v1 (default: all)")
         p.add_argument("--summary", action="store_true", help="one line per pattern and source, with its match count")
         a = p.parse_args(args[1:])
         return names(a.source, summary=a.summary)
-    return sourceledger.main(args, parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
+    except (ValueError, yaml.YAMLError) as e:  # a malformed or missing vocabulary/*.yaml
+        sys.stderr.write(f"error: {e}\n")
+        return 1
 
 
 def entry() -> NoReturn:
     """The `r9lab-vocabulary` command."""
-    if sys.argv[1:2] in (["rdf"], ["wikidata"], ["names"], ["diff"]):
+    if sys.argv[1:2] and sys.argv[1] in OWN:
         sys.exit(main())
     sourceledger.entry(parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
 

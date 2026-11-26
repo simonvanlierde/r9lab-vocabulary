@@ -18,7 +18,7 @@ SPDX-License-Identifier = "CC-BY-SA-4.0"
 
 # skohub-shapes' SKOS shapes, copied from skohub-io/skohub-shapes at ce46984 with trailing whitespace trimmed.
 [[annotations]]
-path = "shapes/skohub-skos.shacl.ttl"
+path = "tests/fixtures/skohub-skos.shacl.ttl"
 SPDX-FileCopyrightText = "2022-2024 SkoHub contributors <https://github.com/skohub-io/skohub-shapes>"
 SPDX-License-Identifier = "Apache-2.0"
 

@@ -1,16 +1,23 @@
-"""Fixtures the test modules share."""
+"""Fixtures and constants the test modules share; `pythonpath` in pyproject.toml lets them import it."""
 
 from __future__ import annotations
 
+import contextlib
 import os
 import subprocess
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
+from r9lab_vocabulary import pipeline, scheme
+
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+# A code set that holds every code, for a test that does not check codes.
+EVERYTHING = type("All", (set,), {"__contains__": lambda *_: True})()
 
 
 def _git(cwd: Path, *args: str, day: str = "2026-01-01") -> None:
@@ -29,3 +36,41 @@ def _git(cwd: Path, *args: str, day: str = "2026-01-01") -> None:
 def git() -> Callable[..., None]:
     """`git(cwd, *args, day=...)`: git in `cwd` as a throwaway committer, dated noon UTC on `day`, with no HOME."""
     return _git
+
+
+def built[T](load: Callable[[], T]) -> T:
+    """`load()` of `just pipeline` output, in ROOT; skips while it is missing, fails if PIPELINE_OUTPUT_REQUIRED=1."""
+    try:
+        with contextlib.chdir(ROOT):
+            return load()
+    except FileNotFoundError as e:
+        if os.environ.get("PIPELINE_OUTPUT_REQUIRED") == "1":
+            pytest.fail(str(e))
+        pytest.skip(str(e))
+
+
+@pytest.fixture
+def stub_sources(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Callable[..., None]:
+    """`stub_sources(names=None, *, codes=EVERYTHING, concepts=None)`: fake the built sources `rdf` and `names` read.
+
+    `names` maps each BAFU version to its names, and `codes` is every outside prefix's known
+    codes. With `concepts` (the YAML under `concepts:`), the test runs in `tmp_path` on one
+    scheme `t` holding them and an empty tags file; without, in ROOT on the real vocabulary.
+    """
+
+    def stub(
+        names: dict[str, list[str]] | None = None, *, codes: set[str] = EVERYTHING, concepts: str | None = None
+    ) -> None:
+        monkeypatch.setattr(pipeline, "known_codes", lambda: dict.fromkeys(pipeline.SOURCE_CODES, codes))
+        monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": names or {}})
+        if concepts is None:
+            monkeypatch.chdir(ROOT)
+            return
+        (tmp_path / "vocabulary").mkdir()
+        text = f"scheme: {{slug: t, title: t, id_letter: t}}\nconcepts:\n  {concepts}\n"
+        (tmp_path / "vocabulary" / "t.yaml").write_text(text)
+        (tmp_path / "mappings").mkdir()
+        (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text("\t".join(scheme.TAG_COLUMNS) + "\n")
+        monkeypatch.chdir(tmp_path)
+
+    return stub

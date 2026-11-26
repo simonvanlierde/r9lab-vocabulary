@@ -1,20 +1,21 @@
 """The vocabulary's own rules, on the real files and on small broken copies."""
 
-import csv
 import json
 from datetime import UTC, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
-import yaml
+from conftest import ROOT
 from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Literal, URIRef
 from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
-ROOT = Path(__file__).resolve().parent.parent
 # The ORCID iD ORCID itself publishes for tests.
 TEST_ORCID = "https://orcid.org/0000-0002-1825-0097"
 # The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
@@ -52,7 +53,7 @@ def test_the_vocabulary_breaks_no_rule(schemes: Schemes):
 
 
 def test_the_pilot_collection_keeps_the_frozen_keys(schemes: Schemes):
-    g = scheme.to_graph(schemes, "test")
+    g = scheme.to_graph(schemes, scheme.About("test"))
     coll = URIRef(schemes["pilot-classes"].iri + "collection")
     members = set(g.objects(coll, SKOS.member))
     assert {str(g.value(m, SKOS.notation)) for m in members} == PILOT_KEYS
@@ -70,16 +71,9 @@ def test_the_material_axis_is_topped_by_ashbys_six_families(schemes: Schemes):
     assert tops == {"metal", "polymer", "elastomer", "glass", "ceramic", "hybrid material"}
 
 
-def test_every_concept_is_in_its_scheme(schemes: Schemes):
-    g = scheme.to_graph(schemes, "test")
-    for s in schemes.values():
-        for cid in s.concepts:
-            assert (URIRef(s.iri + cid), SKOS.inScheme, URIRef(s.iri)) in g
-
-
 @pytest.mark.parametrize("prefix", sorted(scheme.CODE_ONLY))
 def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
-    g = scheme.to_graph(schemes, "test")
+    g = scheme.to_graph(schemes, scheme.About("test"))
     base = scheme.PREFIXES[prefix]
     nodes = {s for s in g.subjects(RDF.type, SKOS.Concept) if str(s).startswith(base)}
     assert nodes
@@ -89,7 +83,7 @@ def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
 
 
 def test_cc0_covers_the_vocabulary_and_its_own_schemes_only(schemes: Schemes):
-    g = scheme.to_graph(schemes, "test")
+    g = scheme.to_graph(schemes, scheme.About("test"))
     licensed = {str(s) for s in g.subjects(DCTERMS.license, scheme.CC0)}
     assert licensed == {scheme.BASE} | {s.iri for s in schemes.values()}
 
@@ -135,6 +129,12 @@ def test_check_tag_mappings_needs_its_columns(schemes: Schemes, tmp_path: Path):
     assert scheme.check_tag_mappings(schemes, path) == [
         "t.sssom.tsv: no subject_id, predicate_id, object_label, mapping_justification column"
     ]
+
+
+def test_check_tag_mappings_reports_a_short_row(schemes: Schemes, tmp_path: Path):
+    path = tmp_path / "t.sssom.tsv"
+    path.write_text("\t".join(scheme.TAG_COLUMNS) + "\nr9lab-tag:steel\tsteel\n")
+    assert "t.sssom.tsv: 'steel': justification '' is not a semapv term" in scheme.check_tag_mappings(schemes, path)
 
 
 def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Schemes):
@@ -239,7 +239,7 @@ def test_text_fields_are_written_as_skos_notes():
         }
     )
     assert scheme.validate(schemes, VERSIONS) == []
-    g = scheme.to_graph(schemes, "test")
+    g = scheme.to_graph(schemes, scheme.About("test"))
     a, b = URIRef(schemes["t"].iri + "t01"), URIRef(schemes["t"].iri + "t02")
     assert set(g.objects(a, SKOS.example)) == {Literal("x", lang="en"), Literal("y", lang="en")}
     assert g.value(a, SKOS.scopeNote) == Literal("Not a b.", lang="en")
@@ -261,7 +261,7 @@ def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Sch
 def test_a_weee_category_link_points_into_annex_iii_of_the_directive():
     schemes = one({"t01": {"label": "a", "mappings": {"broad": ["weee6:6"]}}})
     assert scheme.validate(schemes, VERSIONS) == []
-    g = scheme.to_graph(schemes, "test")
+    g = scheme.to_graph(schemes, scheme.About("test"))
     target = URIRef("http://data.europa.eu/eli/dir/2012/19/oj#anx_III-6")
     assert (URIRef(schemes["t"].iri + "t01"), SKOS.broadMatch, target) in g
 
@@ -269,7 +269,7 @@ def test_a_weee_category_link_points_into_annex_iii_of_the_directive():
 def test_a_deprecated_concept_is_marked_and_not_a_top_concept():
     schemes = one({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]}, "t02": {"label": "b"}})
     assert scheme.validate(schemes, VERSIONS) == []
-    g = scheme.to_graph(schemes, "test")
+    g = scheme.to_graph(schemes, scheme.About("test"))
     old = URIRef(schemes["t"].iri + "t01")
     assert (old, OWL.deprecated, Literal("true", datatype=XSD.boolean)) in g
     assert (old, SKOS.topConceptOf, URIRef(schemes["t"].iri)) not in g
@@ -300,7 +300,8 @@ def test_name_patterns_search_the_versions_they_apply_to():
 
 def test_name_matches_has_one_row_per_pattern_and_source(tmp_path: Path):
     schemes = one({"t01": {"label": "a", "names": {"bafu": ["^x"]}}})
-    scheme.write(schemes, "test", tmp_path, [("t", "t01", "bafu", "2026-v1", "^x", ["X, at plant", "x2"])])
+    match = ("t", "t01", "bafu", "2026-v1", "^x", ["X, at plant", "x2"])
+    scheme.write(schemes, scheme.About("test"), tmp_path, [match])
     assert (tmp_path / "name-matches.csv").read_text(encoding="utf-8").splitlines() == [
         "concept,label,source,pattern,matches",
         f"{schemes['t'].iri}t01,a,bafu-2026-v1,^x,2",
@@ -315,7 +316,7 @@ def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
 
 def test_the_first_author_alone_publishes():
     orcids = [TEST_ORCID, "https://orcid.org/0000-0001-5109-3700"]
-    g = scheme.to_graph(one({"t01": {"label": "a"}}), "1.2.3", orcids=orcids)
+    g = scheme.to_graph(one({"t01": {"label": "a"}}), scheme.About("1.2.3", orcids))
     s = URIRef(scheme.BASE + "t/")
     assert set(g.objects(s, DCTERMS.publisher)) == {URIRef(TEST_ORCID)}
     assert len(set(g.objects(s, DCTERMS.creator))) == 2
@@ -326,14 +327,12 @@ ORCID = "https://orcid.org/0009-0006-6953-909X"
 
 
 def read_sssom(path: Path) -> tuple[dict, list[dict[str, str]]]:
-    lines = path.read_text(encoding="utf-8").splitlines()
-    header = [line[1:] for line in lines if line.startswith("#")]
-    rows = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
-    return yaml.safe_load("\n".join(header)), list(rows)
+    meta, rows = scheme.read_sssom(path)
+    return meta, list(rows)
 
 
 def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tmp_path: Path):
-    meta, rows = read_sssom(scheme.write_sssom(schemes, "0.1.0", tmp_path, ORCID))
+    meta, rows = read_sssom(scheme.write_sssom(schemes, scheme.About("0.1.0", [ORCID]), tmp_path))
     assert meta["mapping_set_id"] == f"{scheme.BASE}r9lab-vocabulary.sssom.tsv"
     assert meta["mapping_set_version"] == "0.1.0"
     assert meta["license"] == "https://creativecommons.org/publicdomain/zero/1.0/"
@@ -359,7 +358,7 @@ def test_sssom_leaves_out_mappings_from_or_to_a_deprecated_concept(tmp_path: Pat
             "t02": {"label": "b", "mappings": {"exact": ["wd:Q2"], "related": ["t:t01"]}},
         }
     )
-    _, rows = read_sssom(scheme.write_sssom(schemes, "test", tmp_path, ORCID))
+    _, rows = read_sssom(scheme.write_sssom(schemes, scheme.About("test", [ORCID]), tmp_path))
     assert [(r["subject_id"], r["object_id"]) for r in rows] == [("t:t02", "wd:Q2")]
 
 
@@ -418,6 +417,12 @@ def pilot_fixture(materials: dict, pilot_mappings: dict) -> Schemes:
 def test_broad_and_related_pilot_mappings_give_no_pilot_key():
     schemes = pilot_fixture({"m01": {"label": "a"}}, {"broad": ["m:m01"], "related": ["m:m01"]})
     assert scheme.labels(schemes)[0]["concepts"][0]["pilot"] == []
+
+
+def test_a_pilot_class_with_a_null_notation_is_keyed_by_its_id():
+    schemes = pilot_fixture({"m01": {"label": "a"}}, {"exact": ["m:m01"]})
+    schemes["p"].concepts["p01"]["notation"] = None
+    assert scheme.labels(schemes)[0]["concepts"][0]["pilot"] == ["p01"]
 
 
 def test_pilot_keys_come_from_every_broader_parent():

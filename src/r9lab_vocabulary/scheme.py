@@ -24,7 +24,7 @@ from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, Name
 from yaml.constructor import ConstructorError
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
     from pathlib import Path
 
 # NOTE: w3id.org/r9lab is not registered yet; the redirect is a PR to perma-id/w3id.org.
@@ -136,15 +136,31 @@ class _UniqueKeyLoader(yaml.SafeLoader):
 
 
 def load(directory: Path) -> dict[str, Scheme]:
-    """Every `*.yaml` scheme in `directory`, keyed by slug. A repeated key in a file is an error."""
+    """Every `*.yaml` scheme in `directory`, keyed by slug.
+
+    ValueError when there is none, or a file is not a `scheme` mapping with a `slug` and a
+    `concepts` mapping; a repeated key in a file is a YAML error.
+    """
     schemes = {}
-    for path in sorted(directory.glob("*.yaml")):
+    paths = sorted(directory.glob("*.yaml"))
+    if not paths:
+        msg = f"{directory}: no *.yaml scheme files"
+        raise ValueError(msg)
+    for path in paths:
         doc = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)  # noqa: S506
-        slug = doc["scheme"]["slug"]
+        meta = doc.get("scheme") if isinstance(doc, dict) else None
+        if not isinstance(meta, dict) or not isinstance(meta.get("slug"), str):
+            msg = f"{path.name}: needs a `scheme` mapping with a `slug`"
+            raise ValueError(msg)  # noqa: TRY004 - bad input, not a caller's bug
+        concepts = doc.get("concepts") or {}
+        if not isinstance(concepts, dict):
+            msg = f"{path.name}: `concepts` must map each id to a concept"
+            raise ValueError(msg)  # noqa: TRY004 - bad input, not a caller's bug
+        slug = meta["slug"]
         if slug in schemes or slug in PREFIXES:
             msg = f"{path.name}: scheme slug {slug!r} is already taken"
             raise ValueError(msg)
-        schemes[slug] = Scheme(slug, doc["scheme"], doc.get("concepts") or {})
+        schemes[slug] = Scheme(slug, meta, concepts)
     return schemes
 
 
@@ -156,11 +172,12 @@ def mappings(concept: dict[str, Any]) -> Iterable[tuple[str, str, str]]:
             yield relation, prefix, local
 
 
-def validate(schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
+def validate(schemes: dict[str, Scheme], versions: Mapping[str, Collection[str]]) -> list[str]:
     """Every rule the vocabulary breaks, as `scheme/id: message`; empty when it is sound.
 
-    `versions` maps each name-list family (`bafu`) to its pinned versions (`2026-v1`): a
-    `names` entry for another family, or scoped to another version, is an error.
+    `versions` maps each name-list family (`bafu`) to its pinned versions (`2026-v1`), such as
+    the version -> names lists `name_matches` takes: a `names` entry for another family, or
+    scoped to another version, is an error.
     """
     errors: list[str] = []
     for scheme in schemes.values():
@@ -168,7 +185,7 @@ def validate(schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[
     return errors
 
 
-def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
+def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: Mapping[str, Collection[str]]) -> list[str]:
     errors = []
     if not SLUG.match(scheme.slug):
         errors.append(f"{scheme.slug}: slug must start with a lower-case letter")
@@ -277,7 +294,7 @@ def _bad_name_entry(entry: object) -> bool:
     return not isinstance(entry, str) or not entry.strip()
 
 
-def _validate_names(where: str, c: dict[str, Any], versions: dict[str, set[str]]) -> list[str]:
+def _validate_names(where: str, c: dict[str, Any], versions: Mapping[str, Collection[str]]) -> list[str]:
     families = c.get("names") or {}
     if not isinstance(families, dict) or not all(isinstance(v, list) for v in families.values()):
         return [f"{where}: names must map each family to a list of patterns"]
@@ -350,20 +367,21 @@ def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]
     return errors
 
 
+def _above(s: Scheme, cid: str) -> Iterator[str]:
+    """Each concept up the `broader` links from `cid`, once, and `cid` if a chain loops back. Skips unknown ids."""
+    seen, todo = set(), list(s.concepts[cid].get("broader") or [])
+    while todo:
+        node = todo.pop()
+        if node in seen or node not in s.concepts:
+            continue
+        seen.add(node)
+        yield node
+        todo += s.concepts[node].get("broader") or []
+
+
 def _cycles(scheme: Scheme) -> list[str]:
-    errors = []
-    for start in scheme.concepts:
-        stack, seen = list(scheme.concepts[start].get("broader") or []), set()
-        while stack:
-            node = stack.pop()
-            if node == start:
-                errors.append(f"{scheme.slug}/{start}: broader chain loops back to itself")
-                break
-            if node in seen or node not in scheme.concepts:
-                continue
-            seen.add(node)
-            stack += scheme.concepts[node].get("broader") or []
-    return errors
+    loops = [cid for cid in scheme.concepts if cid in _above(scheme, cid)]
+    return [f"{scheme.slug}/{cid}: broader chain loops back to itself" for cid in loops]
 
 
 def diff(old: dict[str, Scheme], new: dict[str, Scheme]) -> tuple[list[str], bool]:
@@ -377,26 +395,26 @@ def diff(old: dict[str, Scheme], new: dict[str, Scheme]) -> tuple[list[str], boo
         a, b = before.get(key), after.get(key)
         if b is None:
             sections["Removed"].append(
-                f"- `{key}` {a and a.get('label')}: deprecate it with `replaced_by` instead of deleting it"
+                f"- `{key}` {before[key].get('label')}: deprecate it with `replaced_by` instead of deleting it"
             )
             continue
         if a is None:
-            sections["Added"].append(f"- `{key}` {b['label']}")
+            sections["Added"].append(f"- `{key}` {b.get('label')}")
             continue
         if b.get("deprecated") and not a.get("deprecated"):
             slug = key.partition("/")[0]
             by = ", ".join(f"`{slug}/{ref}`" for ref in b.get("replaced_by") or [])
             how = f"replaced by {by}" if by else "with no `replaced_by`"
-            sections["Deprecated"].append(f"- `{key}` {b['label']}, {how}")
+            sections["Deprecated"].append(f"- `{key}` {b.get('label')}, {how}")
         if a.get("deprecated") and not b.get("deprecated"):
-            sections["Deprecated"].append(f"- `{key}` {b['label']}: no longer deprecated")
+            sections["Deprecated"].append(f"- `{key}` {b.get('label')}: no longer deprecated")
         maps_a, maps_b = ({f"{rel} {prefix}:{local}" for rel, prefix, local in mappings(c)} for c in (a, b))
         if maps_a != maps_b:
             changes = [f"added {m}" for m in sorted(maps_b - maps_a)]
             changes += [f"dropped {m}" for m in sorted(maps_a - maps_b)]
-            sections["Mappings"].append(f"- `{key}` {b['label']}: {'; '.join(changes)}")
+            sections["Mappings"].append(f"- `{key}` {b.get('label')}: {'; '.join(changes)}")
         if a.get("label") != b.get("label"):
-            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b['label']}")
+            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b.get('label')}")
     lines = []
     for title, items in sections.items():
         if items:
@@ -423,6 +441,13 @@ TAG_PREFIX = "r9lab-tag"
 TAG_COLUMNS = ("subject_id", "subject_label", "predicate_id", "object_id", "object_label", "mapping_justification")
 
 
+def read_sssom(path: Path) -> tuple[dict[str, Any], csv.DictReader[str]]:
+    """An SSSOM TSV file's `#` metadata block and its rows; a short row's missing fields are empty."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
+    return meta, csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t", restval="")
+
+
 def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     """Rows of the SSSOM file that maps R9lab tags to concepts that break a rule.
 
@@ -430,12 +455,13 @@ def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is a SKOS match
     property (`skos:exactMatch`, as `write_sssom` writes it), its justification a semapv
     term, and its object a live concept here, under its current label, or
-    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`.
+    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`. A missing file is one error.
     """
-    lines = path.read_text(encoding="utf-8").splitlines()
-    meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
+    try:
+        meta, reader = read_sssom(path)
+    except FileNotFoundError:
+        return [f"{path}: missing"]
     prefixes = set(meta.get("curie_map") or {})
-    reader = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
     if missing := [c for c in TAG_COLUMNS if c not in (reader.fieldnames or [])]:
         return [f"{path.name}: no {', '.join(missing)} column"]
     predicates = {f"skos:{p.fragment}" for p in RELATIONS.values()}
@@ -472,12 +498,16 @@ def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:
 
 @dataclass(frozen=True)
 class About:
-    """What every scheme says about its release: version, the authors' ORCID iDs, landing page, and build date."""
+    """What every scheme says about its release: version, the authors' ORCID iDs, landing page, and build date.
+
+    `orcids` and `landing` are what `pipeline.citation` reads from CITATION.cff, the first iD the
+    publisher; `modified` is `dct:modified`. Without them those triples are left out.
+    """
 
     version: str
-    orcids: list[str]
-    landing: str | None
-    modified: date | None
+    orcids: Sequence[str] = ()
+    landing: str | None = None
+    modified: date | None = None
 
     def describe(self, g: Graph, node: URIRef, title: str, created: date | None) -> None:
         """Type `node` as a schema.org term set and add its title, version, dates, creators and landing page."""
@@ -498,26 +528,14 @@ class About:
             g.add((node, DCAT.landingPage, URIRef(self.landing)))
 
 
-def to_graph(
-    schemes: dict[str, Scheme],
-    version: str,
-    *,
-    orcids: list[str] | None = None,
-    landing: str | None = None,
-    modified: date | None = None,
-) -> Graph:
-    """The whole vocabulary as one SKOS graph, its schemes the parts of one `dcat:Dataset`.
-
-    `orcids` and `landing` are what `pipeline.citation` reads from CITATION.cff, the first iD the
-    publisher; `modified` is `dct:modified`. Without them those triples are left out.
-    """
+def to_graph(schemes: dict[str, Scheme], about: About) -> Graph:
+    """The whole vocabulary as one SKOS graph, its schemes the parts of one `dcat:Dataset`, all described by `about`."""
     g = Graph()
     namespaces = (("skos", SKOS), ("dcterms", DCTERMS), ("dcat", DCAT), ("schema", SDO), ("owl", OWL), ("bibo", BIBO))
     for prefix, ns in namespaces:
         g.bind(prefix, ns)
     for slug, scheme in schemes.items():
         g.bind(f"r9-{slug}", Namespace(scheme.iri))
-    about = About(version, orcids or [], landing, modified)
     # The code-only schemes and the whole are as old as the oldest scheme written here.
     created = min(filter(None, (s.meta.get("created") for s in schemes.values())), default=None)
     vocab = URIRef(BASE)
@@ -608,23 +626,13 @@ def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], about: About, 
         g.add((node, SKOS.prefLabel, Literal(code, lang=LANG)))
 
 
-def write(
-    schemes: dict[str, Scheme],
-    version: str,
-    out: Path,
-    matches: list[Match],
-    *,
-    orcids: list[str] | None = None,
-    landing: str | None = None,
-    modified: date | None = None,
-) -> list[Path]:
+def write(schemes: dict[str, Scheme], about: About, out: Path, matches: list[Match]) -> list[Path]:
     """Write `r9lab-vocabulary.ttl`, `.jsonld` and `name-matches.csv` into `out`.
 
     `matches` is `name_matches`: the CSV has one row per pattern and source (`bafu-2026-v1`), with its match count.
-    `orcids`, `landing` and `modified` are as in `to_graph`.
     """
     out.mkdir(parents=True, exist_ok=True)
-    g = to_graph(schemes, version, orcids=orcids, landing=landing, modified=modified)
+    g = to_graph(schemes, about)
     ttl, jsonld, names = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "name-matches.csv"
     g.serialize(ttl, format="turtle")
     g.serialize(jsonld, format="json-ld", auto_compact=True)
@@ -637,11 +645,11 @@ def write(
     return [ttl, jsonld, names]
 
 
-def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str) -> Path:
+def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
     """Write `r9lab-vocabulary.sssom.tsv` into `out`: one SSSOM row per `mappings` entry.
 
     Every row is a person's curation, so its justification is `semapv:ManualMappingCuration`
-    and `author` (an ORCID IRI) is its author. Mappings from or to a deprecated concept are
+    and the publisher, `about`'s first ORCID iD, is its author. Mappings from or to a deprecated concept are
     left out: SSSOM has no field for a deprecated subject, and the SKOS graph keeps them.
     The YAML records no date per mapping, so there is no `mapping_date` column.
     """
@@ -656,10 +664,10 @@ def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str
     meta = {
         "curie_map": curie_map,
         "mapping_set_id": f"{BASE}r9lab-vocabulary.sssom.tsv",
-        "mapping_set_version": version,
-        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "mapping_set_version": about.version,
+        "license": str(CC0),
     }
-    author_id = f"orcid:{author.removeprefix(orcid)}"
+    author_id = f"orcid:{about.orcids[0].removeprefix(orcid)}"
     rows = sorted(
         (f"{slug}:{cid}", c["label"], f"skos:{RELATIONS[relation].fragment}", f"{prefix}:{local}")
         for slug, s in schemes.items()
@@ -693,24 +701,13 @@ def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[s
         for cid, c in s.concepts.items():
             if c.get("deprecated"):
                 continue
-            key = str(c.get("notation", cid))
+            key = str(cid if c.get("notation") is None else c["notation"])
             inherited.setdefault((slug, cid), set()).add(key)
             for relation, prefix, local in mappings(c):
                 target = {"exact": inherited, "narrow": inherited, "close": own}.get(relation)
                 if target is not None and prefix in schemes:
                     target.setdefault((prefix, local), set()).add(key)
     return inherited, own
-
-
-def _ancestors(s: Scheme, cid: str) -> set[str]:
-    """`cid` and every concept above it, through all its `broader` parents."""
-    seen, todo = set(), [cid]
-    while todo:
-        node = todo.pop()
-        if node not in seen:
-            seen.add(node)
-            todo.extend(s.concepts[node].get("broader") or [])
-    return seen
 
 
 def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
@@ -730,7 +727,8 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
                 chain.insert(0, node["broader"][0])
                 node = s.concepts[chain[0]]
             definition = s.concepts[cid].get("definition")
-            pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in _ancestors(s, cid)))
+            above = {cid, *_above(s, cid)}
+            pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in above))
             concepts.append(
                 {
                     "id": cid,
