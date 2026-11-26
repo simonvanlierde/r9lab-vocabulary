@@ -117,7 +117,7 @@ concepts:
     definition: Lamp that makes light with light-emitting diodes, made to fit a standard lamp holder.
     source: https://www.wikidata.org/wiki/Q1553201
     example: [an E27 LED bulb, a GU10 LED spot, an LED filament bulb, an LED retrofit tube]
-    note: 'Not luminaire: a light fitting with LEDs built in that cannot be swapped out is a luminaire, and sits in UNU-KEY 0506 and WEEE category 5 rather than 0505 and category 3.'
+    note: 'Not luminaire: a light fitting with built-in LEDs that cannot be swapped out is a luminaire. Luminaires sit in UNU-KEY 0506 and WEEE category 5, LED lamps in 0505 and category 3.'
     broader: [p0004]
     mappings: {exact: ['wd:Q1553201'], broad: ['cpc:46510', 'unu1:0505', 'unu2:0505', 'weee6:3'], close: ['r9lab-cpv:31531']}
   p0024:
@@ -173,7 +173,8 @@ concepts:
     definition: Block of mains sockets on a flexible cable, sometimes with a switch, surge protection or USB charging ports.
     source: https://www.wikidata.org/wiki/Q1754646
     example: [a six-way extension block, a surge-protected power strip, a power strip with USB ports]
-    note: Not laptop charger or computer power supply, which convert power; a power strip only passes it on, apart from any USB ports. Whether a passive power strip is EEE in scope varies by member state.
+    note: Not laptop charger or computer power supply, which convert power. A power strip passes mains power on, and only its USB ports convert any.
+    editorial_note: Whether a passive power strip is electrical and electronic equipment in WEEE scope varies by member state.
     broader: [p0005]
     mappings: {exact: ['wd:Q1754646'], broad: ['cpc:46212', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0031:
