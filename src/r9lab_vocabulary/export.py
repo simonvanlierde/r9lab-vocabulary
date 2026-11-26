@@ -261,7 +261,9 @@ def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[s
 
 
 def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
-    """Per scheme, each non-deprecated concept by id: IRI, label, label path from its root, definition, pilot keys.
+    """Per scheme, each live concept by id: IRI, label, path, definition, scope note, examples, pilot keys.
+
+    The editorial note stays out: it is for curators, not prompts.
 
     The path follows the first `broader` only. `pilot` holds the key of each pilot class that
     maps onto the concept, or as `exact` or `narrow` onto any of its ancestors through every
@@ -276,16 +278,18 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
             while node.get("broader"):
                 chain.insert(0, node["broader"][0])
                 node = s.concepts[chain[0]]
-            definition = s.concepts[cid].get("definition")
+            c = s.concepts[cid]
             above = {cid, *ancestors(s, cid)}
             pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in above))
             concepts.append(
                 {
                     "id": cid,
                     "iri": s.iri + cid,
-                    "label": s.concepts[cid]["label"],
+                    "label": c["label"],
                     "path": [s.concepts[a]["label"] for a in chain],
-                    "definition": definition.strip() if definition else None,
+                    "definition": c["definition"].strip() if c.get("definition") else None,
+                    "note": c["note"].strip() if c.get("note") else None,
+                    "example": [e.strip() for e in texts(c, "example")],
                     "pilot": sorted(pilot),
                 }
             )

@@ -16,6 +16,10 @@ wikidata:
 diff ref:
     uv run r9lab-vocabulary diff {{ ref }}
 
+# Rebuild mappings/r9lab-tags.sssom.tsv from the review log in mappings/r9lab-tags/. `just check` fails while it is out of date.
+curate:
+    uv run python -m r9lab_vocabulary.curate build
+
 # Fetch, build and check everything, write dist/, and print how the match counts changed since the last run.
 update:
     #!/usr/bin/env bash

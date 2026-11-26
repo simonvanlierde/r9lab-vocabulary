@@ -27,11 +27,6 @@ PILOT_KEYS = {
     "other",
 }
 
-# Concepts still waiting for a definition, example and scope note, written in batches of
-# about ten. A new concept must come with all three. The list only shrinks; once it is
-# empty, the rule moves into validate.
-PENDING_TEXT = set((ROOT / "tests" / "pending-text.txt").read_text(encoding="utf-8").split())
-
 
 def test_the_vocabulary_breaks_no_rule(schemes: Schemes):
     assert checks.validate(schemes, VERSIONS) == []
@@ -63,10 +58,8 @@ def test_the_tag_mappings_break_no_rule(schemes: Schemes):
 def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Schemes):
     concepts = {cid: c for s in schemes.values() for cid, c in s.concepts.items() if not c.get("deprecated")}
     done = {cid for cid, c in concepts.items() if all(c.get(f) for f in ("definition", "example", "note"))}
-    missing = set(concepts) - done - PENDING_TEXT
+    missing = set(concepts) - done
     assert not missing, f"no definition, example or note: {sorted(missing)}"
-    stale = PENDING_TEXT - (set(concepts) - done)
-    assert not stale, f"done or gone, take out of tests/pending-text.txt: {sorted(stale)}"
 
 
 def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
