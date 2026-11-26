@@ -11,7 +11,7 @@ the identifiers, except where a concept's own label is the common name of the th
 
 | Reused | From | License | Where it lives here |
 | --- | --- | --- | --- |
-| The six material families as the top of the material axis | Ashby, *Materials Selection in Mechanical Design*, 5th ed., 2017, ISBN 9780081005996 | Cited, not copied | `vocabulary/materials.yaml` |
+| The six material families as the top of the material axis | Ashby, *Materials Selection in Mechanical Design*, 5th ed., 2017, section 2.2, Fig. 2.1, ISBN 9780081005996 | Cited, not copied | `vocabulary/materials.yaml` |
 | CPC 2.1 subclass codes and IRIs | UN Statistics Division; IRIs as served by [vocab.sentier.dev](https://vocab.sentier.dev) | UN terms of use | `cpc:` mappings |
 | PMDco term IRIs | [materialdigital/core-ontology](https://github.com/materialdigital/core-ontology) v3.1.2 | CC BY 4.0 | `pmdco:` mappings |
 | Wikidata item ids | [Wikidata](https://www.wikidata.org) | CC0 1.0 | `wd:` mappings |
