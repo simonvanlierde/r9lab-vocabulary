@@ -44,13 +44,18 @@ page last started to the verdict, measured on the server, less the time the page
 was hidden (another tab, a minimised window) or paused. A rater takes a break with Pause (`p`),
 which hides the card and stops the clock.
 
+The log is public and permanent: it is published with the repository, and git keeps every row
+even after a hand edit. A rater who starts the page agrees to their ORCID, verdicts and times
+being published this way.
+
 The page shows each card once. Undo (`z`) brings back the last card judged on this page, once; its
 new verdict is a new row. For an older verdict, a rater who changes their mind adds a row to the
 log by hand. The latest row counts, and the earlier ones stay.
 
 ## How verdicts become the published file
 
-`just curate` builds `mappings/r9lab-tags.sssom.tsv` from proposals and verdicts:
+`just curate` builds `mappings/r9lab-tags.sssom.tsv` from proposals and verdicts. An unsure
+verdict counts as no vote:
 
 - a proposal one or more raters agree with, and none rejects, is published with those raters
   in `reviewer_id`;
