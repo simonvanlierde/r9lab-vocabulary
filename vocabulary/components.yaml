@@ -145,10 +145,10 @@ concepts:
     mappings: {exact: ['wd:Q353743']}
   c0020:
     label: neodymium magnet
-    definition: Permanent magnet made of an alloy of neodymium, iron and boron, the strongest common kind.
+    definition: Permanent magnet made of an alloy of neodymium, iron and boron (NdFeB), the strongest common kind.
     source: https://www.wikidata.org/wiki/Q908880
     example: [a hard-drive voice-coil magnet, an earbud speaker magnet, a phone vibration-motor magnet, a nickel-plated disc magnet]
-    note: NdFeB. Not ferrite magnet, which is a dark grey ceramic and much weaker. Not samarium-cobalt magnet, a different rare-earth magnet.
+    note: Not ferrite magnet, which is a dark grey ceramic and much weaker. Not samarium-cobalt magnet, a different rare-earth magnet.
     editorial_note: BAFU's only dataset comes from the electric-vehicle motor chain.
     broader: [c0019]
     mappings: {exact: ['wd:Q908880'], broad: ['cpc:46931']}
@@ -159,7 +159,7 @@ concepts:
     definition: Permanent magnet made of ferrite, a ceramic of iron oxide with barium or strontium, either sintered or bonded in rubber or plastic.
     source: https://www.wikidata.org/wiki/Q5105088
     example: [a loudspeaker ring magnet, a fridge door-seal magnet strip, a small DC motor's arc magnet, a microwave magnetron magnet]
-    note: 'Not ferrite: a ferrite core in an inductor or a cable choke is not a magnet and goes by its material. Not neodymium magnet, which is metallic and much stronger.'
+    note: 'Not ferrite: a ferrite inductor core or a clip-on ferrite on a cable is not a magnet and goes by its material. Not neodymium magnet, which is metallic and much stronger.'
     broader: [c0019]
     mappings: {exact: ['wd:Q5105088'], close: ['cpc:46932'], related: ['materials:m0048']}
   c0022:
@@ -182,7 +182,8 @@ concepts:
     label: lithium-ion cell
     definition: Single lithium-ion electrochemical cell, the unit a lithium-ion battery is built from.
     example: [an 18650 cell from a laptop pack, a pouch cell cut from a phone battery, a prismatic cell, a 21700 cell]
-    note: 'Not lithium-ion battery: a cell still fitted with the pack''s case, wiring or protection board is the battery. Part of a battery, not a kind of battery, so it has no broader concept.'
+    note: 'Not lithium-ion battery: a cell still fitted with the pack''s case, wiring or protection board is the battery.'
+    editorial_note: Part of a battery, not a kind of battery, so it has no broader concept.
     related: [c0002]
     mappings: {broad: ['wd:Q80097', 'cpc:46420']}
     names:
