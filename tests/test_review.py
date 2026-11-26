@@ -487,3 +487,15 @@ def test_the_page_will_not_start_without_a_review_log(
     monkeypatch.setattr("uvicorn.run", lambda *_, **__: pytest.fail("the server started"))
     assert main([]) == 2
     assert "missing or empty" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("secret", ["", "short"])
+def test_the_page_will_not_start_with_a_weak_secret(
+    secret: str, monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    monkeypatch.setenv("R9LAB_RATERS", RATER)
+    monkeypatch.chdir(make_root(tmp_path))
+    (tmp_path / ".review-secret").write_text(secret)  # an empty key would make every link guessable from the ORCID
+    monkeypatch.setattr("uvicorn.run", lambda *_, **__: pytest.fail("the server started"))
+    assert main([]) == 2
+    assert ".review-secret" in capsys.readouterr().err

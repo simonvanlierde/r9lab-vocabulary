@@ -51,6 +51,10 @@ def main(argv: list[str] | None = None) -> int:
 
     hosts = tuple(h for h in os.environ.get("R9LAB_ALLOWED_HOSTS", ",".join(LOCAL_HOSTS)).split(",") if h)
     secret = read_secret()
+    # Bytes of hex. An empty or short key would let anyone derive a rater's link from their ORCID.
+    if len(secret) < 32:
+        sys.stderr.write(f"error: {SECRET} holds no usable secret; delete it to make a new one\n")
+        return 2
     sys.stdout.write("Send each rater their own link; behind a proxy, put its address in front of /r/.\n")
     for rater in raters:
         sys.stdout.write(f"  {rater}: http://127.0.0.1:{args.port}/r/{rater_token(secret, rater)}\n")
