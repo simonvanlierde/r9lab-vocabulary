@@ -140,7 +140,7 @@ concepts:
     definition: Rare metals of high value that resist corrosion, such as gold, silver and the platinum group, and their alloys.
     source: https://www.wikidata.org/wiki/Q271449
     example: [platinum in a temperature sensor, rhodium plating, ruthenium in a chip resistor, a mixed precious-metal concentrate]
-    note: Gold, silver and palladium have their own classes; other precious metals, such as platinum, rhodium and ruthenium, stay here. Thin plating goes by its base metal unless the record lists it by itself. Wikidata's precious metal counts only the elements; here their alloys are included.
+    note: 'Not gold, silver or palladium: each has its own class. Platinum, rhodium and ruthenium stay here. Plating goes by its base metal unless the record lists it on its own. Wikidata''s item counts only the elements; here their alloys are included.'
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0010014', 'wd:Q271449'], close: ['cpc:413']}
   m0017:
@@ -185,7 +185,7 @@ concepts:
     definition: Polymer that softens on heating and can be remelted.
     source: https://www.wikidata.org/wiki/Q380677
     example: [ABS, polypropylene, polycarbonate, a nylon gear]
-    note: 'Not thermoset: a resin that has cured cannot be remelted. Not thermoplastic elastomer: rubbery grades that recover their shape are elastomers.'
+    note: 'Not thermoset: a resin that has cured cannot be remelted. Not thermoplastic elastomer: rubbery grades that recover their shape are elastomers. Not glass-fibre reinforced polymer: short-fibre glass-filled grades such as PA66-GF30 go by their polymer.'
     broader: [m0020]
     mappings: {exact: ['pmdco:PMD_0050004', 'wd:Q380677']}
   m0022:
@@ -193,7 +193,7 @@ concepts:
     definition: Thermoplastic made from ethylene, ranging from soft film to rigid moulded parts.
     source: https://www.wikidata.org/wiki/Q143429
     example: [an HDPE container, LDPE packaging film, PE cable sheath, a PE foam insert]
-    note: 'Includes HDPE, LDPE and LLDPE. Not polypropylene: PP is the other common polyolefin and is stiffer. PE foam counts here when the record names the polymer, and as foam when it does not.'
+    note: 'Not polypropylene: PP is the other common polyolefin and is stiffer. Includes HDPE, LDPE and LLDPE. PE foam goes here when the record names the polymer, and to foam when it does not.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050005', 'wd:Q143429'], close: ['cpc:34710']}
     names:
