@@ -51,7 +51,9 @@ proposed (`semapv:AgentBasedMatching` and other machine justifications), with no
 verdict took in `review_seconds`. A rater's latest row for a mapping counts. The built file keeps
 every proposal no rater rejected, with the raters who agreed in `reviewer_id`; a row with no
 reviewer is still a proposal, not a curated mapping. A proposal with one rater for and one
-against stays, without a reviewer, until the rater against it changes their verdict.
+against stays, without a reviewer, until the rater against it changes their verdict. A tag whose
+only proposal every rater rejected fails `just check` until it gets a new proposal, or
+`sssom:NoTermFound`. Verdicts on a withdrawn proposal stay in the log, and `just check` warns about them.
 [ADR 0005](docs/decisions/0005-mapping-review-log.md) says why it is a log.
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,

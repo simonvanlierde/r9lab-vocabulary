@@ -39,3 +39,5 @@ each mapping in one file, so they hold one verdict, and its accept rewrites the 
   `review_seconds` extension, and its schema does not yet list `semapv:AgentBasedMatching`, so
   `sssom validate` reports every machine row. The log's own rules run in `just check` instead.
 * Bad: the published file is generated, so a hand edit to it fails `just check`.
+* Bad: a rejection takes the tag out of the published file, so `just check` fails until the tag
+  gets a new proposal. The old proposal's verdicts stay in the log, unused, with a warning.

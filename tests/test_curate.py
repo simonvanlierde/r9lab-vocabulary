@@ -83,7 +83,6 @@ def test_check_catches_each_broken_rule(tmp_path: Path):
         tmp_path,
         [proposal("twice", "m:1"), proposal("twice", "m:1"), proposal("twice", "m:2"), bad],
         [
-            review("ghost", "m:9", A, "1"),
             review("twice", "m:1", "simon", "yes", review_date="26 Nov", review_seconds="soon"),
             review("twice", "m:1", f"{A}x", "1", review_date="2026-13-45"),
             review("twice", "m:1", A, "1", review_date="2026-11-26x"),
@@ -93,14 +92,13 @@ def test_check_catches_each_broken_rule(tmp_path: Path):
         "predictions.sssom.tsv: 'twice' -> m:1 is proposed twice",
         "predictions.sssom.tsv: 'twice' -> m:2: the tag already has a proposal",
         "predictions.sssom.tsv: 'hand' -> m:1: 'semapv:ManualMappingCuration' is not a machine justification",
-        "reviews.sssom.tsv row 1: r9lab-tag:ghost -> m:9 is not a proposal",
-        "reviews.sssom.tsv row 2: reviewer_id 'simon' is not an ORCID CURIE",
-        "reviews.sssom.tsv row 2: reviewer_agreement 'yes' is not 1, -1 or 0",
-        "reviews.sssom.tsv row 2: review_date '26 Nov' is not YYYY-MM-DD",
-        "reviews.sssom.tsv row 2: review_seconds 'soon' is not a number",
-        f"reviews.sssom.tsv row 3: reviewer_id '{A}x' is not an ORCID CURIE",
-        "reviews.sssom.tsv row 3: review_date '2026-13-45' is not YYYY-MM-DD",
-        "reviews.sssom.tsv row 4: review_date '2026-11-26x' is not YYYY-MM-DD",
+        "reviews.sssom.tsv row 1: reviewer_id 'simon' is not an ORCID CURIE",
+        "reviews.sssom.tsv row 1: reviewer_agreement 'yes' is not 1, -1 or 0",
+        "reviews.sssom.tsv row 1: review_date '26 Nov' is not YYYY-MM-DD",
+        "reviews.sssom.tsv row 1: review_seconds 'soon' is not a number",
+        f"reviews.sssom.tsv row 2: reviewer_id '{A}x' is not an ORCID CURIE",
+        "reviews.sssom.tsv row 2: review_date '2026-13-45' is not YYYY-MM-DD",
+        "reviews.sssom.tsv row 3: review_date '2026-11-26x' is not YYYY-MM-DD",
     ]
 
 
@@ -110,6 +108,26 @@ def test_check_accepts_every_valid_verdict(tmp_path: Path, monkeypatch: pytest.M
     monkeypatch.chdir(tmp_path)
     assert curate.main(["build"]) == 0
     assert curate.check(tmp_path) == []
+
+
+def test_a_tag_every_rater_rejected_fails_check_until_it_gets_a_new_proposal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    write_log(tmp_path, [proposal("brass", "m:1")], [review("brass", "m:1", A, "-1")])
+    monkeypatch.chdir(tmp_path)
+    assert curate.main(["build"]) == 0
+    assert published_rows((tmp_path / curate.PUBLISHED).read_text()) == []
+    [error] = curate.check(tmp_path)
+    assert error.startswith("predictions.sssom.tsv: 'brass' -> m:1: every rater rejected it")
+    # Replacing the proposal fixes it; the old verdict stays in the log, with a warning.
+    (tmp_path / curate.PREDICTIONS).write_text(tsv(curate.PREDICTION_COLUMNS, [proposal("brass", "m:2")]))
+    assert curate.main(["build"]) == 0
+    capsys.readouterr()
+    assert curate.main(["check"]) == 0
+    assert capsys.readouterr().err == (
+        "warning: reviews.sssom.tsv row 1: r9lab-tag:brass skos:exactMatch m:1 is no longer proposed;"
+        " its verdict is kept but unused\n"
+    )
 
 
 def test_build_refuses_a_broken_log_and_leaves_the_published_file(

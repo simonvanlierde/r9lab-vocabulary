@@ -61,6 +61,15 @@ def latest_verdicts(reviews: list[dict[str, str]]) -> dict[tuple[str, str, str],
     return verdicts
 
 
+def reviewers(votes: dict[str, int]) -> str | None:
+    """A proposal's `reviewer_id` from its votes: the raters who agreed, "" while one rejects, None if only rejected."""
+    agree = sorted(r for r, v in votes.items() if v == 1)
+    reject = any(v == -1 for v in votes.values())
+    if reject and not agree:
+        return None
+    return "" if reject else "|".join(agree)
+
+
 def build(meta: dict, predictions: list[dict[str, str]], reviews: list[dict[str, str]]) -> str:
     """The published file: each proposal no rater rejected, with the raters who agreed as `reviewer_id`.
 
@@ -74,14 +83,10 @@ def build(meta: dict, predictions: list[dict[str, str]], reviews: list[dict[str,
     w = csv.writer(out, delimiter="\t", lineterminator="\n")
     w.writerow(PUBLISHED_COLUMNS)
     for row in predictions:
-        votes = verdicts.get(key(row), {})
-        agree = sorted(r for r, v in votes.items() if v == 1)
-        reject = any(v == -1 for v in votes.values())
-        if reject and not agree:
-            continue
-        reviewers = "" if reject else "|".join(agree)
-        out_row = row | {"reviewer_id": reviewers}
-        w.writerow([out_row.get(c, "") for c in PUBLISHED_COLUMNS])
+        reviewer_id = reviewers(verdicts.get(key(row), {}))
+        if reviewer_id is not None:
+            out_row = row | {"reviewer_id": reviewer_id}
+            w.writerow([out_row.get(c, "") for c in PUBLISHED_COLUMNS])
     return out.getvalue()
 
 
@@ -102,19 +107,37 @@ def read_log(root: Path) -> tuple[dict, list[dict[str, str]], list[dict[str, str
     errors = [f"{PREDICTIONS.name}: no {c} column" for c in PREDICTION_COLUMNS if c not in pcols]
     errors += [f"{REVIEWS.name}: no {c} column" for c in REVIEW_COLUMNS if c not in rcols]
     if not errors:
-        errors = check_predictions(predictions) + check_reviews(reviews, {key(r) for r in predictions})
+        errors = check_predictions(predictions) + check_reviews(reviews)
     return meta, predictions, reviews, errors
 
 
 def check(root: Path = Path()) -> list[str]:
-    """What breaks the review log's rules, and whether the published file is out of date."""
+    """What breaks the review log's rules, a tag every rater rejected, and an out-of-date published file."""
     meta, predictions, reviews, errors = read_log(root)
     if errors:
         return errors
+    verdicts = latest_verdicts(reviews)
+    errors = [
+        f"{PREDICTIONS.name}: {row['subject_label']!r} -> {row['object_id']}: every rater rejected it, so the tag"
+        " is missing from the published file; propose another concept or sssom:NoTermFound"
+        for row in predictions
+        if reviewers(verdicts.get(key(row), {})) is None
+    ]
     published = root / PUBLISHED
     if not published.exists() or published.read_text(encoding="utf-8") != build(meta, predictions, reviews):
-        return [f"{PUBLISHED} is out of date: run `just curate`"]
-    return []
+        errors.append(f"{PUBLISHED} is out of date: run `just curate`")
+    return errors
+
+
+def orphaned(root: Path = Path()) -> list[str]:
+    """Reviews of a proposal that is no longer in predictions. They stay in the log but count for nothing."""
+    _, predictions, reviews, _ = read_log(root)
+    proposed = {key(r) for r in predictions}
+    return [
+        f"{REVIEWS.name} row {n}: {' '.join(key(row))} is no longer proposed; its verdict is kept but unused"
+        for n, row in enumerate(reviews, start=1)
+        if key(row) not in proposed
+    ]
 
 
 def check_predictions(predictions: list[dict[str, str]]) -> list[str]:
@@ -136,13 +159,14 @@ def check_predictions(predictions: list[dict[str, str]]) -> list[str]:
     return errors
 
 
-def check_reviews(reviews: list[dict[str, str]], proposed: set[tuple[str, str, str]]) -> list[str]:
-    """A review names a proposal, an ORCID, an agreement of 1, -1 or 0, a date, and seconds if any."""
+def check_reviews(reviews: list[dict[str, str]]) -> list[str]:
+    """A review names an ORCID, an agreement of 1, -1 or 0, a date, and seconds if any.
+
+    A review of a withdrawn proposal is kept, so the log stays append-only; `orphaned` lists those.
+    """
     errors = []
     for n, row in enumerate(reviews, start=1):
         where = f"{REVIEWS.name} row {n}"
-        if key(row) not in proposed:
-            errors.append(f"{where}: {row['subject_id']} -> {row['object_id']} is not a proposal")
         if not ORCID.fullmatch(row["reviewer_id"]):
             errors.append(f"{where}: reviewer_id {row['reviewer_id']!r} is not an ORCID CURIE")
         if row["reviewer_agreement"] not in ("1", "-1", "0"):
@@ -173,7 +197,8 @@ def write_published(root: Path = Path()) -> int:
 
 
 def report(root: Path = Path()) -> int:
-    """Print what breaks a rule; 1 if anything does."""
+    """Print what breaks a rule, and warn about reviews of withdrawn proposals; 1 if a rule breaks."""
+    sys.stderr.writelines(f"warning: {w}\n" for w in orphaned(root))
     return fail(check(root))
 
 
