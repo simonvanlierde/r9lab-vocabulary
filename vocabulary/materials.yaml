@@ -178,7 +178,7 @@ concepts:
     broader: [m0021]
     mappings: {exact: ['wd:Q62246'], broad: ['cpc:34740']}
     names:
-      bafu: ['^polycarbonate']
+      bafu: ['^polycarbonate, ']
   m0027:
     label: polycarbonate/ABS blend
     definition: Blend of polycarbonate and ABS, common in device housings.
@@ -197,7 +197,7 @@ concepts:
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050013', 'wd:Q146368'], broad: ['cpc:34730']}
     names:
-      bafu: ['^polyvinylchloride']
+      bafu: ['^polyvinylchloride, ']
   m0030:
     label: polyethylene terephthalate
     note: PET.
@@ -232,7 +232,7 @@ concepts:
     broader: [m0034]
     mappings: {exact: ['pmdco:PMD_0050023', 'wd:Q143983'], broad: ['cpc:34740']}
     names:
-      bafu: ['^epoxy resin']
+      bafu: ['^epoxy resin, ']
   m0036:
     label: phenolic resin
     note: Phenol formaldehyde (PF), Bakelite.
@@ -279,7 +279,7 @@ concepts:
     broader: [m0043]
     mappings: {exact: ['pmdco:PMD_0050102', 'wd:Q745127'], broad: ['cpc:3711']}
     names:
-      bafu: ['^flat glass']
+      bafu: ['^flat glass, ']
   m0045:
     label: glass fibre
     broader: [m0043]
