@@ -9,6 +9,7 @@ this vocabulary (its `slug`).
 from __future__ import annotations
 
 import csv
+import json
 import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -429,3 +430,129 @@ def write(schemes: dict[str, Scheme], version: str, out: Path, matches: list[Mat
             label = schemes[slug].concepts[cid]["label"]
             w.writerow([schemes[slug].iri + cid, label, f"{family}-{ver}", pattern, len(hits)])
     return [ttl, jsonld, names]
+
+
+def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str) -> Path:
+    """Write `r9lab-vocabulary.sssom.tsv` into `out`: one SSSOM row per `mappings` entry.
+
+    Every row is a person's curation, so its justification is `semapv:ManualMappingCuration`
+    and `author` (an ORCID IRI) is its author. Mappings from or to a deprecated concept are
+    left out: SSSOM has no field for a deprecated subject, and the SKOS graph keeps them.
+    The YAML records no date per mapping, so there is no `mapping_date` column.
+    """
+    orcid = "https://orcid.org/"
+    curie_map = {
+        **PREFIXES,
+        **{slug: s.iri for slug, s in schemes.items()},
+        "orcid": orcid,
+        "semapv": "https://w3id.org/semapv/vocab/",
+        "skos": str(SKOS),
+    }
+    meta = {
+        "curie_map": curie_map,
+        "mapping_set_id": f"{BASE}r9lab-vocabulary.sssom.tsv",
+        "mapping_set_version": version,
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+    }
+    author_id = f"orcid:{author.removeprefix(orcid)}"
+    rows = sorted(
+        (f"{slug}:{cid}", c["label"], f"skos:{RELATIONS[relation].fragment}", f"{prefix}:{local}")
+        for slug, s in schemes.items()
+        for cid, c in s.concepts.items()
+        if not c.get("deprecated")
+        for relation, prefix, local in mappings(c)
+        if not (prefix in schemes and schemes[prefix].concepts[local].get("deprecated"))
+    )
+    path = out / "r9lab-vocabulary.sssom.tsv"
+    out.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as f:
+        f.writelines(f"#{line}\n" for line in yaml.safe_dump(meta, sort_keys=False).splitlines())
+        w = csv.writer(f, delimiter="\t", lineterminator="\n")
+        w.writerow(["subject_id", "subject_label", "predicate_id", "object_id", "mapping_justification", "author_id"])
+        w.writerows((*row, "semapv:ManualMappingCuration", author_id) for row in rows)
+    return path
+
+
+def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[str]], dict[tuple[str, str], set[str]]]:
+    """Two maps of (slug, id) -> the keys of the collection members that map onto that concept.
+
+    The first holds `exact` and `narrow` targets, whose descendants inherit the key; the second
+    `close` targets, which carry it alone (SKOS closeMatch says nothing about the narrower
+    concepts). A member's key is its notation, and a member carries its own key.
+    """
+    inherited: dict[tuple[str, str], set[str]] = {}
+    own: dict[tuple[str, str], set[str]] = {}
+    for slug, s in schemes.items():
+        if not s.meta.get("collection"):
+            continue
+        for cid, c in s.concepts.items():
+            if c.get("deprecated"):
+                continue
+            key = str(c.get("notation", cid))
+            inherited.setdefault((slug, cid), set()).add(key)
+            for relation, prefix, local in mappings(c):
+                target = {"exact": inherited, "narrow": inherited, "close": own}.get(relation)
+                if target is not None and prefix in schemes:
+                    target.setdefault((prefix, local), set()).add(key)
+    return inherited, own
+
+
+def _ancestors(s: Scheme, cid: str) -> set[str]:
+    """`cid` and every concept above it, through all its `broader` parents."""
+    seen, todo = set(), [cid]
+    while todo:
+        node = todo.pop()
+        if node not in seen:
+            seen.add(node)
+            todo.extend(s.concepts[node].get("broader") or [])
+    return seen
+
+
+def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
+    """Per scheme, each non-deprecated concept by id: IRI, label, label path from its root, definition, pilot keys.
+
+    The path follows the first `broader` only. `pilot` holds the key of each pilot class that
+    maps onto the concept, or as `exact` or `narrow` onto any of its ancestors through every
+    `broader` parent; a `close` mapping marks its target alone.
+    """
+    inherited, own = _pilot_keys(schemes)
+    out = []
+    for slug, s in schemes.items():
+        concepts = []
+        for cid in sorted(cid for cid, c in s.concepts.items() if not c.get("deprecated")):
+            chain, node = [cid], s.concepts[cid]
+            while node.get("broader"):
+                chain.insert(0, node["broader"][0])
+                node = s.concepts[chain[0]]
+            definition = s.concepts[cid].get("definition")
+            pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in _ancestors(s, cid)))
+            concepts.append(
+                {
+                    "id": cid,
+                    "iri": s.iri + cid,
+                    "label": s.concepts[cid]["label"],
+                    "path": [s.concepts[a]["label"] for a in chain],
+                    "definition": definition.strip() if definition else None,
+                    "pilot": sorted(pilot),
+                }
+            )
+        out.append({"slug": slug, "title": s.meta["title"], "iri": s.iri, "concepts": concepts})
+    return out
+
+
+def write_labels(schemes: dict[str, Scheme], version: str, out: Path) -> list[Path]:
+    """Write `labels.json` and `labels.md` into `out`: `labels`, as data and as a table per scheme."""
+    out.mkdir(parents=True, exist_ok=True)
+    data = labels(schemes)
+    json_path, md_path = out / "labels.json", out / "labels.md"
+    json_path.write_text(
+        json.dumps({"version": version, "schemes": data}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    lines = [f"# R9lab vocabulary labels {version}"]
+    for s in data:
+        lines += ["", f"## {s['title']}", "", "| id | label | path | definition | pilot |", "|---|---|---|---|---|"]
+        for c in s["concepts"]:
+            cells = (c["id"], c["label"], " > ".join(c["path"]), c["definition"] or "", ", ".join(c["pilot"]))
+            lines.append("| " + " | ".join(v.replace("|", "\\|").replace("\n", " ") for v in cells) + " |")
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return [json_path, md_path]

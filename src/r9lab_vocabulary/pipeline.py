@@ -33,6 +33,7 @@ from typing import TYPE_CHECKING, NoReturn, cast
 
 import rdflib
 import sourceledger
+import yaml
 from sourceledger import Source
 
 from r9lab_vocabulary import scheme
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
 
 VOCABULARY = Path("vocabulary")
 DIST = Path("dist")
+CITATION = Path("CITATION.cff")  # its first author curates every mapping
 PROCESSED = Path("data/processed")
 USER_AGENT = "r9lab-vocabulary (https://github.com/simonvanlierde/r9lab-vocabulary)"
 CPC_SOURCE, PMDCO_SOURCE, WIKIDATA = "cpc21", "pmdco", "wd"
@@ -204,8 +206,14 @@ def rdf(out: Path) -> int:
     if errors:
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
-    for path in scheme.write(schemes, version("r9lab-vocabulary"), out, matches):
-        sys.stdout.write(f"{path}\n")
+    ver = version("r9lab-vocabulary")
+    author = yaml.safe_load(CITATION.read_text(encoding="utf-8"))["authors"][0]["orcid"]
+    paths = [
+        *scheme.write(schemes, ver, out, matches),
+        scheme.write_sssom(schemes, ver, out, author),
+        *scheme.write_labels(schemes, ver, out),
+    ]
+    sys.stdout.writelines(f"{path}\n" for path in paths)
     return 0
 
 

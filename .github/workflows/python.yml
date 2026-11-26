@@ -77,6 +77,11 @@ jobs:
       - run: uv run r9lab-vocabulary build
       - run: uv run r9lab-vocabulary validate
 
+      # dist/, as `just rdf` writes it, and its SSSOM file checked against the SSSOM schema
+      # as `just sssom-validate` does. Not in the template: keep these on a copier update.
+      - run: uv run r9lab-vocabulary rdf
+      - run: uvx --exclude-newer "1 week" --from sssom==0.4.22 sssom validate dist/r9lab-vocabulary.sssom.tsv
+
       # The release folder `just data-release` writes, checked as `just data-release-check` does.
       - run: uv run r9lab-vocabulary release "$RUNNER_TEMP/release"
       - run: uv run r9lab-vocabulary release --check "$RUNNER_TEMP/release"
