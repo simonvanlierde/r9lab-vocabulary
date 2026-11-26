@@ -29,30 +29,30 @@ concepts:
     mappings: {close: ['cpc:452']}
   p0002:
     label: telecommunications equipment
-    definition: Family of products that send or receive voice, data or radio signals, such as phones, routers and satellite navigation receivers.
+    definition: Family of products that send or receive voice, data or radio signals, such as phones and routers.
     source: https://www.wikidata.org/wiki/Q1780509
-    example: [a smartphone, a desk phone, a home router, a car GPS navigator]
-    note: 'Not computing equipment: a docking station or laptop charger goes there. Wikidata''s telecommunications device covers any telecom hardware; here it gathers whole products only, and takes in GPS receivers, which UNU-KEY files under 0402.'
+    example: [a smartphone, a desk phone, a home router]
+    note: 'Not computing equipment: a docking station or laptop charger goes there. Wikidata''s telecommunications device covers any telecom hardware, but here only whole products count.'
     mappings: {close: ['wd:Q1780509']}
   p0003:
     label: audio and video equipment
     definition: Family of products that play, receive or control sound or pictures, such as headphones, speakers, radios and remote controls.
     source: https://www.wikidata.org/wiki/Q581105
     example: [a pair of headphones, a Bluetooth speaker, a clock radio, a TV remote control]
-    note: 'Not telecommunications equipment: a phone plays sound but goes there. Wikidata''s consumer electronics is wider and takes in computers and phones; here only sound and picture products. Its types sit in UNU-KEY 04xx, WEEE 5.'
+    note: 'Not telecommunications equipment: a phone plays sound but goes there. Wikidata''s consumer electronics also takes in computers and phones. Its types sit in UNU-KEY 04xx, WEEE 5.'
     mappings: {close: ['wd:Q581105']}
   p0004:
     label: lighting equipment
     definition: 'Family of products that give light: lamps and the luminaires that hold or include them.'
-    example: [an LED bulb, a desk lamp, a ceiling luminaire, a bedside lamp]
-    note: Not a display backlight, which belongs to a display. Lamps (UNU-KEY 0505, WEEE 3) and luminaires (0506, WEEE 5) fall on different sides of the WEEE line.
+    example: [an LED bulb, a fluorescent tube, a desk lamp, a ceiling luminaire]
+    note: Not a display backlight, which belongs to a display. Lamps (UNU-KEY 0505) are WEEE category 3, and luminaires (0506) are category 5.
     mappings: {close: ['cpc:4653']}
   p0005:
     label: small household appliance
     definition: Family of portable household appliances that do tasks such as heating water, preparing food, ironing or moving air.
     source: https://www.wikidata.org/wiki/Q3558289
     example: [an electric kettle, a toaster, a clothes iron, a desk fan]
-    note: 'Not personal care appliance: a shaver or hair dryer goes there, though both families sit in UNU-KEY 02xx, WEEE 5. Not a large appliance such as a washing machine or fridge (UNU-KEY 01xx). Power strips are kept here for now.'
+    note: 'Not personal care appliance: a shaver or hair dryer goes there, though both families sit in UNU-KEY 02xx, WEEE 5. Not a large appliance such as a washing machine or fridge (UNU-KEY 01xx).'
     mappings: {close: ['cpc:4481', 'wd:Q3558289']}
   p0006:
     label: personal care appliance
@@ -78,9 +78,9 @@ concepts:
     mappings: {exact: ['wd:Q155972'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['r9lab-cpv:302132']}
   p0009:
     label: docking station
-    definition: Device that a laptop or mobile device plugs into to break out its ports, and often to charge it.
+    definition: Device that a laptop or mobile device plugs into to get extra ports, and often to charge.
     source: https://www.wikidata.org/wiki/Q1233773
-    example: [a USB-C laptop dock, a port replicator, a desktop charging cradle]
+    example: [a USB-C laptop dock, a port replicator, a docking station with display outputs]
     note: 'Not laptop charger: a charger only supplies power, while a dock also passes data or video. Both are UNU-KEY 0301, WEEE 6.'
     broader: [p0001]
     mappings: {exact: ['wd:Q1233773'], broad: ['cpc:45290', 'unu1:0301', 'unu2:0301', 'weee6:6']}
@@ -89,7 +89,8 @@ concepts:
     definition: Expansion card that produces the image signal sent to a display.
     source: https://www.wikidata.org/wiki/Q4308
     example: [a PCIe graphics card, a low-profile graphics card, a workstation graphics card, an AGP video card]
-    note: A PC component; whether it is stand-alone EEE is debatable. Not populated printed circuit board.
+    note: 'Not populated printed circuit board: a board taken off the card is a component.'
+    editorial_note: Whether a PC part such as a graphics card is a product of its own is still open.
     broader: [p0001]
     mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0302', 'unu2:0302', 'weee6:6'], close: ['r9lab-cpv:3023713']}
   p0011:
