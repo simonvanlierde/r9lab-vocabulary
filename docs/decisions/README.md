@@ -10,3 +10,4 @@ structure, and add a record when you make a choice that is expensive to undo.
 | [0002](0002-yaml-source-skos-build.md) Hand-written YAML, built into SKOS | accepted | 2026-11-17 |
 | [0003](0003-weee-category-iris.md) WEEE category IRIs as fragments on the directive's ELI | accepted | 2026-11-26 |
 | [0004](0004-versioned-iris-and-scheme-dates.md) Version IRIs under the base, dates from the sources and git | accepted | 2026-11-26 |
+| [0005](0005-product-families-and-facets.md) Product families for navigation, facets as their own schemes later | accepted | 2026-11-26 |
