@@ -364,8 +364,8 @@ concepts:
     label: foam
     definition: Solid with gas-filled cells throughout, as in packaging, padding and insulation.
     source: https://www.wikidata.org/wiki/Q215414
-    example: [an unmarked packaging foam sheet, an acoustic foam pad, a foam gasket, aluminium foam]
-    note: 'Not polyurethane, polystyrene or polyethylene: a foam whose polymer is known goes by that polymer, such as PUR foam or EPS. Wikidata''s foam also counts liquid foams.'
+    example: [an unmarked packaging foam sheet, an acoustic foam pad, a foam gasket, foam padding in a headphone cushion]
+    note: 'Not polyurethane, polystyrene or polyethylene: a foam whose polymer is known goes by that polymer, such as PUR foam or EPS. A metal foam goes by its metal. Wikidata''s foam also counts liquid foams.'
     broader: [m0049]
     mappings: {exact: ['pmdco:PMD_0020126'], close: ['wd:Q215414']}
   m0054:
