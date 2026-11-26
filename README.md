@@ -5,12 +5,15 @@
 [![Software Heritage](https://archive.softwareheritage.org/badge/origin/https://github.com/simonvanlierde/r9lab-vocabulary/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/simonvanlierde/r9lab-vocabulary)
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
+The R9lab reference vocabulary: product types and component and material classes for repair
+and disassembly records, as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, WEEE categories, PMDco,
+Wikidata and BAFU.
+
 Status: experimental. Concept ids are stable from v0.1.0 on; labels, mappings and the
-product types may still change.
+product types may still change. The `https://w3id.org/r9lab/vocabulary/` IRIs do not resolve
+yet: the redirect is waiting for review at w3id.org.
 
 Questions and bugs: see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
-
-R9lab reference vocabulary: product types and component and material classes as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, Wikidata and BAFU
 
 ## What is in it
 
@@ -22,7 +25,7 @@ graph:
 | [Material classes](vocabulary/materials.yaml) | 58 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
 | [Component classes](vocabulary/components.yaml) | 24 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
-| [Pilot classes](vocabulary/pilot-classes.yaml) | 11 | The eleven coarse material classes a photo study scores, kept as a `skos:Collection` |
+| [Pilot classes](vocabulary/pilot-classes.yaml) | 11 | The eleven coarse material classes a pilot study sorts photographed parts into, kept as a `skos:Collection` |
 
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
@@ -40,23 +43,19 @@ in the name (`re.search`).
 [SSSOM](https://mapping-commons.github.io/sssom/): `skos:exactMatch`, `closeMatch`, or
 `broadMatch` when the tag is narrower than the concept. A tag with no concept maps to
 `sssom:NoTermFound`. Each tag's `subject_id` is `r9lab-tag:` plus the URL-encoded tag
-(`r9lab-tag:pc%2Babs`), so SSSOM tools that need an id can load the file. Joined on `concept`
-with `dist/name-matches.csv`, it gives each tag its BAFU activity names.
+(`r9lab-tag:pc%2Babs`, under `https://w3id.org/r9lab/vocabulary/tags/`), so SSSOM tools that
+need an id can load the file. Joined on `concept` with `dist/name-matches.csv`, it gives each
+tag its BAFU activity names.
 
-That file is built, by `just curate`, from a review log in
-[`mappings/r9lab-tags/`](mappings/r9lab-tags/). `predictions.sssom.tsv` holds what machines
-proposed (`semapv:AgentBasedMatching` and other machine justifications), with no reviewer.
-`reviews.sssom.tsv` gets one row per rater per verdict: their ORCID CURIE in `reviewer_id`,
-`reviewer_agreement` 1 (agree), -1 (disagree) or 0 (unsure), `review_date`, and the seconds the
-verdict took in `review_seconds`. A rater's latest row for a mapping counts. The built file keeps
-every proposal no rater rejected, with the raters who agreed in `reviewer_id`; a row with no
-reviewer is still a proposal, not a curated mapping. A proposal with one rater for and one
-against stays, without a reviewer, until the rater against it changes their verdict. A tag whose
-only proposal every rater rejected fails `just check` until it gets a new proposal, or
-`sssom:NoTermFound`. Verdicts on a withdrawn proposal stay in the log, and `just check` warns about them.
-[ADR 0005](docs/decisions/0005-mapping-review-log.md) says why it is a log.
-`just review` serves a page for adding verdicts, one blind card at a time, on this machine only;
-[`docs/review-protocol.md`](docs/review-protocol.md) has the rules a rater follows.
+`just curate` builds that file from a review log in [`mappings/r9lab-tags/`](mappings/r9lab-tags/):
+
+- `predictions.sssom.tsv` holds what machines proposed, with no reviewer.
+- `reviews.sssom.tsv` gets one row per rater per verdict, and a rater's latest row counts.
+- The built file keeps every proposal no rater rejected, with the raters who agreed in
+  `reviewer_id`. A row with no reviewer is still a proposal, not a curated mapping.
+
+[ADR 0005](docs/decisions/0005-mapping-review-log.md) says why it is a log, and
+[`docs/review-protocol.md`](docs/review-protocol.md) how verdicts are counted.
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
@@ -70,8 +69,8 @@ each comes from.
 
 ## Usage
 
-Get the built files from the [releases](https://github.com/simonvanlierde/r9lab-vocabulary/releases),
-or build them:
+Each [release](https://github.com/simonvanlierde/r9lab-vocabulary/releases) carries the files
+listed below, except `name-matches.csv`, plus `mappings/r9lab-tags.sssom.tsv`. Or build them:
 
 ```sh
 just update      # fetch the pinned CPC 2.1, PMDco and BAFU files, then write dist/
@@ -109,6 +108,18 @@ SKOS rules (`tests/fixtures/skohub-skos.shacl.ttl`), on the graph `vocabulary/` 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
 missing from the pinned files, a WEEE category other than 1 to 6, or a name pattern that matches no live name in a version.
+The scheme slugs `tags` and `external` are taken by other IRIs under the base.
+
+Every `r9lab-vocabulary` command exits 0 on success and 1 on a broken rule, or for `wikidata` a
+missing or redirected item. Exit 2 is a bad argument (an unknown `names --source`, a `diff` ref
+with no `vocabulary/`), and 3 means the pipeline output is missing: run `just pipeline`.
+
+### Review the tag mappings
+
+`just review` runs with the `review` extra (FastAPI, uvicorn), and needs the rater's ORCID CURIE
+in `R9LAB_REVIEWER` (`R9LAB_REVIEWER=orcid:0000-0002-1825-0097 just review`). It serves the page on
+127.0.0.1 only, and rebuilds the published file when stopped with Ctrl-C.
+[`docs/review-protocol.md`](docs/review-protocol.md) has the rules a rater follows.
 
 ### Write a concept's text
 
@@ -120,7 +131,8 @@ Each concept in `vocabulary/*.yaml` carries:
 - `note`: what the concept leaves out and the nearest concept it is told apart from
   (`skos:scopeNote`).
 - `editorial_note`: remarks for maintainers, such as a missing BAFU dataset
-  (`skos:editorialNote`).
+  (`skos:editorialNote`). It ships in the published graph, so write it for outside readers
+  too; `labels.json` leaves it out.
 
 The vocabulary is CC0, so a definition is written in our own words: Ashby and IEC 60050
 are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they are.
@@ -187,8 +199,12 @@ just pipeline    # fetch, build and validate every source in sources.toml
 just data-release   # write the folder to publish: the redistributable data, datapackage.json, SHA256SUMS
 ```
 
-`just check` skips the tests that read the pipeline output when it is missing. `just test-full`
+`just check` skips the tests that read the pipeline output when it is missing, and ends with
+`curate check`, which fails on a broken review-log rule or an out-of-date tag file. `just test-full`
 runs the pipeline first and then every test, as CI does.
+
+The version in `pyproject.toml` goes into the version IRIs and both SSSOM files: after changing
+it, run `just curate` to rewrite the tag file's header.
 
 `tests/test_golden.py` pins the Turtle a small fixture in `tests/fixtures/golden/` builds to. After
 a deliberate change to the output, rewrite it with `UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py`
