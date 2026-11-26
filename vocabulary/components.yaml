@@ -56,7 +56,7 @@ concepts:
       bafu: ['^printed wiring board, (surface mounted|through-hole mounted|mixed mounted)', 'mainboard', '^printed wiring board, power supply unit']
   c0007:
     label: electronic component
-    definition: Discrete electronic part, such as a chip, capacitor, resistor or LED, recorded loose, not soldered to a board.
+    definition: Discrete electronic part, such as a chip, capacitor, resistor or LED.
     source: https://www.wikidata.org/wiki/Q11653
     example: [an integrated circuit, an electrolytic capacitor, a resistor, a quartz crystal]
     note: 'Not populated printed circuit board: a board recorded whole, parts and all, is one item. Not transformer or electric motor, which are concepts of their own.'
@@ -118,10 +118,11 @@ concepts:
       bafu: ['^(led|oled) (module|screen)']
   c0017:
     label: cable
-    note: 'Not a bare conductor: an uninsulated copper strip or braid goes by its metal. So does enamelled winding wire in a coil, motor or transformer. Not a flexible printed circuit, which is a printed circuit board. Wikidata''s cable does not ask for insulation; this scheme does.'
+    note: 'Not a bare conductor: an uninsulated copper strip or braid goes by its metal. So does enamelled winding wire in a coil, motor or transformer. Not a flexible printed circuit, which is a printed circuit board.'
     definition: 'Electric cable or wire: one or more insulated conductors, with or without plugs.'
     source: https://www.wikidata.org/wiki/Q188447
     example: [a power cord, a USB cable, an internal wire harness, a ribbon cable]
+    editorial_note: Wikidata's cable does not ask for insulation; this scheme does.
     mappings: {exact: ['wd:Q188447'], close: ['cpc:463']}
     names:
       bafu: ['^cable, ', '^plugs, inlet and outlet']
