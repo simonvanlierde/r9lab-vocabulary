@@ -77,7 +77,7 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: Mappi
     malformed = False
     for cid, c in scheme.concepts.items():
         where = f"{scheme.slug}/{cid}"
-        if not ID.match(cid) or (letter and not cid.startswith(letter)):
+        if not isinstance(cid, str) or not ID.match(cid) or (letter and not cid.startswith(letter)):
             errors.append(f"{where}: id must be {letter or 'a letter'} plus 2-4 digits")
         errors += [f"{where}: unknown field {k!r}" for k in sorted(set(c) - FIELDS)]
         if shape := _validate_shape(where, c):
@@ -87,6 +87,7 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: Mappi
             continue
         errors += _validate_text(where, c)
         errors += _validate_links(where, c, scheme)
+        errors += _validate_related(where, cid, c, scheme)
         errors += _validate_mappings(where, c, schemes)
         errors += _validate_names(where, c, versions)
     if malformed:
@@ -144,6 +145,16 @@ def _duplicates(scheme: Scheme, field: str, key: Callable[[dict[str, Any]], Any]
             errors.append(f"{scheme.slug}/{cid}: {field} {c[field]!r} is also {seen[k]}'s")
         seen[k] = cid
     return errors
+
+
+def _validate_related(where: str, cid: str, c: dict[str, Any], scheme: Scheme) -> list[str]:
+    """SKOS S27: `related` is disjoint with `broaderTransitive`, in either direction."""
+    up = set(ancestors(scheme, cid))
+    return [
+        f"{where}: related {ref} is itself or above or below it"
+        for ref in c.get("related") or []
+        if ref == cid or ref in up or (ref in scheme.concepts and cid in ancestors(scheme, ref))
+    ]
 
 
 def _validate_links(where: str, c: dict[str, Any], scheme: Scheme) -> list[str]:

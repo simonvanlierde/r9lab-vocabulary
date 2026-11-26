@@ -133,6 +133,16 @@ def test_check_codes_names_a_pmdco_id_missing_from_the_pinned_source():
         ({"t01": {"label": "a", "related": ["t09"]}}, "related t09 does not exist"),
         ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t09"]}}, "replaced_by t09 does not exist"),
         ({"t01": {"label": "a", "mappings": {"close": ["t:t09"]}}}, "t:t09 does not exist"),
+        ({"t01": {"label": "a", "related": ["t01"]}}, "related t01 is itself or above or below it"),
+        (
+            {"t01": {"label": "a"}, "t02": {"label": "b", "broader": ["t01"], "related": ["t01"]}},
+            "t/t02: related t01 is itself or above or below it",
+        ),
+        (
+            {"t01": {"label": "a", "related": ["t02"]}, "t02": {"label": "b", "broader": ["t01"]}},
+            "t/t01: related t02 is itself or above or below it",
+        ),
+        ({101: {"label": "a"}}, "t/101: id must be"),
         (
             {
                 "t01": {"label": "a", "mappings": {"narrow": ["t:t02"]}},
