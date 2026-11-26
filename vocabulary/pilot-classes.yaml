@@ -1,5 +1,5 @@
-# The ten material classes a photo-study pilot scores (frozen 5 November 2026), kept as
-# their own scheme and collection so pilot scoring is untouched. Each notation is the
+# The material classes a photo-study pilot scores (ten frozen 5 November 2026; s11 added for
+# the rerun), kept as their own scheme and collection so pilot scoring is untouched. Each notation is the
 # pilot's class key. Mappings into the material and component axes: exact where the
 # class is one concept there, close where it nearly is, narrow where it spans several.
 scheme:
@@ -9,7 +9,7 @@ scheme:
   created: 2026-11-17
   collection: Photo-study pilot L1 classes
   description: >
-    The ten coarse material classes scored in a photo-study pilot, mapped to the material and
+    The eleven coarse material classes scored in a photo-study pilot, mapped to the material and
     component classes.
 concepts:
   s01:
@@ -18,7 +18,7 @@ concepts:
     definition: A component made mainly, by mass, of iron or an iron-based alloy, such as steel or cast iron.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017
     example: [a steel chassis, a screw, a steel mounting bracket, a transformer core]
-    note: 'Not non-ferrous: stainless and plated steel are ferrous even when they look bright. Alloys based on chromium, manganese, cobalt or nickel are non-ferrous.'
+    note: 'Not non-ferrous: stainless and plated steel are ferrous even when they look bright. Alloys based on chromium, manganese, cobalt or nickel are non-ferrous. Not a ferrite core, which is ceramic: other.'
     mappings: {exact: ['materials:m0002']}
   s02:
     label: non-ferrous
@@ -27,22 +27,23 @@ concepts:
     source: https://www.wikidata.org/wiki/Q5679431
     example: [an aluminium heat sink, a copper bus bar, a brass connector pin, a magnesium laptop frame]
     note: 'Not ferrous: every steel is ferrous, stainless included, though some stainless steel is not magnetic. Not cable: insulated copper wire is a cable.'
-    mappings: {close: ['materials:m0006']}
+    mappings: {narrow: ['materials:m0006']}
   s03:
     label: plastic
     notation: plastic
     definition: A component made mainly, by mass, of a rigid or flexible plastic, thermoplastic or thermoset.
     source: https://www.wikidata.org/wiki/Q11474
     example: [an ABS housing, a polycarbonate cover, a nylon gear, a foam insert]
-    note: 'Not rubber: a soft part that stretches and springs back is rubber. Not cable, even though a cable''s sheath is plastic. A glass-filled grade such as PA66-GF30 is plastic.'
-    mappings: {narrow: ['materials:m0020']}
+    note: 'Not rubber: a soft part that stretches and springs back is rubber. Not cable, even though a cable''s sheath is plastic. A glass-filled grade such as PA66-GF30 is plastic. Glass-fibre composites count as plastic, and so does a plain FR-4 sheet with no printed tracks.'
+    editorial_note: Glass-fibre composites go here, not under display or glass, because their footprint per kg (about 2.5-8 kg CO2e, set mostly by the resin) sits with plastics, and they end of life as thermosets.
+    mappings: {narrow: ['materials:m0020', 'materials:m0053', 'materials:m0050']}
   s04:
     label: electronics
     notation: electronics
     definition: A printed circuit board, bare or populated, or a loose electronic component.
     source: https://www.wikidata.org/wiki/Q173350
     example: [a motherboard, a phone logic board, a power-supply board, a loose capacitor or chip]
-    note: 'Not display or glass: a display keeps its own driver board. Batteries, cables and magnets have their own classes. A flexible printed circuit counts here.'
+    note: 'Not display or glass: a display keeps its own driver board. Batteries, cables and magnets have their own classes. A flexible printed circuit counts here, but a flat flex cable with no printed tracks is a cable. Not electric motor or transformer: a small choke or transformer on a circuit board stays electronics.'
     mappings: {narrow: ['components:c0005', 'components:c0006', 'components:c0007']}
   s05:
     label: battery
@@ -50,13 +51,13 @@ concepts:
     definition: 'A battery or a bare cell: one or more electrochemical cells, with or without the case, terminals and protective devices a battery has.'
     source: IEC 60050-482:2004, 482-01-04
     example: [a phone's lithium-ion pouch battery, a laptop battery pack, an AA cell, an 18650 cell cut from a pack]
-    note: 'Not electronics: a pack''s protection board stays with the battery. A bare cell cut from a pack counts too.'
+    note: 'Not electronics: a pack''s protection board stays with the battery.'
     editorial_note: Wider than the IEC battery (482-01-04), which needs the cells fitted for use.
     mappings: {narrow: ['components:c0001', 'components:c0024']}
   s06:
     label: display or glass
     notation: display_glass
-    definition: A component made mainly of glass, or a display panel or module such as an LCD.
+    definition: A component made mainly, by mass, of glass, or a display panel or module such as an LCD.
     source: https://www.wikidata.org/wiki/Q11469
     example: [a phone screen assembly, an LCD panel, a glass cover or lens, a light bulb]
     note: 'Not plastic: a clear plastic window or light guide is plastic. Not electronics: a display keeps its driver board.'
@@ -64,14 +65,14 @@ concepts:
   s07:
     label: rubber
     notation: rubber
-    definition: 'A component made mainly of an elastomer, a soft material that stretches and springs back: natural or synthetic rubber, silicone or thermoplastic elastomer.'
+    definition: 'A component made mainly, by mass, of an elastomer, a soft material that stretches and springs back: natural or synthetic rubber, silicone or thermoplastic elastomer.'
     source: https://www.wikidata.org/wiki/Q252266
     example: [a rubber foot, a gasket or seal, a keypad membrane, a drive belt]
     note: 'Not plastic: a hard part that does not spring back is plastic. Not cable: a rubber-sheathed cable is a cable.'
     mappings: {narrow: ['materials:m0038']}
   s08:
     label: cable
-    note: 'Not electronics: a flexible printed circuit is a printed circuit board. Not non-ferrous: a bare copper strip is non-ferrous metal. So is enamelled winding wire in a coil, motor or transformer.'
+    note: 'Not electronics: a flexible printed circuit is a printed circuit board, but a flat flex cable with no printed tracks is a cable. Not non-ferrous: a bare copper strip is non-ferrous metal. So is enamelled winding wire in a coil, motor or transformer.'
     notation: cable
     definition: 'An electric cable or wire: one or more insulated conductors, with or without plugs.'
     source: https://www.wikidata.org/wiki/Q188447
@@ -83,12 +84,21 @@ concepts:
     definition: 'A permanent magnet: material that keeps its own magnetic field without an electric current, such as a ferrite or neodymium (NdFeB) magnet.'
     source: https://www.wikidata.org/wiki/Q353743
     example: [a loudspeaker magnet, a hard-drive voice-coil magnet, a motor rotor magnet, a magnetic catch]
-    note: 'Not ferrous: a steel part a magnet sticks to is ferrous. A motor or an electromagnet is not in this class. It takes its main material''s class.'
-    mappings: {exact: ['components:c0019']}
+    note: 'Not ferrous: a steel part a magnet sticks to is ferrous. Not electric motor or transformer: a whole motor goes there. A whole loudspeaker driver counts here. An electromagnet takes its main material''s class.'
+    mappings: {exact: ['components:c0019'], narrow: ['components:c0023']}
   s10:
     label: other
     notation: other
-    definition: A component whose main material fits none of the other nine classes, such as paper, cardboard, wood, fabric or ceramic.
+    definition: A component whose main material fits none of the other ten classes, such as paper, cardboard, wood, fabric or ceramic.
     example: [a cardboard insert, a wooden case, a fabric speaker grille, a ceramic insulator]
     note: 'Only when no other class fits: a paper or fabric part that is mostly plastic by mass is plastic, and woven glass fabric is display or glass.'
-    mappings: {narrow: ['materials:m0055', 'materials:m0056', 'materials:m0057']}
+    mappings: {narrow: ['materials:m0046', 'materials:m0054', 'materials:m0057']}
+  s11:
+    label: electric motor or transformer
+    notation: motor_transformer
+    definition: A copper-wound electromechanical part, such as an electric motor, a mains transformer or a large inductor, which scrap recyclers trade as a grade of its own.
+    source: https://www.isrispecs.org/wp-content/uploads/2026/09/2026-July-ReMA_ISRI_Specifications.pdf
+    example: [a washing-machine motor, a fan motor, a mains transformer from an old amplifier, a microwave-oven transformer]
+    note: 'Not electronics: a small choke or transformer on a circuit board stays electronics. Not magnet: a loose magnet taken out of a motor is a magnet. Not non-ferrous: copper wire unwound from a motor or transformer is non-ferrous.'
+    editorial_note: Follows the electric motor grades of the ReMA (ISRI) Scrap Specifications, "Elmo" and "Small Elmo", which recyclers price apart from copper and steel scrap. Transformers and large inductors join them as the same build of copper windings on a steel core.
+    mappings: {narrow: ['components:c0022', 'components:c0013']}

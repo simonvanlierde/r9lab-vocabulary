@@ -18,7 +18,7 @@ Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
 # The ORCID iD ORCID itself publishes for tests.
 TEST_ORCID = "https://orcid.org/0000-0002-1825-0097"
-# The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
+# The pilot's L1 keys: the ten frozen at registration (5 November 2026), plus motor_transformer.
 PILOT_KEYS = {
     "ferrous",
     "non_ferrous",
@@ -30,6 +30,7 @@ PILOT_KEYS = {
     "cable",
     "magnet",
     "other",
+    "motor_transformer",
 }
 
 
@@ -405,11 +406,10 @@ def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
     assert "t01" not in md_path.read_text(encoding="utf-8")
 
 
-def test_a_close_pilot_mapping_marks_its_target_but_not_the_targets_descendants(schemes: Schemes):
-    concepts = {c["id"]: c for s in scheme.labels(schemes) for c in s["concepts"]}
-    assert "non_ferrous" in concepts["m0006"]["pilot"]
-    assert "non_ferrous" not in concepts["m0017"]["pilot"]
-    assert "non_ferrous" not in concepts["m0012"]["pilot"]
+def test_a_close_pilot_mapping_marks_its_target_but_not_the_targets_descendants():
+    schemes = pilot_fixture({"m01": {"label": "a"}, "m02": {"label": "b", "broader": ["m01"]}}, {"close": ["m:m01"]})
+    concepts = {c["id"]: c["pilot"] for c in scheme.labels(schemes)[0]["concepts"]}
+    assert concepts == {"m01": ["x"], "m02": []}
 
 
 def pilot_fixture(materials: dict, pilot_mappings: dict) -> Schemes:
