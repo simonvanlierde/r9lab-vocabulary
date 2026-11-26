@@ -92,6 +92,9 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "broader": ["t09"]}}, "broader t09 does not exist"),
         ({"t01": {"label": "a"}, "t02": {"label": "A"}}, "label 'A' is also t01's"),
         ({"x01": {"label": "a"}}, "id must be t"),
+        ({"t1": {"label": "a"}}, "id must be t"),
+        ({"t00001": {"label": "a"}}, "id must be t"),
+        ({"t01": {"label": "a", "broader": ["t01"]}}, "loops back"),
         ({"t01": {"label": "a", "mappings": {"exact": ["wd:Q1"], "broad": ["wd:Q1"]}}}, "both exact and broad"),
         ({"t01": {"label": "a", "mappings": {"exact": ["zz:1"]}}}, "unknown prefix"),
         ({"t01": {"label": "a", "mappings": {"same": ["wd:Q1"]}}}, "unknown mapping relation"),
@@ -190,9 +193,19 @@ def test_a_scheme_slug_taken_by_another_scheme_or_prefix_is_an_error(tmp_path: P
         scheme.load(tmp_path)
 
 
-def test_a_deprecated_concept_may_keep_a_deprecated_broader():
-    concepts = {
-        "t01": {"label": "a", "deprecated": True},
-        "t02": {"label": "b", "deprecated": True, "broader": ["t01"]},
-    }
-    assert scheme.validate(one(concepts), RELEASES) == []
+@pytest.mark.parametrize(
+    "concepts",
+    [
+        {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "deprecated": True, "broader": ["t01"]}},
+        {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "a"}},
+        {"t01": {"label": "a", "notation": ""}, "t02": {"label": "b", "notation": ""}},
+    ],
+    ids=["deprecated-under-deprecated", "deprecated-label-reused", "empty-notations"],
+)
+def test_validate_accepts(concepts: dict):
+    assert scheme.validate(one(concepts), VERSIONS) == []
+
+
+def test_an_id_in_a_scheme_without_a_letter_needs_any_letter():
+    errors = scheme.validate(one({"01": {"label": "a"}}, {"title": "t"}), VERSIONS)
+    assert any("id must be a letter plus 2-4 digits" in e for e in errors), errors
