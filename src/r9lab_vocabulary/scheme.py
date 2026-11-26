@@ -83,6 +83,9 @@ TEXT_FIELDS = {
 MANY_TEXTS = {"example"}
 # Where the definition comes from: a URL, written as an IRI, or a citation.
 SOURCE = "source"
+# Every field a concept may carry; validate rejects any other, so a misspelt one is not lost.
+FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, "broader", "related", "mappings", "names"}
+FIELDS |= {"deprecated", "replaced_by"}
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A match: (scheme slug, concept id, family, version, pattern, matched names).
 Match = tuple[str, str, str, str, str, list[str]]
@@ -161,6 +164,7 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[
             errors.append(f"{where}: id must be {letter or 'a letter'} plus 2-4 digits")
         if not c.get("label"):
             errors.append(f"{where}: no label")
+        errors += [f"{where}: unknown field {k!r}" for k in sorted(set(c) - FIELDS)]
         errors += _validate_text(where, c)
         errors += _validate_links(where, c, scheme)
         errors += _validate_mappings(where, c, schemes)
@@ -413,7 +417,7 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
     for field, prop in TEXT_FIELDS.items():
         for text in _texts(c, field):
             g.add((node, prop, Literal(text.strip(), lang=LANG)))
-    if source := c.get(SOURCE):
+    if source := c.get(SOURCE, "").strip():
         g.add((node, DCTERMS.source, URIRef(source) if source.startswith(("http://", "https://")) else Literal(source)))
     if (notation := c.get("notation")) is not None:
         g.add((node, SKOS.notation, Literal(str(notation))))

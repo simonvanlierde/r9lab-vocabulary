@@ -139,6 +139,7 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "example": []}}, "example must be non-empty text"),
         ({"t01": {"label": "a", "example": ["x", 3]}}, "example must be non-empty text"),
         ({"t01": {"label": "a", "source": "Ashby 2017"}}, "source needs a definition"),
+        ({"t01": {"label": "a", "examples": ["x"]}}, "unknown field 'examples'"),
         ({"t01": {}}, "t/t01: no label"),
         ({"t01": {"label": "a", "related": ["t09"]}}, "related t09 does not exist"),
         ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t09"]}}, "replaced_by t09 does not exist"),
@@ -194,8 +195,10 @@ def test_text_fields_are_written_as_skos_notes():
 def test_every_concept_has_a_definition_an_example_and_a_scope_note(schemes: Schemes):
     concepts = {cid: c for s in schemes.values() for cid, c in s.concepts.items() if not c.get("deprecated")}
     done = {cid for cid, c in concepts.items() if all(c.get(f) for f in ("definition", "example", "note"))}
-    assert set(concepts) - done <= PENDING_TEXT, "missing a definition, example or note"
-    assert not done & PENDING_TEXT, "done: take these out of PENDING_TEXT"
+    missing = set(concepts) - done - PENDING_TEXT
+    assert not missing, f"no definition, example or note: {sorted(missing)}"
+    stale = PENDING_TEXT - (set(concepts) - done)
+    assert not stale, f"done or gone, take out of tests/pending-text.txt: {sorted(stale)}"
 
 
 def test_a_weee_category_link_points_into_annex_iii_of_the_directive():
