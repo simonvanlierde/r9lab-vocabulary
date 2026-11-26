@@ -8,7 +8,7 @@ from conftest import ROOT
 from pyshacl import validate
 from rdflib import SH, Graph
 
-from r9lab_vocabulary import pipeline, scheme
+from r9lab_vocabulary import export, pipeline, scheme
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -33,7 +33,7 @@ def _violations(data: Graph, shapes: Graph) -> set[str]:
 def test_the_build_conforms(root: Path, shapes: Graph):
     orcids, landing = pipeline.citation(root / "CITATION.cff")
     schemes = scheme.load(root / "vocabulary")
-    g = scheme.to_graph(schemes, scheme.About("1.0.0", orcids, landing, date(2026, 2, 1)))
+    g = export.to_graph(schemes, export.About("1.0.0", orcids, landing, date(2026, 2, 1)))
     assert _violations(g, shapes) == set()
 
 

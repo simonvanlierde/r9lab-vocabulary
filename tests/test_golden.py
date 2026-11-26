@@ -13,7 +13,7 @@ from conftest import ROOT
 from rdflib import Graph
 from rdflib.compare import graph_diff, to_isomorphic
 
-from r9lab_vocabulary import pipeline, scheme
+from r9lab_vocabulary import export, pipeline, scheme
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -33,7 +33,7 @@ def _same(a: Graph, b: Graph) -> None:
 def test_the_build_matches_the_golden_turtle():
     orcids, landing = pipeline.citation(GOLDEN / "CITATION.cff")
     schemes = scheme.load(GOLDEN / "vocabulary")
-    g = scheme.to_graph(schemes, scheme.About("1.0.0", orcids, landing, date(2026, 2, 1)))
+    g = export.to_graph(schemes, export.About("1.0.0", orcids, landing, date(2026, 2, 1)))
     if os.environ.get("UPDATE_GOLDEN") == "1":
         g.serialize(EXPECTED, format="turtle")
     _same(g, Graph().parse(EXPECTED))
@@ -43,9 +43,9 @@ def test_the_build_matches_the_golden_turtle():
 @pytest.mark.filterwarnings("ignore:ConjunctiveGraph is deprecated:DeprecationWarning")
 def test_the_real_build_round_trips_through_turtle_and_json_ld(tmp_path: Path):
     orcids, landing = pipeline.citation(ROOT / "CITATION.cff")
-    about = scheme.About("test", orcids, landing, date(2026, 2, 1))
+    about = export.About("test", orcids, landing, date(2026, 2, 1))
     schemes = scheme.load(ROOT / "vocabulary")
-    scheme.write(schemes, about, tmp_path, [])
+    export.write(schemes, about, tmp_path, [])
     ttl = Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
-    _same(ttl, scheme.to_graph(schemes, about))
+    _same(ttl, export.to_graph(schemes, about))
     _same(Graph().parse(tmp_path / "r9lab-vocabulary.jsonld"), ttl)

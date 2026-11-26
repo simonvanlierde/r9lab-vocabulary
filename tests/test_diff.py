@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from r9lab_vocabulary import pipeline, scheme
+from r9lab_vocabulary import checks, pipeline, scheme
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -19,11 +19,11 @@ OLD, NEW = FIXTURES / "golden" / "vocabulary", FIXTURES / "next" / "vocabulary"
 
 def test_both_fixture_states_break_no_rule():
     for d in (OLD, NEW):
-        assert scheme.validate(scheme.load(d), {}) == [], d
+        assert checks.validate(scheme.load(d), {}) == [], d
 
 
 def test_the_diff_lists_what_was_added_deprecated_remapped_and_relabelled():
-    lines, ok = scheme.diff(scheme.load(OLD), scheme.load(NEW))
+    lines, ok = checks.diff(scheme.load(OLD), scheme.load(NEW))
     assert ok
     assert lines == [
         "### Added",
@@ -48,7 +48,7 @@ def test_the_diff_lists_what_was_added_deprecated_remapped_and_relabelled():
 def test_a_concept_id_that_vanished_fails_the_diff():
     new = scheme.load(NEW)
     del new["tools"].concepts["t03"]
-    lines, ok = scheme.diff(scheme.load(OLD), new)
+    lines, ok = checks.diff(scheme.load(OLD), new)
     assert not ok
     assert "- `tools/t03` old screwdriver: deprecate it with `replaced_by` instead of deleting it" in lines
 
@@ -80,7 +80,7 @@ def test_just_diff_reads_the_vocabulary_at_a_tag(
 def test_the_diff_reports_an_undeprecation_and_a_deprecation_with_no_replacement():
     old = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b"}})}
     new = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a"}, "t02": {"label": "b", "deprecated": True}})}
-    lines, ok = scheme.diff(old, new)
+    lines, ok = checks.diff(old, new)
     assert ok
     assert "- `t/t02` b, with no `replaced_by`" in lines
     assert "- `t/t01` a: no longer deprecated" in lines
@@ -103,4 +103,4 @@ def test_just_diff_of_an_unloadable_ref_is_an_error_not_a_traceback(
 def test_the_diff_of_an_added_concept_with_no_fields_is_a_report_not_a_crash():
     old = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a"}})}
     new = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a"}, "t02": {}})}
-    assert scheme.diff(old, new) == (["### Added", "", "- `t/t02` None", ""], True)
+    assert checks.diff(old, new) == (["### Added", "", "- `t/t02` None", ""], True)

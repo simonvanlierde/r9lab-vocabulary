@@ -6,7 +6,9 @@
 # cpc: CPC 2.1 subclass, broad unless the subclass is the type itself. unu1 and unu2:
 # UNU-KEY v1 and v2 codes, checked against the key descriptions and the HS and CPC tables
 # of the E-waste Statistics Guidelines (2nd ed. 2018, 3rd ed. 2026). v2 follows the v1 code
-# by Annex 2 of the 3rd edition, except where its HS table moved the product.
+# by Annex 2 of the 3rd edition, except where its HS table moved the product. Where a key's
+# description names the product, that key wins over the HS and CPC tables, which map whole
+# trade classes coarser than these types.
 # r9lab-cpv: the CPV code R9lab stores for the type today (truncated as in the app).
 # weee6: category 1-6 of Annex III to Directive 2012/19/EU (WEEE), derived from the
 # unu1 code by the UNU-KEY to EU-6 table of the Global E-waste Monitor 2017 annexes, which
@@ -98,8 +100,9 @@ concepts:
     source: https://www.wikidata.org/wiki/Q4308
     example: [a PCIe graphics card, a low-profile graphics card, a workstation graphics card, an AGP video card]
     note: 'Not populated printed circuit board: a card that arrives on its own is this product, but one taken out of a PC during a teardown is a populated printed circuit board.'
+    editorial_note: UNU-KEY counts final goods only and no key names parts, so 0301 (small IT) is the nearest key.
     broader: [p0001]
-    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0302', 'unu2:0302', 'weee6:6'], close: ['r9lab-cpv:3023713']}
+    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023713']}
   p0011:
     label: computer power supply
     definition: Power supply unit fitted inside a desktop computer that turns mains power into the low DC voltages its parts use.
@@ -107,6 +110,7 @@ concepts:
     example: [an ATX power supply, an SFX power supply, a modular power supply, a server power supply]
     note: 'Not laptop charger: an external adapter in its own case with a cable is a laptop charger.'
     broader: [p0001]
+    editorial_note: An internal part; as for p0010, 0301 (small IT) is the nearest UNU-KEY.
     mappings: {exact: ['wd:Q3972'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0012:
     label: computer mouse
@@ -132,9 +136,9 @@ concepts:
     source: https://www.wikidata.org/wiki/Q887369
     example: [a barrel-plug laptop adapter, a USB-C laptop charger, a power brick with its mains cord]
     note: Not computer power supply, which sits inside a desktop case. Only adapters for laptops count.
-    editorial_note: Wikidata's AC adapter covers adapters for any appliance.
+    editorial_note: Wikidata's AC adapter covers adapters for any appliance. The UNU-KEY 0201 description lists adapters.
     broader: [p0001]
-    mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
+    mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0015:
     label: mobile phone
     definition: Portable telephone that makes calls over a cellular radio network, smartphones and basic phones included.
@@ -276,7 +280,9 @@ concepts:
     source: https://www.wikidata.org/wiki/Q1754646
     example: [a six-way extension block, a surge-protected power strip, a power strip with USB ports]
     note: Not laptop charger or computer power supply, which convert power. A power strip passes mains power on, and only its USB ports convert any.
-    editorial_note: Whether a passive power strip is electrical and electronic equipment in WEEE scope varies by member state.
+    editorial_note: >
+      Whether a passive power strip is electrical and electronic equipment in WEEE scope varies
+      by member state. No UNU-KEY description or table names power strips; 0201 is the nearest key.
     broader: [p0005]
     mappings: {exact: ['wd:Q1754646'], broad: ['cpc:46212', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0031:

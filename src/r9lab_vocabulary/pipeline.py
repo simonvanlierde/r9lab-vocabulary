@@ -39,7 +39,7 @@ import sourceledger
 import yaml
 from sourceledger import Source
 
-from r9lab_vocabulary import scheme
+from r9lab_vocabulary import checks, export, scheme
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -236,12 +236,12 @@ def rdf(out: Path) -> int:
     except FileNotFoundError as e:
         sys.stderr.write(f"error: {e}\n")
         return 3
-    errors = scheme.validate(schemes, lists) + scheme.check_codes(schemes, known)
-    errors += scheme.check_tag_mappings(schemes, TAG_MAPPINGS)
+    errors = checks.validate(schemes, lists) + checks.check_codes(schemes, known)
+    errors += checks.check_tag_mappings(schemes, TAG_MAPPINGS)
     if errors:  # a broken pattern would not compile below
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
-    matches = scheme.name_matches(schemes, lists)
+    matches = checks.name_matches(schemes, lists)
     errors = [
         f"{slug}/{cid}: {family} pattern {pattern!r} matches no live name in {family}-{ver}"
         for slug, cid, family, ver, pattern, hits in matches
@@ -259,12 +259,12 @@ def rdf(out: Path) -> int:
     except ValueError as e:
         sys.stderr.write(f"error: {e}\n")
         return 1
-    about = scheme.About(version("r9lab-vocabulary"), orcids, repo, modified)
+    about = export.About(version("r9lab-vocabulary"), orcids, repo, modified)
     paths = [
-        *scheme.write(schemes, about, out, matches),
+        *export.write(schemes, about, out, matches),
         Path(shutil.copy(SHAPES, out)),
-        scheme.write_sssom(schemes, about, out),
-        *scheme.write_labels(schemes, about.version, out),
+        export.write_sssom(schemes, about, out),
+        *export.write_labels(schemes, about.version, out),
     ]
     sys.stdout.writelines(f"{path}\n" for path in paths)
     return 0
@@ -330,12 +330,12 @@ def names(source: str | None, *, summary: bool) -> int:
             sys.stderr.write(f"error: no name-list source {source!r}; known: {known}\n")
             return 2
     schemes = scheme.load(VOCABULARY)
-    if errors := scheme.validate(schemes, lists):
+    if errors := checks.validate(schemes, lists):
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
     if source is not None:
         lists = {family: {ver: lists[family][ver]}}
-    for slug, cid, family, ver, pattern, hits in scheme.name_matches(schemes, lists):
+    for slug, cid, family, ver, pattern, hits in checks.name_matches(schemes, lists):
         if summary:
             sys.stdout.write(f"{slug}/{cid}\t{family}-{ver}\t{len(hits)}\t{pattern}\n")
         else:
@@ -364,7 +364,7 @@ def diff(ref: str) -> int:
         except (yaml.YAMLError, ValueError) as e:
             sys.stderr.write(f"error: cannot load {VOCABULARY}/ at {ref}: {e}\n")
             return 2
-    lines, ok = scheme.diff(old, scheme.load(VOCABULARY))
+    lines, ok = checks.diff(old, scheme.load(VOCABULARY))
     sys.stdout.write(f"## Vocabulary changes since {ref}\n\n")
     lines = lines or ["No concept added, deprecated, removed, remapped or relabelled."]
     sys.stdout.writelines(f"{line}\n" for line in lines)
