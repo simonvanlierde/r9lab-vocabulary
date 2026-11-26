@@ -83,6 +83,12 @@ def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
         assert {str(o) for o in g.objects(node) if isinstance(o, Literal)} == {str(node).removeprefix(base)}
 
 
+def test_cc0_covers_the_vocabulary_and_its_own_schemes_only(schemes: Schemes):
+    g = scheme.to_graph(schemes, "test")
+    licensed = {str(s) for s in g.subjects(DCTERMS.license, scheme.CC0)}
+    assert licensed == {scheme.BASE} | {s.iri for s in schemes.values()}
+
+
 def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Schemes):
     errors = scheme.check_codes(schemes, {"cpc": {"411"}})
     assert "materials/m0002: cpc:411 is not in the pinned cpc source" not in errors

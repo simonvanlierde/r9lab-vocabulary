@@ -441,6 +441,7 @@ def to_graph(
     created = min(filter(None, (s.meta.get("created") for s in schemes.values())), default=None)
     vocab = URIRef(BASE)
     g.add((vocab, RDF.type, DCAT.Dataset))
+    g.add((vocab, DCTERMS.license, CC0))
     about.describe(g, vocab, TITLE, created)
     used_external: dict[str, set[str]] = {}
     for scheme in schemes.values():
