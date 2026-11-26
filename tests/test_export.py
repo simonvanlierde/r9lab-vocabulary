@@ -152,6 +152,7 @@ def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_p
         "path": ["metal", "ferrous metal", "carbon and low-alloy steel"],
         "definition": schemes["materials"].concepts["m0003"]["definition"],
         "pilot": ["ferrous"],
+        "pilot_any": ["ferrous"],
     }
     assert concepts["s01"]["pilot"] == ["ferrous"]
     assert concepts["c0006"]["pilot"] == ["electronics"]
@@ -181,16 +182,39 @@ def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
             "note": "n",
             "example": ["e"],
             "pilot": [],
+            "pilot_any": [],
         }
     ]
     assert "t01" not in md_path.read_text(encoding="utf-8")
 
 
-def test_a_close_pilot_mapping_marks_its_target_but_not_the_targets_descendants(schemes: Schemes):
-    concepts = {c["id"]: c for s in export.labels(schemes) for c in s["concepts"]}
-    assert "non_ferrous" in concepts["m0006"]["pilot"]
-    assert "non_ferrous" not in concepts["m0017"]["pilot"]
-    assert "non_ferrous" not in concepts["m0012"]["pilot"]
+# Concepts that span several pilot classes, so they carry no key of their own; `pilot_any` covers them.
+KEYLESS = {"materials:m0001", "materials:m0049", "components:c0018"}
+
+
+def test_every_material_and_component_has_a_pilot_key_or_is_known_to_span_several(schemes: Schemes):
+    keyless = {
+        f"{s['slug']}:{c['id']}"
+        for s in export.labels(schemes)
+        if s["slug"] in ("materials", "components")
+        for c in s["concepts"]
+        if not c["pilot"]
+    }
+    assert keyless == KEYLESS
+
+
+def test_pilot_any_collects_the_keys_below_a_concept():
+    child = {"broader": ["m01"]}
+    materials = {"m01": {"label": "a"}, "m02": {"label": "b", **child}, "m03": {"label": "c", **child}}
+    schemes = pilot_fixture(materials, {"narrow": ["m:m02"]})
+    concepts = {c["id"]: (c["pilot"], c["pilot_any"]) for c in export.labels(schemes)[0]["concepts"]}
+    assert concepts == {"m01": ([], ["x"]), "m02": (["x"], ["x"]), "m03": ([], [])}
+
+
+def test_a_close_pilot_mapping_marks_its_target_but_not_the_targets_descendants():
+    schemes = pilot_fixture({"m01": {"label": "a"}, "m02": {"label": "b", "broader": ["m01"]}}, {"close": ["m:m01"]})
+    concepts = {c["id"]: c["pilot"] for c in export.labels(schemes)[0]["concepts"]}
+    assert concepts == {"m01": ["x"], "m02": []}
 
 
 def pilot_fixture(materials: dict, pilot_mappings: dict) -> Schemes:

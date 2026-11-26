@@ -26,6 +26,7 @@ concepts:
   p0001:
     label: computing equipment
     definition: Family of products that process or store data, with the peripherals, add-in cards and power units made for them.
+    source: https://unstats.un.org/unsd/classifications/Econ/Detail/EN/1074/452
     example: [a laptop, a tablet, a computer mouse, a graphics card]
     note: 'Not telecommunications equipment: a router or a phone goes there.'
     editorial_note: UNU-KEY puts routers in 0301 with computer peripherals.
@@ -49,6 +50,7 @@ concepts:
   p0004:
     label: lighting equipment
     definition: 'Family of products that give light: lamps and the luminaires that hold or include them.'
+    source: https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32012L0019#anx_IV
     example: [an LED bulb, a fluorescent tube, a desk lamp, a ceiling luminaire]
     note: Not a display backlight, which belongs to a display.
     editorial_note: Lamps (UNU-KEY 0505) are WEEE category 3, and luminaires (0506) are category 5.
@@ -64,6 +66,7 @@ concepts:
   p0006:
     label: personal care appliance
     definition: Family of small electric appliances for grooming or caring for the body, such as shavers, hair dryers and foot files.
+    source: https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32012L0019#anx_II
     example: [an electric shaver, a hair dryer, an electric toothbrush, a hair straightener]
     note: 'Not small household appliance: a clothes iron or fan goes there.'
     editorial_note: Its types sit in UNU-KEY 0205, WEEE 5.
@@ -187,14 +190,16 @@ concepts:
   p0020:
     label: speaker
     definition: Stand-alone loudspeaker product, wired or wireless, with or without a built-in amplifier.
+    source: https://www.wikidata.org/wiki/Q390573
     example: [a Bluetooth speaker, a pair of bookshelf speakers, a smart speaker, a set of computer speakers]
     note: 'Not headphones, which are worn on the ears. Not loudspeaker driver: a driver taken out of a product is a component. Not radio, which tunes broadcasts itself.'
     editorial_note: UNU-KEY puts speakers in 0405 and headphones in 0401.
     broader: [p0003]
-    mappings: {broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
+    mappings: {exact: ['wd:Q390573'], broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
   p0021:
     label: radio
     definition: Stand-alone receiver for sound broadcasts, mains or battery powered.
+    source: https://unstats.un.org/unsd/classifications/Econ/Detail/EN/1074/47311
     example: [a portable FM radio, a DAB radio, a clock radio, a kitchen radio]
     note: 'Includes clock radios. Not speaker: a radio tunes broadcasts itself, a speaker only plays what it is sent.'
     editorial_note: UNU-KEY v1 files mains and clock radios under 0402, v2 under 0403.

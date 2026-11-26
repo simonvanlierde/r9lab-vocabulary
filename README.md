@@ -22,7 +22,7 @@ graph:
 | [Material classes](vocabulary/materials.yaml) | 58 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
 | [Component classes](vocabulary/components.yaml) | 24 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
-| [Pilot classes](vocabulary/pilot-classes.yaml) | 10 | The ten coarse material classes a photo study scores, kept as a `skos:Collection` |
+| [Pilot classes](vocabulary/pilot-classes.yaml) | 11 | The eleven coarse material classes a photo study scores, kept as a `skos:Collection` |
 
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
@@ -97,7 +97,7 @@ tag is gone: deprecate a concept with `replaced_by`, never delete it.
   them. The file has no `mapping_date` column, because the YAML records no date per mapping.
 - `dist/labels.json` and `dist/labels.md`: per scheme, each non-deprecated concept by id with
   its IRI, label, label path from its top concept, definition, and the keys of the pilot
-  classes it falls under (`pilot`). A model prompt can quote them. `labels.json` also carries
+  classes it falls under (`pilot`), plus the keys of every concept below it (`pilot_any`). A model prompt can quote them. `labels.json` also carries
   each scope note and example; the editorial note stays out. Evaluation answers are not kept
   in this repository.
 

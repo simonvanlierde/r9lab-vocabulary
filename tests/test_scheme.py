@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
-# The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
+# The pilot's L1 keys: the ten frozen at registration (5 November 2026), plus motor_transformer.
 PILOT_KEYS = {
     "ferrous",
     "non_ferrous",
@@ -25,6 +25,7 @@ PILOT_KEYS = {
     "cable",
     "magnet",
     "other",
+    "motor_transformer",
 }
 
 
