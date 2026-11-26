@@ -162,14 +162,14 @@ def test_rdf_reports_a_missing_tag_mappings_file_as_a_rule_error(
     assert capsys.readouterr().err == "error: mappings/r9lab-tags.sssom.tsv: missing\n"
 
 
-# Prefixes no source pins: Wikidata is checked live by `just wikidata`, and R9lab's CPV codes
-# are truncated as the app stores them, so no CPV list holds them.
-UNCHECKED = {"wd", "r9lab-cpv"}
+# Prefixes no source pins: Wikidata is checked live by `just wikidata`, and a CPV code only
+# for its 8-digit shape, as no CPV list is pinned.
+UNCHECKED = {"wd", "cpv"}
 
 
 def test_every_outside_prefix_has_its_codes_checked_or_is_exempt():
     routes = set(scheme.FIXED_CODES) | set(pipeline.SOURCE_CODES) | UNCHECKED
-    assert set(scheme.PREFIXES) == routes
+    assert set(scheme.PREFIXES) | set(scheme.CODE_LISTS) == routes
 
 
 def test_rdf_fails_on_a_name_pattern_that_matches_nothing(

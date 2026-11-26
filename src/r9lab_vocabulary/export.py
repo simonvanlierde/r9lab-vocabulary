@@ -15,15 +15,16 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import yaml
-from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
+from rdflib import DCAT, DCTERMS, OWL, RDF, RDFS, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
 
 from r9lab_vocabulary.scheme import (
     BASE,
     CC0,
-    CODE_ONLY,
+    CODE_LISTS,
     PREFIXES,
     RELATIONS,
     SOURCE,
+    TERMS,
     TEXT_FIELDS,
     Match,
     Scheme,
@@ -45,6 +46,23 @@ BIBO = Namespace("http://purl.org/ontology/bibo/")
 # PyST accepts only draft, accepted and rejected; deprecation is owl:deprecated, so a deprecated concept stays accepted.
 ACCEPTED = URIRef("http://purl.org/ontology/bibo/status/accepted")
 LIST = "@list"  # the JSON-LD array whose order is its meaning
+UNU_KEY_COMMENT = (
+    "The UNU-KEY the product type falls under, from the E-waste Statistics Guidelines. The datatype names the "
+    "key version. Only the code is given: the key names are under a non-commercial licence."
+)
+SSSOM_COLUMNS = (
+    "subject_id",
+    "subject_label",
+    "predicate_id",
+    "object_id",
+    "object_label",
+    "object_type",
+    "object_source",
+    "mapping_justification",
+    "author_id",
+)
+# The 3rd edition (2026), which lists both the v2 keys and, in Table 19, the v1 codes.
+UNU_KEY_GUIDELINES = "https://doi.org/10.5281/zenodo.18328494"
 
 
 @dataclass(frozen=True)
@@ -87,25 +105,34 @@ def to_graph(schemes: dict[str, Scheme], about: About) -> Graph:
         g.bind(prefix, ns)
     for slug, scheme in schemes.items():
         g.bind(f"r9-{slug}", Namespace(scheme.iri))
-    # The code-only schemes and the whole are as old as the oldest scheme written here.
+    g.bind("r9lab", Namespace(TERMS))
+    # The whole is as old as the oldest scheme written here.
     created = min(filter(None, (s.meta.get("created") for s in schemes.values())), default=None)
     vocab = URIRef(BASE)
     g.add((vocab, RDF.type, DCAT.Dataset))
     g.add((vocab, DCTERMS.license, CC0))
     about.describe(g, vocab, TITLE, created)
-    used_external: dict[str, set[str]] = {}
+    _add_terms(g)
     for scheme in schemes.values():
-        _add_scheme(g, scheme, schemes, about, used_external)
+        _add_scheme(g, scheme, schemes, about)
         g.add((vocab, DCTERMS.hasPart, URIRef(scheme.iri)))
-    for prefix, codes in used_external.items():
-        _add_code_only_scheme(g, prefix, codes, about, created)
-        g.add((vocab, DCTERMS.hasPart, URIRef(PREFIXES[prefix])))
     return g
 
 
-def _add_scheme(
-    g: Graph, scheme: Scheme, schemes: dict[str, Scheme], about: About, used_external: dict[str, set[str]]
-) -> None:
+def _add_terms(g: Graph) -> None:
+    """The `unuKey` property and one datatype per key version, so a code says which list it is from."""
+    prop = URIRef(TERMS + "unuKey")
+    g.add((prop, RDF.type, OWL.DatatypeProperty))
+    g.add((prop, RDFS.label, Literal("UNU-KEY", lang=LANG)))
+    g.add((prop, RDFS.comment, Literal(UNU_KEY_COMMENT, lang=LANG)))
+    for datatype, label in CODE_LISTS.values():
+        dt = URIRef(TERMS + datatype)
+        g.add((dt, RDF.type, RDFS.Datatype))
+        g.add((dt, RDFS.label, Literal(label, lang=LANG)))
+        g.add((dt, RDFS.seeAlso, URIRef(UNU_KEY_GUIDELINES)))
+
+
+def _add_scheme(g: Graph, scheme: Scheme, schemes: dict[str, Scheme], about: About) -> None:
     s = URIRef(scheme.iri)
     g.add((s, RDF.type, SKOS.ConceptScheme))
     g.add((s, SKOS.prefLabel, Literal(scheme.meta["title"], lang=LANG)))
@@ -126,9 +153,15 @@ def _add_scheme(
         if collection:
             g.add((coll, SKOS.member, node))
         for relation, prefix, local in mappings(c):
-            g.add((node, RELATIONS[relation], iri(schemes, prefix, local)))
-            if prefix in CODE_ONLY:
-                used_external.setdefault(prefix, set()).add(local)
+            _add_mapping(g, node, relation, prefix, local, schemes)
+
+
+def _add_mapping(g: Graph, node: URIRef, relation: str, prefix: str, local: str, schemes: dict[str, Scheme]) -> None:
+    if prefix in CODE_LISTS:
+        datatype = URIRef(TERMS + CODE_LISTS[prefix][0])
+        g.add((node, URIRef(TERMS + "unuKey"), Literal(local, datatype=datatype)))
+        return
+    g.add((node, RELATIONS[relation], iri(schemes, prefix, local)))
 
 
 def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> None:
@@ -158,23 +191,6 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
         g.add((node, OWL.deprecated, Literal("true", datatype=XSD.boolean)))
         for ref in c.get("replaced_by") or []:
             g.add((node, DCTERMS.isReplacedBy, URIRef(scheme.iri + ref)))
-
-
-def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], about: About, created: date | None) -> None:
-    s = URIRef(PREFIXES[prefix])
-    g.add((s, RDF.type, SKOS.ConceptScheme))
-    g.add((s, SKOS.prefLabel, Literal(CODE_ONLY[prefix], lang=LANG)))
-    g.add((s, SKOS.definition, Literal(CODE_ONLY[prefix], lang=LANG)))
-    g.add((s, BIBO.status, ACCEPTED))
-    about.describe(g, s, CODE_ONLY[prefix], created)
-    for code in sorted(codes):
-        node = URIRef(PREFIXES[prefix] + code)
-        g.add((node, RDF.type, SKOS.Concept))
-        g.add((node, RDF.type, SDO.DefinedTerm))
-        g.add((node, SKOS.inScheme, s))
-        g.add((node, BIBO.status, ACCEPTED))
-        g.add((node, SKOS.notation, Literal(code)))
-        g.add((node, SKOS.prefLabel, Literal(code, lang=LANG)))
 
 
 def write(schemes: dict[str, Scheme], about: About, out: Path, matches: list[Match]) -> list[Path]:
@@ -213,12 +229,15 @@ def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
     and the publisher, `about`'s first ORCID iD, is its author. Mappings from or to a deprecated concept are
     left out: SSSOM has no field for a deprecated subject, and the SKOS graph keeps them.
     The YAML records no date per mapping, so there is no `mapping_date` column.
+    A UNU-KEY code has no IRI, so its row is an SSSOM literal mapping: no `object_id`, the code
+    as `object_label`, `object_type` `rdfs literal`, and the key version's datatype as `object_source`.
     """
     orcid = "https://orcid.org/"
     curie_map = {
         **PREFIXES,
         **{slug: s.iri for slug, s in schemes.items()},
         "orcid": orcid,
+        "r9lab": TERMS,
         "semapv": "https://w3id.org/semapv/vocab/",
         "skos": str(SKOS),
     }
@@ -231,7 +250,7 @@ def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
     }
     author_id = f"orcid:{about.orcids[0].removeprefix(orcid)}"
     rows = sorted(
-        (f"{slug}:{cid}", c["label"], f"skos:{RELATIONS[relation].fragment}", f"{prefix}:{local}")
+        (f"{slug}:{cid}", c["label"], f"skos:{RELATIONS[relation].fragment}", *_sssom_object(prefix, local))
         for slug, s in schemes.items()
         for cid, c in s.concepts.items()
         if not c.get("deprecated")
@@ -243,9 +262,16 @@ def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
     with path.open("w", encoding="utf-8", newline="") as f:
         f.writelines(f"#{line}\n" for line in yaml.safe_dump(meta, sort_keys=False).splitlines())
         w = csv.writer(f, delimiter="\t", lineterminator="\n")
-        w.writerow(["subject_id", "subject_label", "predicate_id", "object_id", "mapping_justification", "author_id"])
+        w.writerow(SSSOM_COLUMNS)
         w.writerows((*row, "semapv:ManualMappingCuration", author_id) for row in rows)
     return path
+
+
+def _sssom_object(prefix: str, local: str) -> tuple[str, str, str, str]:
+    """`object_id`, `object_label`, `object_type` and `object_source` for a mapping's target."""
+    if prefix in CODE_LISTS:
+        return "", local, "rdfs literal", f"r9lab:{CODE_LISTS[prefix][0]}"
+    return f"{prefix}:{local}", "", "", ""
 
 
 def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[str]], dict[tuple[str, str], set[str]]]:

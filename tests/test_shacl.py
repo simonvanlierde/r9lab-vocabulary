@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from conftest import ROOT
 from pyshacl import validate
-from rdflib import SH, Graph
+from rdflib import RDF, SH, SKOS, Graph
 
 from r9lab_vocabulary import export, pipeline, scheme
 
@@ -17,8 +17,18 @@ OWN, SKOHUB = ROOT / "shapes" / "r9lab.shacl.ttl", ROOT / "tests" / "fixtures" /
 
 
 @pytest.fixture(scope="module")
-def shapes() -> Graph:
-    return Graph().parse(OWN).parse(SKOHUB)
+def own() -> Graph:
+    return Graph().parse(OWN)
+
+
+@pytest.fixture(scope="module")
+def skohub() -> Graph:
+    return Graph().parse(SKOHUB)
+
+
+@pytest.fixture(scope="module")
+def shapes(own: Graph, skohub: Graph) -> Graph:
+    return own + skohub
 
 
 def _violations(data: Graph, shapes: Graph) -> set[str]:
@@ -30,11 +40,19 @@ def _violations(data: Graph, shapes: Graph) -> set[str]:
 
 
 @pytest.mark.parametrize("root", [ROOT, ROOT / "tests" / "fixtures" / "golden"])
-def test_the_build_conforms(root: Path, shapes: Graph):
+def test_the_build_conforms(root: Path, own: Graph, skohub: Graph):
     orcids, landing = pipeline.citation(root / "CITATION.cff")
     schemes = scheme.load(root / "vocabulary")
     g = export.to_graph(schemes, export.About("1.0.0", orcids, landing, date(2026, 2, 1)))
-    assert _violations(g, shapes) == set()
+    # skohub's S19/S20 rule wants every relatedMatch target typed in the graph. SKOS entails it
+    # (relatedMatch is a sub-property of related, whose range is skos:Concept), and a target in an
+    # outside scheme, such as a CPV code, is typed only in that scheme's own data. Add the entailed
+    # type for the skohub run; the vocabulary's own shapes run on the graph as built.
+    entailed = Graph() + g
+    for target in set(g.objects(None, SKOS.relatedMatch)):
+        entailed.add((target, RDF.type, SKOS.Concept))
+    assert _violations(g, own) == set()
+    assert _violations(entailed, skohub) == set()
 
 
 def test_each_own_rule_catches_its_break(shapes: Graph):

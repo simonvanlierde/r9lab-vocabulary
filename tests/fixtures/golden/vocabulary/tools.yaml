@@ -12,7 +12,7 @@ concepts:
     definition: A tool worked by hand.
     example: [a hammer]
     note: 'Not power tool: a hand tool has no motor.'
-    mappings: {exact: ['wd:Q1'], related: ['unu1:0001']}
+    mappings: {exact: ['wd:Q1'], broad: ['unu1:0001']}
   t02:
     label: screwdriver
     notation: driver

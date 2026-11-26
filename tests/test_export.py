@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from conftest import ROOT, VERSIONS, Schemes, one
-from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Literal, URIRef
+from rdflib import DCTERMS, OWL, SKOS, XSD, Literal, URIRef
 
 from r9lab_vocabulary import checks, export, scheme
 
@@ -20,15 +20,16 @@ if TYPE_CHECKING:
 TEST_ORCID = "https://orcid.org/0000-0002-1825-0097"
 
 
-@pytest.mark.parametrize("prefix", sorted(scheme.CODE_ONLY))
-def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
+@pytest.mark.parametrize("prefix", sorted(scheme.CODE_LISTS))
+def test_unu_keys_are_typed_codes_not_iris(schemes: Schemes, prefix: str):
     g = export.to_graph(schemes, export.About("test"))
-    base = scheme.PREFIXES[prefix]
-    nodes = {s for s in g.subjects(RDF.type, SKOS.Concept) if str(s).startswith(base)}
-    assert nodes
-    for node in nodes:
-        # Every literal, not one prefLabel: a second label could carry a licensed name.
-        assert {str(o) for o in g.objects(node) if isinstance(o, Literal)} == {str(node).removeprefix(base)}
+    datatype = URIRef(scheme.TERMS + scheme.CODE_LISTS[prefix][0])
+    values = g.objects(None, URIRef(scheme.TERMS + "unuKey"))
+    codes = [o for o in values if isinstance(o, Literal) and o.datatype == datatype]
+    assert codes
+    # A bare code, never a licensed key name.
+    assert {str(o) for o in codes} <= scheme.FIXED_CODES[prefix]
+    assert not [n for n in g.all_nodes() if str(n).startswith(f"{scheme.BASE}external/")]
 
 
 def test_cc0_covers_the_vocabulary_and_its_own_schemes_only(schemes: Schemes):
@@ -122,9 +123,25 @@ def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tm
         "subject_label": "metal",
         "predicate_id": "skos:exactMatch",
         "object_id": "wd:Q11426",
+        "object_label": "",
+        "object_type": "",
+        "object_source": "",
         "mapping_justification": "semapv:ManualMappingCuration",
         "author_id": "orcid:0009-0006-6953-909X",  # the first author, the publisher
     } in rows
+    # A UNU-KEY has no IRI: an SSSOM 1.0 literal mapping, the key version in object_source.
+    assert {
+        "subject_id": "products:p0007",
+        "subject_label": "laptop",
+        "predicate_id": "skos:broadMatch",
+        "object_id": "",
+        "object_label": "0303",
+        "object_type": "rdfs literal",
+        "object_source": "r9lab:UNUKEYv1",
+        "mapping_justification": "semapv:ManualMappingCuration",
+        "author_id": "orcid:0009-0006-6953-909X",
+    } in rows
+    assert meta["curie_map"]["r9lab"] == scheme.TERMS
     keys = [(r["subject_id"], r["predicate_id"], r["object_id"]) for r in rows]
     assert keys == sorted(keys)
 

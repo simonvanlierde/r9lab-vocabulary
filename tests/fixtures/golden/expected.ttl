@@ -4,6 +4,8 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix r9-parts: <https://w3id.org/r9lab/vocabulary/parts/> .
 @prefix r9-tools: <https://w3id.org/r9lab/vocabulary/tools/> .
+@prefix r9lab: <https://w3id.org/r9lab/vocabulary/terms#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema: <https://schema.org/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -12,8 +14,7 @@
         schema:DefinedTermSet ;
     dcterms:created "2026-01-01"^^xsd:date ;
     dcterms:creator <https://orcid.org/0000-0002-1825-0097> ;
-    dcterms:hasPart <https://w3id.org/r9lab/vocabulary/external/unu-key-v1/>,
-        r9-parts:,
+    dcterms:hasPart r9-parts:,
         r9-tools: ;
     dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
     dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
@@ -30,6 +31,18 @@ r9-parts:collection a skos:Collection ;
         r9-parts:p02 ;
     skos:prefLabel "Fasteners a pilot counts"@en .
 
+r9lab:UNUKEYv1 a rdfs:Datatype ;
+    rdfs:label "UNU-KEY v1 code"@en ;
+    rdfs:seeAlso <https://doi.org/10.5281/zenodo.18328494> .
+
+r9lab:UNUKEYv2 a rdfs:Datatype ;
+    rdfs:label "UNU-KEY v2 code"@en ;
+    rdfs:seeAlso <https://doi.org/10.5281/zenodo.18328494> .
+
+r9lab:unuKey a owl:DatatypeProperty ;
+    rdfs:label "UNU-KEY"@en ;
+    rdfs:comment "The UNU-KEY the product type falls under, from the E-waste Statistics Guidelines. The datatype names the key version. Only the code is given: the key names are under a non-commercial licence."@en .
+
 r9-tools:t03 a skos:Concept,
         schema:DefinedTerm ;
     dcterms:isReplacedBy r9-tools:t02 ;
@@ -37,29 +50,6 @@ r9-tools:t03 a skos:Concept,
     owl:deprecated true ;
     skos:inScheme r9-tools: ;
     skos:prefLabel "old screwdriver"@en .
-
-<https://w3id.org/r9lab/vocabulary/external/unu-key-v1/0001> a skos:Concept,
-        schema:DefinedTerm ;
-    bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
-    skos:inScheme <https://w3id.org/r9lab/vocabulary/external/unu-key-v1/> ;
-    skos:notation "0001" ;
-    skos:prefLabel "0001"@en .
-
-<https://w3id.org/r9lab/vocabulary/external/unu-key-v1/> a skos:ConceptScheme,
-        schema:DefinedTermSet ;
-    dcterms:created "2026-01-01"^^xsd:date ;
-    dcterms:creator <https://orcid.org/0000-0002-1825-0097> ;
-    dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
-    dcterms:modified "2026-02-01"^^xsd:date ;
-    dcterms:publisher <https://orcid.org/0000-0002-1825-0097> ;
-    dcterms:title "UNU-KEY v1 codes (codes only; names under CC BY-NC-SA 3.0 IGO are not copied)"@en ;
-    bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
-    owl:versionIRI <https://w3id.org/r9lab/vocabulary/1.0.0/external/unu-key-v1/> ;
-    owl:versionInfo "1.0.0" ;
-    skos:definition "UNU-KEY v1 codes (codes only; names under CC BY-NC-SA 3.0 IGO are not copied)"@en ;
-    skos:prefLabel "UNU-KEY v1 codes (codes only; names under CC BY-NC-SA 3.0 IGO are not copied)"@en ;
-    dcat:landingPage <https://example.org/r9lab-vocabulary> ;
-    schema:name "UNU-KEY v1 codes (codes only; names under CC BY-NC-SA 3.0 IGO are not copied)"@en .
 
 r9-tools:t01 a skos:Concept,
         schema:DefinedTerm ;
@@ -70,9 +60,9 @@ r9-tools:t01 a skos:Concept,
     skos:inScheme r9-tools: ;
     skos:narrower r9-tools:t02 ;
     skos:prefLabel "hand tool"@en ;
-    skos:relatedMatch <https://w3id.org/r9lab/vocabulary/external/unu-key-v1/0001> ;
     skos:scopeNote "Not power tool: a hand tool has no motor."@en ;
-    skos:topConceptOf r9-tools: .
+    skos:topConceptOf r9-tools: ;
+    r9lab:unuKey "0001"^^r9lab:UNUKEYv1 .
 
 r9-tools:t02 a skos:Concept,
         schema:DefinedTerm ;

@@ -92,6 +92,8 @@ def test_check_codes_names_a_pmdco_id_missing_from_the_pinned_source():
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:7"]}}}, "weee6:7 is not a weee6 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["unu1:0310"]}}}, "unu1:0310 is not a unu1 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["unu2:0406"]}}}, "unu2:0406 is not a unu2 code"),
+        ({"t01": {"label": "a", "mappings": {"related": ["unu1:0303"]}}}, "unu1:0303 must be a broad mapping"),
+        ({"t01": {"label": "a", "mappings": {"close": ["cpv:302131"]}}}, "cpv:302131 is not an 8-digit CPV code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:0"]}}}, "weee6:0 is not a weee6 code"),
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:06"]}}}, "weee6:06 is not a weee6 code"),
         ({"t01": {"label": "a", "replaced_by": ["t02"]}, "t02": {"label": "b"}}, "needs deprecated"),
@@ -180,7 +182,7 @@ def test_check_codes_names_a_pmdco_id_missing_from_the_pinned_source():
         ({"scheme": {"title": 3}}, "t: title must be non-empty text"),
         ({"scheme": {"description": ""}}, "t: description must be non-empty text"),
         ({"scheme": {"slug": "tags"}}, "tags: slug 'tags' is reserved"),
-        ({"scheme": {"slug": "external"}}, "external: slug 'external' is reserved"),
+        ({"scheme": {"slug": "terms"}}, "terms: slug 'terms' is reserved"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):

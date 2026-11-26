@@ -10,7 +10,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 
 - Four SKOS concept schemes: 58 material classes under Ashby's six families, 24 component classes, 33 product types, and the eleven coarse material classes of a pilot study as a collection. Concept ids are stable: a concept that goes away is deprecated with `replaced_by`, never deleted. See [What is in it](README.md#what-is-in-it).
-- Typed crosswalks from each concept to CPC 2.1, PMDco v3.1.2, Wikidata, UNU-KEY v1 and v2 and R9lab CPV codes, and from each product type to its WEEE Directive category. Materials and components also carry patterns for BAFU activity names, checked against BAFU:2025 v2 and BAFU:2026 v1.
+- Typed crosswalks from each concept to CPC 2.1, PMDco v3.1.2, Wikidata and EU CPV codes, and from each product type to its WEEE Directive category and its UNU-KEY v1 and v2 codes ([ADR 0007](docs/decisions/0007-outside-codes-without-iris.md)). Materials and components also carry patterns for BAFU activity names, checked against BAFU:2025 v2 and BAFU:2026 v1.
 - Every concept in use has a definition with its source, examples and a scope note; the README lists the [sorting rules](README.md#sort-a-part) the notes follow.
 - Each GitHub release carries the SKOS graph as Turtle and JSON-LD, every mapping as SSSOM, the vocabulary's SHACL shapes, and `labels.json` and `labels.md`, each concept's text and pilot keys for model prompts. See [Usage](README.md#usage).
 - Each scheme and the vocabulary as a whole carry who made them, when, and which release they are, with a version IRI such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/` ([ADR 0004](docs/decisions/0004-versioned-iris-and-scheme-dates.md)).

@@ -9,7 +9,8 @@
 # by Annex 2 of the 3rd edition, except where its HS table moved the product. Where a key's
 # description names the product, that key wins over the HS and CPC tables, which map whole
 # trade classes coarser than these types.
-# r9lab-cpv: the CPV code R9lab stores for the type today (truncated as in the app).
+# cpv: the EU CPV code R9lab stores for the type today. The app cuts its trailing zeros, so
+# its 302131 is cpv:30213100 here.
 # weee6: category 1-6 of Annex III to Directive 2012/19/EU (WEEE), derived from the
 # unu1 code by the UNU-KEY to EU-6 table of the Global E-waste Monitor 2017 annexes, which
 # Table 2 of the 2026 guidelines confirms for every code used here.
@@ -79,7 +80,7 @@ concepts:
     note: 'Not tablet: a tablet has no hinged keyboard. Not laptop charger, which is recorded as a product of its own.'
     editorial_note: Laptops and tablets are both UNU-KEY 0303 and WEEE 2.
     broader: [p0001]
-    mappings: {exact: ['wd:Q3962'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['r9lab-cpv:302131']}
+    mappings: {exact: ['wd:Q3962'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['cpv:30213100']}
   p0008:
     label: tablet
     definition: Portable computer in one flat unit with a touchscreen, circuitry and battery, and no fixed keyboard.
@@ -88,7 +89,7 @@ concepts:
     note: 'Not laptop: a laptop folds shut over a fixed keyboard. Not mobile phone, even when the tablet has a SIM slot.'
     editorial_note: UNU-KEY puts tablets in 0303 with laptops, and mobile phones in 0306.
     broader: [p0001]
-    mappings: {exact: ['wd:Q155972'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['r9lab-cpv:302132']}
+    mappings: {exact: ['wd:Q155972'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['cpv:30213200']}
   p0009:
     label: docking station
     definition: Device that a laptop or mobile device plugs into to get extra ports, and often to charge.
@@ -105,7 +106,7 @@ concepts:
     note: 'Not populated printed circuit board: a card that arrives on its own is this product, but one taken out of a PC during a teardown is a populated printed circuit board.'
     editorial_note: UNU-KEY counts final goods only and no key names parts, so 0301 (small IT) is the nearest key.
     broader: [p0001]
-    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023713']}
+    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['cpv:30237130']}
   p0011:
     label: computer power supply
     definition: Power supply unit fitted inside a desktop computer that turns mains power into the low DC voltages its parts use.
@@ -123,7 +124,7 @@ concepts:
     note: Not computer keyboard. Not a laptop's built-in touchpad, which stays part of the laptop.
     editorial_note: Mice and keyboards both fall under UNU-KEY 0301 and WEEE category 6.
     broader: [p0001]
-    mappings: {exact: ['wd:Q7987'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023741']}
+    mappings: {exact: ['wd:Q7987'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['cpv:30237410']}
   p0013:
     label: computer keyboard
     definition: Separate input device with an arrangement of keys for typing text and commands into a computer.
@@ -132,7 +133,7 @@ concepts:
     note: Not a laptop's built-in keyboard, which stays part of the laptop. Not remote control, even one with a small keyboard.
     editorial_note: UNU-KEY puts remote controls in 0401 and computer keyboards in 0301.
     broader: [p0001]
-    mappings: {exact: ['wd:Q250'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023746']}
+    mappings: {exact: ['wd:Q250'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['cpv:30237460']}
   p0014:
     label: laptop charger
     definition: External power adapter that converts mains electricity into the direct current a laptop runs and charges on.
@@ -141,7 +142,7 @@ concepts:
     note: Not computer power supply, which sits inside a desktop case. Only adapters for laptops count.
     editorial_note: Wikidata's AC adapter covers adapters for any appliance. The UNU-KEY 0201 description lists adapters.
     broader: [p0001]
-    mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0201', 'unu2:0201', 'weee6:5']}
+    mappings: {close: ['wd:Q887369', 'cpv:31158000'], broad: ['cpc:46122', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0015:
     label: mobile phone
     definition: Portable telephone that makes calls over a cellular radio network, smartphones and basic phones included.
@@ -150,7 +151,7 @@ concepts:
     note: Not desk phone, which connects by wire. Not tablet, even one with a SIM slot.
     editorial_note: UNU-KEY puts mobile phones in 0306 and fixed telephones in 0305.
     broader: [p0002]
-    mappings: {exact: ['wd:Q17517'], close: ['r9lab-cpv:3225'], broad: ['cpc:47222', 'unu1:0306', 'unu2:0306', 'weee6:6'], narrow: ['wd:Q22645']}
+    mappings: {exact: ['wd:Q17517'], close: ['cpv:32250000'], broad: ['cpc:47222', 'unu1:0306', 'unu2:0306', 'weee6:6'], narrow: ['wd:Q22645']}
   p0016:
     label: desk phone
     definition: Telephone made to stand on a desk and connect by wire to a phone line or data network, IP phones included.
@@ -159,7 +160,7 @@ concepts:
     note: Not mobile phone, which uses a cellular network. Analogue desk sets count as well as IP phones.
     editorial_note: UNU-KEY puts desk phones in 0305 and mobile phones in 0306. Wikidata's VoIP phone covers only IP phones.
     broader: [p0002]
-    mappings: {close: ['wd:Q943687'], broad: ['cpc:47223', 'unu1:0305', 'unu2:0305', 'weee6:6'], related: ['r9lab-cpv:325521']}
+    mappings: {close: ['wd:Q943687'], broad: ['cpc:47223', 'unu1:0305', 'unu2:0305', 'weee6:6'], related: ['cpv:32552100']}
   p0017:
     label: router
     definition: Network device that connects computer networks and forwards data between them, home gateways included.
@@ -168,7 +169,7 @@ concepts:
     note: 'Not desk phone: a gateway with phone ports is still a router.'
     editorial_note: UNU-KEY files routers under 0301 with computer mice and keyboards, not with telephones.
     broader: [p0002]
-    mappings: {exact: ['wd:Q5318'], broad: ['cpc:47223', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:324131']}
+    mappings: {exact: ['wd:Q5318'], broad: ['cpc:47223', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['cpv:32413100']}
   p0018:
     label: GPS navigation device
     definition: Device that works out its position from satellite signals and shows it on a map, usually with route directions.
@@ -177,7 +178,7 @@ concepts:
     note: 'Not mobile phone: a phone with satellite navigation is still a mobile phone.'
     editorial_note: UNU-KEY 0402 and WEEE category 5 put it with consumer electronics, so it sits under both telecommunications and audio and video equipment.
     broader: [p0002, p0003]
-    mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0402', 'unu2:0402', 'weee6:5'], close: ['r9lab-cpv:381121']}
+    mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0402', 'unu2:0402', 'weee6:5'], close: ['cpv:38112100']}
   p0019:
     label: headphones
     definition: Pair of small loudspeakers worn on or in the ears, including wireless earbuds and headsets with a microphone.
@@ -186,7 +187,7 @@ concepts:
     note: Not speaker, which plays into the room. Not loudspeaker driver, which is a component taken out of either.
     editorial_note: UNU-KEY puts headphones in 0401 and speakers in 0405.
     broader: [p0003]
-    mappings: {exact: ['wd:Q186819'], broad: ['cpc:47330', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['r9lab-cpv:323421']}
+    mappings: {exact: ['wd:Q186819'], broad: ['cpc:47330', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['cpv:32342100']}
   p0020:
     label: speaker
     definition: Stand-alone loudspeaker product, wired or wireless, with or without a built-in amplifier.
@@ -195,7 +196,7 @@ concepts:
     note: 'Not headphones, which are worn on the ears. Not loudspeaker driver: a driver taken out of a product is a component. Not radio, which tunes broadcasts itself.'
     editorial_note: UNU-KEY puts speakers in 0405 and headphones in 0401.
     broader: [p0003]
-    mappings: {exact: ['wd:Q390573'], broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
+    mappings: {exact: ['wd:Q390573'], broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['cpv:32342000']}
   p0021:
     label: radio
     definition: Stand-alone receiver for sound broadcasts, mains or battery powered.
@@ -206,7 +207,7 @@ concepts:
     broader: [p0003]
     # Mains and clock radios (HS 852713, 852791, 852792) are 0402 in the 2018 HS table and
     # 0403 in the 2026 one, though Annex 2 maps v1 0402 to v2 0402.
-    mappings: {broad: ['cpc:47311', 'unu1:0402', 'unu2:0403', 'weee6:5'], close: ['r9lab-cpv:323442']}
+    mappings: {broad: ['cpc:47311', 'unu1:0402', 'unu2:0403', 'weee6:5'], close: ['cpv:32344200']}
   p0022:
     label: remote control
     definition: Hand-held device that operates another device from a distance, usually by infrared or radio.
@@ -215,7 +216,7 @@ concepts:
     note: Not computer mouse or computer keyboard, which control a computer.
     editorial_note: UNU-KEY puts remote controls in 0401 and mice and keyboards in 0301.
     broader: [p0003]
-    mappings: {exact: ['wd:Q185091'], broad: ['cpc:48220', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['r9lab-cpv:3882']}
+    mappings: {exact: ['wd:Q185091'], broad: ['cpc:48220', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['cpv:38820000']}
   p0023:
     label: LED lamp
     definition: Lamp that makes light with light-emitting diodes, made to fit a standard lamp holder.
@@ -224,7 +225,7 @@ concepts:
     note: 'Not luminaire: a light fitting with built-in LEDs that cannot be swapped out is a luminaire.'
     editorial_note: Luminaires sit in UNU-KEY 0506 and WEEE category 5, LED lamps in 0505 and category 3.
     broader: [p0004]
-    mappings: {exact: ['wd:Q1553201'], broad: ['cpc:46510', 'unu1:0505', 'unu2:0505', 'weee6:3'], close: ['r9lab-cpv:31531']}
+    mappings: {exact: ['wd:Q1553201'], broad: ['cpc:46510', 'unu1:0505', 'unu2:0505', 'weee6:3'], close: ['cpv:31531000']}
   p0024:
     label: luminaire
     definition: Light fitting that holds, powers and directs the light of one or more lamps or built-in light sources.
@@ -233,7 +234,7 @@ concepts:
     note: 'Not LED lamp: a replaceable lamp taken out of the fitting is a lamp of its own.'
     editorial_note: Lamps are UNU-KEY 0505 and WEEE category 3. Wikidata labels this item light fixture.
     broader: [p0004]
-    mappings: {exact: ['wd:Q815738'], broad: ['cpc:4653', 'unu1:0506', 'unu2:0506', 'weee6:5'], related: ['r9lab-cpv:31521']}
+    mappings: {exact: ['wd:Q815738'], broad: ['cpc:4653', 'unu1:0506', 'unu2:0506', 'weee6:5'], related: ['cpv:31521000']}
   p0025:
     label: electric kettle
     definition: Electric appliance that boils water in a jug with a built-in heating element.
@@ -251,7 +252,7 @@ concepts:
     note: Not electric kettle, which heats water. Not coffee grinder, which grinds with a motor and has no heating element.
     editorial_note: Toasters and coffee grinders share UNU-KEY 0202; kettles are 0203.
     broader: [p0005]
-    mappings: {exact: ['wd:Q14890'], broad: ['cpc:44816', 'unu1:0202', 'unu2:0202', 'weee6:5'], close: ['r9lab-cpv:3971133']}
+    mappings: {exact: ['wd:Q14890'], broad: ['cpc:44816', 'unu1:0202', 'unu2:0202', 'weee6:5'], close: ['cpv:39711330']}
   p0027:
     label: coffee grinder
     definition: Small appliance that grinds roasted coffee beans to powder with motor-driven blades or burrs.
@@ -269,7 +270,7 @@ concepts:
     note: 'Not electric kettle: a steam iron holds water but its job is pressing cloth. Only electric irons count.'
     editorial_note: Wikidata's clothes iron includes irons heated on a stove.
     broader: [p0005]
-    mappings: {close: ['r9lab-cpv:3971351', 'wd:Q483634'], broad: ['cpc:44816', 'unu1:0201', 'unu2:0201', 'weee6:5']}
+    mappings: {close: ['cpv:39713510', 'wd:Q483634'], broad: ['cpc:44816', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0029:
     label: electric fan
     definition: Electric appliance that moves air with motor-driven blades or an impeller, to cool people or rooms.
@@ -278,7 +279,7 @@ concepts:
     note: Not hair dryer, which heats the air it blows. A cooling fan inside a computer or power supply is a component, not this type.
     editorial_note: UNU-KEY puts fans in 0201 and hair dryers in 0205.
     broader: [p0005]
-    mappings: {exact: ['wd:Q25841836'], close: ['cpc:44815', 'r9lab-cpv:397171'], broad: ['unu1:0201', 'unu2:0201', 'weee6:5']}
+    mappings: {exact: ['wd:Q25841836'], close: ['cpc:44815', 'cpv:39717100'], broad: ['unu1:0201', 'unu2:0201', 'weee6:5']}
   p0030:
     label: power strip
     definition: Block of mains sockets on a flexible cable, sometimes with a switch, surge protection or USB charging ports.
@@ -298,7 +299,7 @@ concepts:
     note: Not electric foot file, which sands off hard skin rather than cutting hair.
     editorial_note: Shavers and foot files share UNU-KEY 0205.
     broader: [p0006]
-    mappings: {exact: ['wd:Q17457835'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['r9lab-cpv:337212']}
+    mappings: {exact: ['wd:Q17457835'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['cpv:33721200']}
   p0032:
     label: hair dryer
     definition: Hand-held electric appliance that blows heated air to dry and style hair.
@@ -307,7 +308,7 @@ concepts:
     note: Not electric fan, which moves air without heating it.
     editorial_note: UNU-KEY puts hair dryers in 0205 and fans in 0201.
     broader: [p0006]
-    mappings: {exact: ['wd:Q15004'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['r9lab-cpv:3971221']}
+    mappings: {exact: ['wd:Q15004'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['cpv:39712210']}
   p0033:
     label: electric foot file
     definition: Hand-held electric device that removes hard skin from the feet with a rotating abrasive roller.

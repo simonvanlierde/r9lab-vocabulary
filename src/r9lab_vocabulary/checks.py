@@ -17,6 +17,7 @@ from urllib.parse import quote
 import yaml
 
 from r9lab_vocabulary.scheme import (
+    CODE_LISTS,
     FIXED_CODES,
     PREFIXES,
     RELATIONS,
@@ -42,8 +43,11 @@ REQUIRED_TEXTS = ("definition", "example", "note")
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A version path segment (`0.1.0`) starts with a digit, so it never collides with a scheme slug.
 SLUG = re.compile(r"^[a-z]")
-# Path segments under the base that the tag IRIs and the code-only schemes already use.
-RESERVED_SLUGS = {"tags", "external"}
+# Path segments under the base that the tag IRIs and the vocabulary's own terms already use.
+RESERVED_SLUGS = {"tags", "terms"}
+# Outside codes checked for their shape only, as no source pins their list: (pattern, what it is).
+CODE_SHAPES = {"cpv": (re.compile(r"^[0-9]{8}$"), "an 8-digit CPV code")}
+LITERAL_RELATION = "broad"
 
 
 def validate(schemes: dict[str, Scheme], versions: Mapping[str, Collection[str]]) -> list[str]:
@@ -257,6 +261,21 @@ def name_matches(schemes: dict[str, Scheme], lists: dict[str, dict[str, list[str
     return out
 
 
+def _outside_code_errors(relation: str, prefix: str, local: str) -> list[str]:
+    curie = f"{prefix}:{local}"
+    if prefix not in PREFIXES and prefix not in CODE_LISTS:
+        return [f"unknown prefix in {curie}"]
+    errors = []
+    if local not in FIXED_CODES.get(prefix, {local}):
+        errors.append(f"{curie} is not a {prefix} code")
+    if (shape := CODE_SHAPES.get(prefix)) and not shape[0].match(local):
+        errors.append(f"{curie} is not {shape[1]}")
+    # A code list's literal says only "falls under", so its relation is always broad.
+    if prefix in CODE_LISTS and relation != LITERAL_RELATION:
+        errors.append(f"{curie} must be a {LITERAL_RELATION} mapping")
+    return errors
+
+
 def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]) -> list[str]:
     raw = c.get("mappings") or {}
     if not isinstance(raw, dict) or not all(isinstance(v, list) for v in raw.values()):
@@ -275,10 +294,8 @@ def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]
                 # Its SSSOM row and any pilot key it passed on would vanish without a word.
                 by = ", ".join(target.get("replaced_by") or []) or "nothing"
                 errors.append(f"{where}: {curie} is deprecated (replaced by {by})")
-        elif prefix not in PREFIXES:
-            errors.append(f"{where}: unknown prefix in {curie}")
-        elif local not in FIXED_CODES.get(prefix, {local}):
-            errors.append(f"{where}: {curie} is not a {prefix} code")
+        else:
+            errors += [f"{where}: {e}" for e in _outside_code_errors(relation, prefix, local)]
         # SKOS integrity: exactMatch is disjoint with the hierarchical and associative matches.
         if curie in relation_of and relation_of[curie] != relation:
             errors.append(f"{where}: {curie} is both {relation_of[curie]} and {relation}")

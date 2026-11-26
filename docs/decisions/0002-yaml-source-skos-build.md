@@ -30,8 +30,8 @@ well in review and carry comments; the build adds the inverse links (`narrower`,
   repository or a change of host. The w3id redirect still has to be registered.
 * CPC codes and PMDco ids are checked against files pinned by checksum in `sources.toml`;
   Wikidata ids against the live API by `just wikidata`.
-* UNU-KEY and R9lab CPV codes become code-only concept schemes minted here: UNU-KEY names are
-  CC BY-NC-SA, so only codes are kept.
+* UNU-KEY codes are kept as codes only, since their names are CC BY-NC-SA. How they and the
+  CPV codes are published is in [ADR 0007](0007-outside-codes-without-iris.md).
 * BAFU activities have no IRIs, so the BAFU link is a list of name patterns written out as a
   CSV, not RDF. Each version of a name list is its own pinned source (`bafu-2026-v1`), read for
   names only, and every pattern must match a live name in each version it applies to. A

@@ -31,7 +31,7 @@ repository, so a version IRI resolves to the repository, not to its release. Add
 per-release rule is a follow-up once the first release is tagged.
 
 * `dct:created` is the `created` date in each scheme's YAML: the date of the commit that added
-  the file. The vocabulary node and the code-only schemes take the earliest of them.
+  the file. The vocabulary node takes the earliest of them.
 * `dct:modified` is `SOURCE_DATE_EPOCH` when set, else the date of the commit built (`git log
   -1` in the package's own checkout, never in a repository around it), not the build date, so
   two builds of one commit are the same files. With neither, `just rdf` stops with an error,
