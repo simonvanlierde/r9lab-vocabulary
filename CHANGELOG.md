@@ -17,6 +17,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just update` fetches, builds and checks everything and prints how the match counts changed; `just test-full` runs the tests as CI does.
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
 - Concepts take an `example` (`skos:example`), an `editorial_note` (`skos:editorialNote`) and a `source` for the definition (`dcterms:source`); `note` stays the scope note. The tests fail on a concept without a definition, an example and a scope note, except those still listed in `tests/pending-text.txt`.
+- The components the pilot classes map to (battery, printed circuit boards, electronic component, display, cable, magnet) have a definition with its source, examples and a scope note. The magnet pilot class maps to permanent magnet, and enamelled winding wire counts as its metal, not as cable.
 - The ten pilot classes have a definition with its source, examples and a note on the class each is told apart from. The short prompt glosses they carried before are gone; the pilot's prompt text stays in its registration.
 - The materials the pilot classes map to (ferrous and non-ferrous metal, polymer, elastomer, glass, wood, paper and board, textile) have a definition with its source, examples and a scope note.
 - The core metals (metal, carbon and stainless steel, cast iron, aluminium, magnesium, copper and its alloys, brass, solder) have a definition with its source, examples and a scope note.
@@ -40,5 +41,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - `just check` now rejects a notation written as `1` and as `"1"`, a `replaced_by` that points at the concept itself or at a deprecated concept, and a concept with an empty body (reported as "no label" instead of crashing).
+- `just rdf`, `just names`, `just wikidata` and `just diff` print an `error:` line and exit 1, instead of a traceback or a silent pass, for a folder with no `vocabulary/*.yaml`, a file that is not valid YAML or has no `scheme` slug or `concepts` mapping, a missing `mappings/r9lab-tags.sssom.tsv` or a short row in it. A pilot class with `notation: null` is keyed by its id in `labels.json`, not "None".
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD

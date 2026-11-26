@@ -1,16 +1,19 @@
 """The SHACL shapes: skohub-shapes' SKOS rules and this vocabulary's own, on the real build and a broken graph."""
 
 from datetime import date
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
+from conftest import ROOT
 from pyshacl import validate
 from rdflib import SH, Graph
 
 from r9lab_vocabulary import pipeline, scheme
 
-ROOT = Path(__file__).resolve().parent.parent
-OWN, SKOHUB = ROOT / "shapes" / "r9lab.shacl.ttl", ROOT / "shapes" / "skohub-skos.shacl.ttl"
+if TYPE_CHECKING:
+    from pathlib import Path
+
+OWN, SKOHUB = ROOT / "shapes" / "r9lab.shacl.ttl", ROOT / "tests" / "fixtures" / "skohub-skos.shacl.ttl"
 
 
 @pytest.fixture(scope="module")
@@ -30,7 +33,7 @@ def _violations(data: Graph, shapes: Graph) -> set[str]:
 def test_the_build_conforms(root: Path, shapes: Graph):
     orcids, landing = pipeline.citation(root / "CITATION.cff")
     schemes = scheme.load(root / "vocabulary")
-    g = scheme.to_graph(schemes, "1.0.0", orcids=orcids, landing=landing, modified=date(2026, 2, 1))
+    g = scheme.to_graph(schemes, scheme.About("1.0.0", orcids, landing, date(2026, 2, 1)))
     assert _violations(g, shapes) == set()
 
 

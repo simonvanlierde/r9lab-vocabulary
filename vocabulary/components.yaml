@@ -11,6 +11,10 @@ scheme:
 concepts:
   c0001:
     label: battery
+    definition: One or more electrochemical cells fitted with what they need for use, such as a case, terminals and protective devices.
+    source: IEC 60050-482:2004, 482-01-04
+    example: [a phone's lithium-ion pouch battery, a laptop battery pack, an AA cell, a coin cell]
+    note: 'Not lithium-ion cell: a bare cell cut out of a pack has none of the pack''s case or protection. Not populated printed circuit board: a pack''s protection board belongs to the battery.'
     mappings: {exact: ['wd:Q267298'], close: ['cpc:464']}
   c0002:
     label: lithium-ion battery
@@ -33,20 +37,29 @@ concepts:
     mappings: {exact: ['wd:Q1378887'], close: ['cpc:46410']}
   c0005:
     label: bare printed circuit board
-    definition: Printed circuit board without mounted components.
+    definition: 'Printed circuit board without mounted components: the insulating board with its conductive tracks.'
+    source: https://www.wikidata.org/wiki/Q173350
+    example: [an unpopulated FR-4 board, a flexible printed circuit without parts, a board with every part desoldered]
+    note: 'Not populated printed circuit board: a board that still carries components is populated. Not FR-4 laminate, which is the board''s material.'
     mappings: {exact: ['wd:Q173350'], close: ['cpc:47130']}
     names:
       bafu: ['^printed wiring board, (surface mount|through-hole), .*surface']
   c0006:
     label: populated printed circuit board
-    definition: Printed circuit board with its components mounted.
+    definition: Printed circuit board with its electronic components mounted, also called a printed circuit board assembly.
+    source: https://www.wikidata.org/wiki/Q3951866
+    example: [a motherboard, a phone logic board, a power-supply board, a hard-drive controller board]
+    note: 'Not bare printed circuit board, which has no components. Not electronic component: a part still soldered on stays part of the board.'
     related: [c0005]
     mappings: {exact: ['wd:Q3951866']}
     names:
       bafu: ['^printed wiring board, (surface mounted|through-hole mounted|mixed mounted)', 'mainboard', '^printed wiring board, power supply unit']
   c0007:
     label: electronic component
-    definition: Discrete electronic part, mounted or loose.
+    definition: Discrete electronic part, such as a chip, capacitor, resistor or LED, mounted on a board or loose.
+    source: https://www.wikidata.org/wiki/Q11653
+    example: [an integrated circuit, an electrolytic capacitor, a resistor, a quartz crystal]
+    note: 'Not populated printed circuit board: a board recorded whole, parts and all, is one item. Not transformer or electric motor, which are concepts of their own.'
     mappings: {exact: ['wd:Q11653']}
     names:
       bafu: ['^electronic component, (active|passive), unspecified']
@@ -85,7 +98,10 @@ concepts:
     mappings: {exact: ['wd:Q11658'], close: ['cpc:46121']}
   c0014:
     label: display
-    definition: Electronic visual display panel or module.
+    example: [a phone screen module, a laptop LCD panel, an OLED smartwatch display, an e-reader's e-paper display]
+    definition: Electronic visual display panel or module that shows images or text, such as an LCD or OLED panel.
+    source: https://www.wikidata.org/wiki/Q6021804
+    note: 'Not glass: a loose cover glass is a material. Not a whole monitor or television, which is a product.'
     mappings: {exact: ['wd:Q6021804']}
   c0015:
     label: liquid-crystal display
@@ -102,12 +118,19 @@ concepts:
       bafu: ['^(led|oled) (module|screen)']
   c0017:
     label: cable
-    definition: Insulated wire or cable assembly, with or without plugs.
+    note: 'Not a bare conductor: an uninsulated copper strip or braid goes by its metal, and so does enamelled winding wire wound into a coil, motor or transformer. Not a flexible printed circuit, which is a printed circuit board. Wikidata''s cable does not ask for insulation; this scheme does.'
+    definition: 'Electric cable or wire: one or more insulated conductors, with or without plugs.'
+    source: https://www.wikidata.org/wiki/Q188447
+    example: [a power cord, a USB cable, an internal wire harness, a ribbon cable]
     mappings: {exact: ['wd:Q188447'], close: ['cpc:463']}
     names:
       bafu: ['^cable, ', '^plugs, inlet and outlet']
   c0018:
     label: magnet
+    example: [a loudspeaker magnet, a hard-drive voice-coil magnet, an electromagnet from a door lock, a magnetic catch]
+    definition: Material or object that produces a magnetic field, permanent or electromagnetic.
+    source: https://www.wikidata.org/wiki/Q11421
+    note: 'Not ferrous metal: a steel part a magnet sticks to is not a magnet. Not electric motor, which holds magnets but is a concept of its own. The pilot''s magnet class means permanent magnet.'
     mappings: {exact: ['wd:Q11421'], broad: ['cpc:4693']}
   c0019:
     label: permanent magnet

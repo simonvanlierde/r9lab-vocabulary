@@ -94,6 +94,8 @@ error-on-warning = false
 minversion = "9.0"
 addopts = ["-ra", "--import-mode=importlib"]
 testpaths = ["tests"]
+# The test modules import ROOT and shared helpers from tests/conftest.py.
+pythonpath = ["tests"]
 strict = true
 filterwarnings = ["error"]
 log_level = "INFO"
