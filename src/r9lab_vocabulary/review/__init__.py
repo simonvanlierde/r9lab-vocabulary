@@ -266,12 +266,14 @@ def create_app(
     @app.get("/r/{token}")
     def sign_in(request: Request, token: str) -> Response:
         """Set the rater's cookie and go to the page. Open to other sites: the link arrives by mail or chat."""
-        if session_of(sessions, token) is None:
+        known = next((t for t in sessions if secrets.compare_digest(t, token)), None)
+        if known is None:
             raise HTTPException(404, "This review link is not known; ask for a new one.")
         response = RedirectResponse("/", status_code=303)
-        # Lax, not Strict: a Strict cookie is held back from the redirect after a click in a mail.
+        # The server's own copy of the token, never the URL's text. Lax, not Strict: a Strict
+        # cookie is held back from the redirect after a click in a mail.
         response.set_cookie(
-            COOKIE, token, max_age=90 * 86400, httponly=True, samesite="lax", secure=request.url.is_secure
+            COOKIE, known, max_age=90 * 86400, httponly=True, samesite="lax", secure=request.url.is_secure
         )
         return response
 

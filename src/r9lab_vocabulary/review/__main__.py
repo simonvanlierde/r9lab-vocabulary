@@ -12,16 +12,16 @@ from pathlib import Path
 from r9lab_vocabulary import curate
 
 # Gitignored. Deleting it gives every rater a new link at the next start.
-SECRET = Path(".review-secret")
+KEY_FILE = Path(".review-secret")
 
 
 def read_secret() -> bytes:
     """The server's link secret, made on the first start and readable by its owner only."""
-    if not SECRET.exists():
-        fd = os.open(SECRET, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    if not KEY_FILE.exists():
+        fd = os.open(KEY_FILE, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(fd, "w") as f:
             f.write(secrets.token_hex(32))
-    return SECRET.read_bytes().strip()
+    return KEY_FILE.read_bytes().strip()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
     secret = read_secret()
     # Bytes of hex. An empty or short key would let anyone derive a rater's link from their ORCID.
     if len(secret) < 32:
-        sys.stderr.write(f"error: {SECRET} holds no usable secret; delete it to make a new one\n")
+        sys.stderr.write(f"error: {KEY_FILE} holds no usable key; delete it to make a new one\n")
         return 2
     sys.stdout.write("Send each rater their own link; behind a proxy, put its address in front of /r/.\n")
     for rater in raters:
