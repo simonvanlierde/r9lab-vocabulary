@@ -191,46 +191,89 @@ concepts:
     mappings: {exact: ['wd:Q185091'], broad: ['cpc:48220', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['r9lab-cpv:3882']}
   p0023:
     label: LED lamp
+    definition: Lamp that makes light with light-emitting diodes, made to fit a standard lamp holder.
+    source: https://www.wikidata.org/wiki/Q1553201
+    example: [an E27 LED bulb, a GU10 LED spot, an LED filament bulb, an LED retrofit tube]
+    note: 'Not luminaire: a light fitting with built-in LEDs that cannot be swapped out is a luminaire. Luminaires sit in UNU-KEY 0506 and WEEE category 5, LED lamps in 0505 and category 3.'
     broader: [p0004]
     mappings: {exact: ['wd:Q1553201'], broad: ['cpc:46510', 'unu1:0505', 'unu2:0505', 'weee6:3'], close: ['r9lab-cpv:31531']}
   p0024:
     label: luminaire
+    definition: Light fitting that holds, powers and directs the light of one or more lamps or built-in light sources.
+    source: https://www.wikidata.org/wiki/Q815738
+    example: [a desk lamp, a ceiling light, a floor lamp, an LED panel light]
+    note: 'Not LED lamp: a replaceable lamp taken out of the fitting is a lamp of its own (UNU-KEY 0505, WEEE category 3). Wikidata labels this item light fixture.'
     broader: [p0004]
     mappings: {exact: ['wd:Q815738'], broad: ['cpc:4653', 'unu1:0506', 'unu2:0506', 'weee6:5'], related: ['r9lab-cpv:31521']}
   p0025:
     label: electric kettle
+    definition: Electric appliance that boils water in a jug with a built-in heating element.
+    source: https://www.wikidata.org/wiki/Q1364042
+    example: [a cordless jug kettle on a base, a travel kettle, a gooseneck kettle, a glass kettle]
+    note: 'Not toaster: a kettle heats water, and sits in UNU-KEY 0203 rather than 0202. A coffee machine also heats water but brews, and is not this type.'
     broader: [p0005]
     mappings: {exact: ['wd:Q1364042'], broad: ['cpc:4481', 'unu1:0203', 'unu2:0203', 'weee6:5']}
   p0026:
     label: toaster
+    definition: Electric appliance that browns slices of bread between radiant heating elements.
+    source: https://www.wikidata.org/wiki/Q14890
+    example: [a two-slot pop-up toaster, a four-slice toaster, a long-slot toaster]
+    note: Not electric kettle, which heats water (UNU-KEY 0203). Not coffee grinder, which shares UNU-KEY 0202 but grinds with a motor and has no heating element.
     broader: [p0005]
     mappings: {exact: ['wd:Q14890'], broad: ['cpc:44816', 'unu1:0202', 'unu2:0202', 'weee6:5'], close: ['r9lab-cpv:3971133']}
   p0027:
     label: coffee grinder
+    definition: Small appliance that grinds roasted coffee beans to powder with motor-driven blades or burrs.
+    source: https://www.wikidata.org/wiki/Q1139048
+    example: [a blade coffee grinder, a burr coffee grinder, a spice and coffee mill]
+    note: Not toaster, which shares UNU-KEY 0202 but heats. Wikidata's coffee grinder includes hand mills; here only powered grinders count.
     broader: [p0005]
-    mappings: {exact: ['wd:Q1139048'], broad: ['cpc:44816', 'unu1:0202', 'unu2:0202', 'weee6:5']}
+    mappings: {close: ['wd:Q1139048'], broad: ['cpc:44816', 'unu1:0202', 'unu2:0202', 'weee6:5']}
   p0028:
     label: clothes iron
+    definition: Electric appliance with a heated flat soleplate that is pressed over cloth to smooth it.
+    source: https://www.wikidata.org/wiki/Q483634
+    example: [a steam iron, a dry iron, a travel iron, a steam generator iron]
+    note: 'Not electric kettle: a steam iron holds water but its job is pressing cloth. Wikidata''s clothes iron includes irons heated on a stove; here only electric ones count.'
     broader: [p0005]
-    mappings: {exact: ['wd:Q483634'], broad: ['cpc:44816', 'unu1:0201', 'unu2:0201', 'weee6:5'], close: ['r9lab-cpv:3971351']}
+    mappings: {close: ['r9lab-cpv:3971351', 'wd:Q483634'], broad: ['cpc:44816', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0029:
     label: electric fan
+    definition: Electric appliance that moves air with motor-driven blades or an impeller, to cool people or rooms.
+    source: https://www.wikidata.org/wiki/Q25841836
+    example: [a desk fan, a pedestal fan, a tower fan, a bladeless fan]
+    note: Not hair dryer, which heats the air it blows (UNU-KEY 0205 rather than 0201). A cooling fan inside a computer or power supply is a component, not this type.
     broader: [p0005]
     mappings: {exact: ['wd:Q25841836'], close: ['cpc:44815', 'r9lab-cpv:397171'], broad: ['unu1:0201', 'unu2:0201', 'weee6:5']}
   p0030:
     label: power strip
+    definition: Block of mains sockets on a flexible cable, sometimes with a switch, surge protection or USB charging ports.
+    source: https://www.wikidata.org/wiki/Q1754646
+    example: [a six-way extension block, a surge-protected power strip, a power strip with USB ports]
+    note: Not laptop charger or computer power supply, which convert power. A power strip passes mains power on, and only its USB ports convert any.
+    editorial_note: Whether a passive power strip is electrical and electronic equipment in WEEE scope varies by member state.
     broader: [p0005]
-    note: Whether a passive power strip is EEE in scope varies by member state.
     mappings: {exact: ['wd:Q1754646'], broad: ['cpc:46212', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0031:
     label: electric shaver
+    definition: Hand-held electric device that cuts hair close to the skin with blades behind a thin foil or under rotary heads.
+    source: https://www.wikidata.org/wiki/Q17457835
+    example: [a foil shaver, a rotary shaver, a cordless shaver with a charging stand, a lady shaver]
+    note: Not electric foot file, which shares UNU-KEY 0205 but sands off hard skin rather than cutting hair.
     broader: [p0006]
     mappings: {exact: ['wd:Q17457835'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['r9lab-cpv:337212']}
   p0032:
     label: hair dryer
+    definition: Hand-held electric appliance that blows heated air to dry and style hair.
+    source: https://www.wikidata.org/wiki/Q15004
+    example: [a hand-held hair dryer, a folding travel hair dryer, a hair dryer with a diffuser]
+    note: Not electric fan, which moves air without heating it (UNU-KEY 0201 rather than 0205).
     broader: [p0006]
     mappings: {exact: ['wd:Q15004'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['r9lab-cpv:3971221']}
   p0033:
     label: electric foot file
+    definition: Hand-held electric device that removes hard skin from the feet with a rotating abrasive roller.
+    example: [a battery foot file with a roller head, a rechargeable callus remover, a foot file with spare rollers]
+    note: Not electric shaver, which shares UNU-KEY 0205 but cuts hair. Wikidata's foot file covers manual files too, so it maps as broader.
     broader: [p0006]
     mappings: {broad: ['wd:Q116221616', 'cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5']}
