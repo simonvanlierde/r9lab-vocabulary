@@ -26,7 +26,7 @@ graph:
 
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
-PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and R9lab CPV codes. Each product type also has a
+PMDco v3.1.2, Wikidata, and to UNU-KEY v1 and v2 and R9lab CPV codes. Each product type also has a
 `broadMatch` to its category in Annex III to the WEEE Directive 2012/19/EU (`weee6:1` to
 `weee6:6`), a fragment on the directive's ELI. Materials and components also
 carry candidate patterns for names in outside lists that have no ids, such as BAFU activity

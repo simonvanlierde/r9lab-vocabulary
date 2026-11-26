@@ -96,6 +96,8 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "mappings": {"exact": ["zz:1"]}}}, "unknown prefix"),
         ({"t01": {"label": "a", "mappings": {"same": ["wd:Q1"]}}}, "unknown mapping relation"),
         ({"t01": {"label": "a", "mappings": {"broad": ["weee6:7"]}}}, "weee6:7 is not a weee6 code"),
+        ({"t01": {"label": "a", "mappings": {"broad": ["unu1:0310"]}}}, "unu1:0310 is not a unu1 code"),
+        ({"t01": {"label": "a", "mappings": {"broad": ["unu2:0406"]}}}, "unu2:0406 is not a unu2 code"),
         ({"t01": {"label": "a", "replaced_by": ["t02"]}, "t02": {"label": "b"}}, "needs deprecated"),
         (
             {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "broader": ["t01"]}},
