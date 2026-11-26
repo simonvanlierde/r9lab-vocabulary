@@ -35,7 +35,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q11474
     example: [an ABS housing, a polycarbonate cover, a nylon gear, a foam insert]
     note: 'Not rubber: a soft part that stretches and springs back is rubber. Not cable, even though a cable''s sheath is plastic. A glass-filled grade such as PA66-GF30 is plastic.'
-    mappings: {close: ['materials:m0020']}
+    mappings: {narrow: ['materials:m0020']}
   s04:
     label: electronics
     notation: electronics
@@ -50,8 +50,9 @@ concepts:
     definition: 'A battery or a bare cell: one or more electrochemical cells, with or without the case, terminals and protective devices a battery has.'
     source: IEC 60050-482:2004, 482-01-04
     example: [a phone's lithium-ion pouch battery, a laptop battery pack, an AA cell, an 18650 cell cut from a pack]
-    note: 'Not electronics: a pack''s protection board stays with the battery. Wider than the IEC battery, which needs the cells fitted for use: here a bare cell counts too.'
-    mappings: {close: ['components:c0001']}
+    note: 'Not electronics: a pack''s protection board stays with the battery. A bare cell cut from a pack counts too.'
+    editorial_note: Wider than the IEC battery (482-01-04), which needs the cells fitted for use.
+    mappings: {narrow: ['components:c0001', 'components:c0024']}
   s06:
     label: display or glass
     notation: display_glass
@@ -67,7 +68,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q252266
     example: [a rubber foot, a gasket or seal, a keypad membrane, a drive belt]
     note: 'Not plastic: a hard part that does not spring back is plastic. Not cable: a rubber-sheathed cable is a cable.'
-    mappings: {close: ['materials:m0038']}
+    mappings: {narrow: ['materials:m0038']}
   s08:
     label: cable
     note: 'Not electronics: a flexible printed circuit is a printed circuit board. Not non-ferrous: a bare copper strip is non-ferrous metal. So is enamelled winding wire in a coil, motor or transformer.'
@@ -80,7 +81,7 @@ concepts:
     label: permanent magnet
     notation: magnet
     definition: 'A permanent magnet: material that keeps its own magnetic field without an electric current, such as a ferrite or neodymium (NdFeB) magnet.'
-    source: https://www.wikidata.org/wiki/Q11421
+    source: https://www.wikidata.org/wiki/Q353743
     example: [a loudspeaker magnet, a hard-drive voice-coil magnet, a motor rotor magnet, a magnetic catch]
     note: 'Not ferrous: a steel part a magnet sticks to is ferrous. A motor or an electromagnet is not in this class. It takes its main material''s class.'
     mappings: {exact: ['components:c0019']}

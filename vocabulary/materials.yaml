@@ -34,13 +34,14 @@ concepts:
     definition: Iron and alloys based on iron, such as steel and cast iron.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017
     example: [sheet steel, stainless steel 18/8, grey cast iron]
-    note: Not non-ferrous metal. Wikidata's ferrous metal also counts alloys based on chromium, manganese, cobalt or nickel; here those are non-ferrous.
+    note: 'Not non-ferrous metal: alloys based on chromium, manganese, cobalt or nickel are non-ferrous.'
+    editorial_note: Wikidata's ferrous metal also counts alloys based on chromium, manganese, cobalt or nickel.
     broader: [m0001]
-    mappings: {exact: ['pmdco:PMD_0000639', 'wd:Q65122087'], close: ['cpc:411']}
+    mappings: {exact: ['pmdco:PMD_0000639'], close: ['cpc:411', 'wd:Q65122087']}
   m0003:
     label: carbon and low-alloy steel
-    definition: Steel with less chromium than stainless steel (under 10.5 %), plain or galvanised.
-    source: EN 10088-1:2014
+    definition: Non-alloy or low-alloy steel, plain or galvanised.
+    source: EN 10020:2000
     example: [a steel chassis, galvanised sheet, a screw, a spring]
     note: 'Not stainless steel: at 10.5 % chromium or more it is stainless. Not cast iron: steel has under about 2 % carbon. A zinc or paint coat does not change the class.'
     broader: [m0002]
@@ -80,9 +81,10 @@ concepts:
     definition: Aluminium and alloys in which aluminium is the main metal, wrought or cast.
     source: https://www.wikidata.org/wiki/Q447725
     example: [an aluminium heat sink, a die-cast frame, an extruded profile, aluminium foil]
-    note: Not magnesium alloy, which looks alike but is lighter. Wikidata's aluminium alloy leaves out pure aluminium; here it is included.
+    note: Not magnesium alloy, which looks alike but is lighter. Pure aluminium is included.
+    editorial_note: Wikidata's aluminium alloy leaves out pure aluminium.
     broader: [m0006]
-    mappings: {exact: ['pmdco:PMD_0020186', 'wd:Q447725'], close: ['cpc:41431']}
+    mappings: {exact: ['pmdco:PMD_0020186'], close: ['cpc:41431', 'wd:Q447725']}
     names:
       bafu: ['^aluminium, (primary|secondary|production mix)']
   m0008:
@@ -120,7 +122,7 @@ concepts:
     definition: Alloy of copper and zinc.
     source: https://www.wikidata.org/wiki/Q39782
     example: [a brass connector pin, a threaded brass insert, a valve body]
-    note: Not bronze, which is copper with tin, not zinc.
+    note: 'Not bronze: copper with tin is copper alloy, not brass.'
     broader: [m0010]
     mappings: {exact: ['wd:Q39782']}
     names:
@@ -130,7 +132,8 @@ concepts:
     definition: Zinc and alloys based on zinc, as in die-cast housings and fittings.
     source: https://www.wikidata.org/wiki/Q758
     example: [a zinc-alloy die-cast housing, a zinc die-cast handle, zinc sheet, a zinc anode]
-    note: 'Not carbon and low-alloy steel: galvanised steel goes by its steel. Not brass: copper-zinc alloy is a copper alloy. Wikidata''s zinc is the element only; here zinc-based alloys are included.'
+    note: 'Not carbon and low-alloy steel: galvanised steel goes by its steel. Not brass: copper-zinc alloy is a copper alloy. Zinc-based alloys are included.'
+    editorial_note: Wikidata's zinc is the element only.
     broader: [m0006]
     mappings: {close: ['cpc:41442', 'wd:Q758']}
     names:
@@ -140,9 +143,10 @@ concepts:
     definition: Tin and alloys based on tin, other than solder.
     source: https://www.wikidata.org/wiki/Q1096
     example: [pewter, a tin ingot, tin plating listed on its own in a material declaration]
-    note: 'Not solder: a tin-based alloy that joins parts is solder. Tinplate and other tin-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s tin is the element only; here tin-based alloys are included.'
+    note: 'Not solder: a tin-based alloy that joins parts is solder. Tinplate and other tin-plated parts go by their base metal unless the record lists the plating by itself. Tin-based alloys are included.'
+    editorial_note: Wikidata's tin is the element only.
     broader: [m0006]
-    mappings: {exact: ['wd:Q1096'], close: ['cpc:41443']}
+    mappings: {close: ['cpc:41443', 'wd:Q1096']}
     names:
       bafu: ['^tin, ']
   m0014:
@@ -150,7 +154,8 @@ concepts:
     definition: Nickel and alloys based on nickel, as in battery connector strip, plating and heating wire.
     source: https://www.wikidata.org/wiki/Q744
     example: [nickel strip from a battery pack, nichrome heating wire, nickel plating listed on its own, a nickel-based superalloy part]
-    note: 'Not stainless steel: steel that contains nickel is still ferrous. Nickel-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s nickel is the element only; here nickel-based alloys are included.'
+    note: 'Not stainless steel: steel that contains nickel is still ferrous. Nickel-plated parts go by their base metal unless the record lists the plating by itself. Nickel-based alloys are included.'
+    editorial_note: Wikidata's nickel is the element only.
     broader: [m0006]
     mappings: {close: ['wd:Q744'], broad: ['cpc:4142']}
     names:
@@ -160,9 +165,10 @@ concepts:
     definition: Low-melting alloy, mostly tin-based, that joins electronic components to a board.
     source: https://www.wikidata.org/wiki/Q866612
     example: [tin-silver-copper solder, tin-lead solder, solder paste, solder wire]
-    note: 'Not brazing alloy: an alloy that melts above about 450 °C brazes rather than solders. Wikidata''s solder also covers joining any metal pieces; here it is the electronics solder.'
+    note: 'Not brazing alloy: an alloy that melts above about 450 °C brazes rather than solders, and goes by its main metal.'
+    editorial_note: Wikidata's solder also covers joining any metal pieces; here it is the electronics solder.
     broader: [m0006]
-    mappings: {exact: ['wd:Q866612'], broad: ['cpc:4154']}
+    mappings: {close: ['wd:Q866612'], broad: ['cpc:4154']}
     names:
       bafu: ['^solder, (bar|paste)']
   m0016:
@@ -170,17 +176,19 @@ concepts:
     definition: Rare metals of high value that resist corrosion, such as gold, silver and the platinum group, and their alloys.
     source: https://www.wikidata.org/wiki/Q271449
     example: [platinum in a temperature sensor, rhodium plating, ruthenium in a chip resistor, a mixed precious-metal concentrate]
-    note: 'Not gold, silver or palladium: each has its own class. Platinum, rhodium and ruthenium stay here. Plating goes by its base metal unless the record lists it on its own. Wikidata''s item counts only the elements; here their alloys are included.'
+    note: Gold, silver and palladium have narrower concepts; other precious metals, such as platinum, rhodium and ruthenium, stay here. Plating goes by its base metal unless the record lists it on its own. Alloys are included.
+    editorial_note: Wikidata's precious metal counts only the elements.
     broader: [m0006]
-    mappings: {exact: ['pmdco:PMD_0010014', 'wd:Q271449'], close: ['cpc:413']}
+    mappings: {exact: ['pmdco:PMD_0010014'], close: ['cpc:413', 'wd:Q271449']}
   m0017:
     label: gold
     definition: Gold and alloys based on gold, as in bonding wire, contact plating and jewellery.
     source: https://www.wikidata.org/wiki/Q897
     example: [gold bonding wire, gold-plated connector pins, gold fingers on a circuit board edge, an 18-carat gold watch case]
-    note: 'Not brass: a gold-coloured part is often brass. Gold-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s gold is the element only; here gold alloys are included.'
+    note: 'Not brass: a gold-coloured part is often brass. Gold-plated parts go by their base metal unless the record lists the plating by itself. Gold alloys are included.'
+    editorial_note: Wikidata's gold is the element only.
     broader: [m0016]
-    mappings: {exact: ['pmdco:PMD_0010015', 'wd:Q897'], close: ['cpc:4132']}
+    mappings: {exact: ['pmdco:PMD_0010015'], close: ['cpc:4132', 'wd:Q897']}
     names:
       bafu: ['^gold\b']
   m0018:
@@ -188,19 +196,21 @@ concepts:
     definition: Silver and alloys based on silver, as in electrical contacts, conductive paste and plating.
     source: https://www.wikidata.org/wiki/Q1090
     example: [a silver relay contact, silver paste on a solar cell, silver-plated wire, sterling silver]
-    note: 'Not solder: tin-silver solder is solder. Silver-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s silver is the element only; here silver alloys are included.'
+    note: 'Not solder: tin-silver solder is solder. Silver-plated parts go by their base metal unless the record lists the plating by itself. Silver alloys are included.'
+    editorial_note: Wikidata's silver is the element only.
     broader: [m0016]
-    mappings: {exact: ['pmdco:PMD_0010016', 'wd:Q1090'], close: ['cpc:4131']}
+    mappings: {exact: ['pmdco:PMD_0010016'], close: ['cpc:4131', 'wd:Q1090']}
     names:
       bafu: ['^silver\b']
   m0019:
     label: palladium
     definition: Palladium and alloys based on palladium, as in contact plating, capacitor electrodes and catalysts.
     source: https://www.wikidata.org/wiki/Q1089
-    example: [palladium-nickel plating on a connector contact, palladium in ceramic capacitor electrodes, palladium in a catalytic converter coating]
-    note: 'Not silver: a silver-palladium alloy that is mostly silver is silver. Plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s palladium is the element only; here palladium alloys are included.'
+    example: [palladium-nickel plating on a connector contact, palladium plating listed on its own in a material declaration, palladium in a catalytic converter coating]
+    note: 'Not silver: a silver-palladium alloy that is mostly silver is silver. Plated parts go by their base metal unless the record lists the plating by itself. Palladium alloys are included.'
+    editorial_note: Wikidata's palladium is the element only.
     broader: [m0016]
-    mappings: {exact: ['pmdco:PMD_0010018', 'wd:Q1089']}
+    mappings: {exact: ['pmdco:PMD_0010018'], close: ['wd:Q1089']}
     names:
       bafu: ['^palladium']
   m0020:
@@ -208,7 +218,8 @@ concepts:
     definition: 'Plastics: thermoplastic and thermosetting polymers, Ashby''s polymer family.'
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [ABS, polycarbonate, polypropylene, epoxy resin]
-    note: 'Not elastomer: rubbers are a family of their own. Wikidata''s polymer also covers rubbers and biopolymers.'
+    note: 'Not elastomer: rubbers are a family of their own.'
+    editorial_note: Wikidata's polymer also covers rubbers and biopolymers.
     mappings: {close: ['pmdco:PMD_0000888', 'wd:Q81163', 'cpc:347']}
   m0021:
     label: thermoplastic
@@ -311,7 +322,8 @@ concepts:
     definition: Thermoplastic with amide links in its chain, known as nylon, as in gears, cable ties and connectors.
     source: https://www.wikidata.org/wiki/Q177941
     example: [PA66, a nylon gear, a cable tie, a connector housing]
-    note: 'PA6, PA66 and other nylons, including glass-filled grades such as PA66-GF30. Not textile: a nylon strap or fabric is textile. Wikidata''s polyamide also covers proteins and aramids.'
+    note: 'PA6, PA66 and other nylons, including glass-filled grades such as PA66-GF30. Not textile: a nylon strap or fabric is textile.'
+    editorial_note: Wikidata's polyamide also covers proteins and aramids.
     broader: [m0021]
     mappings: {exact: ['wd:Q177941'], broad: ['cpc:34790', 'wd:Q145273']}
     names:
@@ -347,7 +359,8 @@ concepts:
     definition: Thermoset made by curing an epoxide resin with a hardener, used as adhesive, potting, coating and laminate binder.
     source: https://www.wikidata.org/wiki/Q143983
     example: [epoxy potting in a power supply, a cast epoxy insulator, two-part epoxy adhesive, epoxy powder coating]
-    note: 'Not FR-4 laminate: epoxy reinforced with glass fibre is a composite. Wikidata describes epoxy resin as an adhesive; here cured epoxy in any use counts.'
+    note: 'Not FR-4 laminate: epoxy reinforced with glass fibre is a composite. Cured epoxy in any use counts.'
+    editorial_note: Wikidata describes epoxy resin as an adhesive.
     broader: [m0034]
     mappings: {exact: ['pmdco:PMD_0050023', 'wd:Q143983'], broad: ['cpc:34740']}
     names:
@@ -375,7 +388,8 @@ concepts:
     definition: Rubbery material of long-chain molecules that recovers its shape after large strain.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [natural rubber, silicone rubber, EPDM, a thermoplastic elastomer]
-    note: 'Not polymer: a hard plastic that does not spring back is a polymer. Wikidata files elastomers under plastics; here they are a family of their own, as in Ashby.'
+    note: 'Not polymer: a hard plastic that does not spring back is a polymer.'
+    editorial_note: Wikidata files elastomers under plastics; here they are a family of their own, as in Ashby.
     mappings: {exact: ['pmdco:PMD_0050030', 'wd:Q252266']}
   m0039:
     label: natural rubber
@@ -390,9 +404,10 @@ concepts:
     definition: Elastomer made by polymerising petrochemical monomers, such as SBR, EPDM, NBR and neoprene.
     source: https://www.wikidata.org/wiki/Q6714735
     example: [an EPDM door seal, an NBR O-ring, a chloroprene rubber gasket, an SBR rubber foot]
-    note: 'Not silicone rubber or thermoplastic elastomer: both have their own concepts here. Wikidata''s synthetic rubber also counts silicone rubber.'
+    note: 'Not silicone rubber or thermoplastic elastomer: both have their own concepts here.'
+    editorial_note: Wikidata's synthetic rubber also counts silicone rubber, and PMDco's silicone rubber is a kind of synthetic rubber.
     broader: [m0038]
-    mappings: {exact: ['pmdco:PMD_0050032'], close: ['cpc:34800', 'wd:Q6714735']}
+    mappings: {close: ['cpc:34800', 'wd:Q6714735', 'pmdco:PMD_0050032']}
     names:
       bafu: ['^synthetic rubber']
   m0041:
@@ -400,8 +415,8 @@ concepts:
     definition: Elastomer with a silicon-oxygen backbone, heat resistant and flexible over a wide temperature range.
     source: https://www.wikidata.org/wiki/Q4115245
     example: [a silicone keypad, a silicone oven door seal, a silicone cable sheath, a silicone hose from a coffee machine]
-    note: Not synthetic rubber, though Wikidata counts silicone rubber as one. Silicone grease and oil are not rubber.
-    editorial_note: BAFU's silicone product is a proxy for silicone rubber.
+    note: 'Not synthetic rubber: silicone rubber has its own concept here. Silicone grease and oil are not rubber.'
+    editorial_note: BAFU's silicone product is a proxy for silicone rubber. Wikidata counts silicone rubber as a synthetic rubber.
     broader: [m0038]
     mappings: {exact: ['pmdco:PMD_0090052', 'wd:Q4115245']}
     names:
@@ -411,7 +426,8 @@ concepts:
     definition: Elastomer that softens on heating and can be remelted, as in overmoulded grips and soft cable sheaths.
     source: https://www.wikidata.org/wiki/Q146527
     example: [a soft-touch grip on a tool, TPU, a TPE cable sheath, a styrenic block copolymer seal]
-    note: 'TPE. Not thermoplastic: a plastic that stays hard is a thermoplastic. Not synthetic rubber: vulcanised rubber cannot be remelted. Wikidata also lists it under thermoplastic; here it is an elastomer only.'
+    note: 'TPE. Not thermoplastic: a plastic that stays hard is a thermoplastic. Not synthetic rubber: vulcanised rubber cannot be remelted.'
+    editorial_note: Wikidata also lists it under thermoplastic; here it is an elastomer only.
     broader: [m0038]
     mappings: {exact: ['wd:Q146527']}
   m0043:
@@ -446,8 +462,9 @@ concepts:
     definition: Inorganic non-metallic crystalline solid formed by heat, Ashby's ceramic family.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [a porcelain insulator, an alumina circuit substrate, a ferrite core, stoneware]
-    note: 'Not glass: glass is amorphous. Wikidata''s ceramic does not require a crystalline structure; here glass is left out.'
-    mappings: {exact: ['pmdco:PMD_0000546', 'wd:Q45621']}
+    note: 'Not glass: glass is amorphous and has its own concept.'
+    editorial_note: Wikidata's ceramic does not require a crystalline structure.
+    mappings: {exact: ['pmdco:PMD_0000546'], close: ['wd:Q45621']}
   m0047:
     label: technical ceramic
     definition: Ceramic of refined oxides, carbides or nitrides, such as alumina, zirconia or silicon carbide, made for technical parts.
@@ -468,13 +485,13 @@ concepts:
       bafu: ['^ferrite']
   m0049:
     label: hybrid material
-    definition: 'Two or more materials, or a material and empty space, combined to give properties that none has alone: Ashby''s hybrid family.'
+    definition: Family of materials made of more than one constituent, such as composites, foams, natural materials and textiles, as Ashby groups them.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [FR-4, a carbon-fibre panel, plywood, a foam gasket]
     note: 'Not a part of separate materials: a part that can be taken apart is recorded by each material. Covers composites, foams, natural materials and textiles.'
   m0050:
     label: composite
-    definition: Two or more unlike materials bonded together, usually fibres or particles in a matrix, that stay distinct in the finished part.
+    definition: Material in which a matrix holds fibres or particles of another material, as in fibre-reinforced plastics and laminates.
     source: https://www.wikidata.org/wiki/Q181790
     example: [glass-fibre reinforced polymer, carbon-fibre reinforced polymer, FR-2 paper-phenolic board, cement-bonded particle board]
     note: 'Not textile: fibres without a matrix are textile, except glass fibres, which are glass fibre. Paper or foil laminated with plastic goes by its main material.'
@@ -503,15 +520,17 @@ concepts:
     definition: Solid with gas-filled cells throughout, as in packaging, padding and insulation.
     source: https://www.wikidata.org/wiki/Q215414
     example: [an unmarked packaging foam sheet, an acoustic foam pad, a foam gasket, foam padding in a headphone cushion]
-    note: 'Not polyurethane, polystyrene or polyethylene: a foam whose polymer is known goes by that polymer, such as PUR foam or EPS. A metal foam goes by its metal. Wikidata''s foam also counts liquid foams.'
+    note: 'Not polyurethane, polystyrene or polyethylene: a foam whose polymer is known goes by that polymer, such as PUR foam or EPS. A metal foam goes by its metal. Only solid foams count.'
+    editorial_note: Wikidata's foam also counts liquid foams, and PMDco's foam allows a liquid matrix.
     broader: [m0049]
-    mappings: {exact: ['pmdco:PMD_0020126'], close: ['wd:Q215414']}
+    mappings: {close: ['wd:Q215414', 'pmdco:PMD_0020126']}
   m0054:
     label: natural material
     definition: Material from plants or animals used with its natural structure kept, such as wood, paper, leather and cork.
     source: https://www.wikidata.org/wiki/Q2451477
     example: [wood, cardboard, leather, cork]
-    note: 'Not polymer: biobased plastics such as PLA are polymers. Wikidata''s natural material leaves out processed forms; here paper, board and tanned leather count.'
+    note: 'Not polymer: biobased plastics such as PLA are polymers. Processed forms such as paper, board and tanned leather count.'
+    editorial_note: Wikidata's natural material leaves out processed forms.
     broader: [m0049]
     mappings: {close: ['wd:Q2451477']}
   m0055:

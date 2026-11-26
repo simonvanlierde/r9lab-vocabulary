@@ -56,4 +56,3 @@ so the vocabulary cannot reuse them as labels. It stays a mapping.
   OntoCrafter Ceramics Ontology: <https://arxiv.org/abs/2606.14814>
 * Context-rich descriptions beat class-only prompts for open-vocabulary waste detection:
   <https://arxiv.org/abs/2508.18799>
-* Too many polyhierarchy edges make a taxonomy hard to use: <https://arxiv.org/abs/2409.15881>
