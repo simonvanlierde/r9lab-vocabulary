@@ -1,6 +1,6 @@
 # This repo's own recipes; copier updates never touch this file.
 
-# Check vocabulary/*.yaml against itself and the pinned sources, then write dist/ (Turtle, JSON-LD, name matches). Needs `just pipeline` first.
+# Check vocabulary/*.yaml against itself and the pinned sources, then write dist/ (Turtle, JSON-LD, SHACL shapes, name matches). Needs `just pipeline` first.
 rdf:
     uv run r9lab-vocabulary rdf
 
@@ -11,6 +11,10 @@ names *args:
 # Print every Wikidata link beside the item's current label; fails on a missing or redirected item. Live network.
 wikidata:
     uv run r9lab-vocabulary wikidata
+
+# Print, as Markdown for the release notes, the concepts added, deprecated, removed, remapped and relabelled since a tag (`just diff v0.1.0`). Fails on a concept id that vanished instead of being deprecated.
+diff ref:
+    uv run r9lab-vocabulary diff {{ ref }}
 
 # Fetch, build and check everything, write dist/, and print how the match counts changed since the last run.
 update:

@@ -1,0 +1,22 @@
+# The golden fixture: one of each thing the build writes. tests/test_golden.py pins its Turtle.
+scheme:
+  slug: tools
+  id_letter: t
+  title: Workshop tools
+  created: 2026-01-01
+  description: >
+    Hand tools, to pin what the build writes.
+concepts:
+  t01:
+    label: hand tool
+    definition: A tool worked by hand.
+    mappings: {exact: ['wd:Q1'], related: ['unu1:0001']}
+  t02:
+    label: screwdriver
+    notation: driver
+    broader: [t01]
+    mappings: {close: ['parts:p01']}
+  t03:
+    label: old screwdriver
+    deprecated: true
+    replaced_by: [t02]

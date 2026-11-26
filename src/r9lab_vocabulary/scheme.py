@@ -4,6 +4,9 @@ Each file in `vocabulary/` is one concept scheme. Concept ids are opaque and nev
 reused: a concept that goes away is marked `deprecated`, never deleted. A mapping is a
 CURIE whose prefix names either an outside scheme (`PREFIXES`) or another scheme of
 this vocabulary (its `slug`).
+
+Every scheme, and the vocabulary as a whole (`BASE`, a `dcat:Dataset`), carries release
+metadata: docs/decisions/0004-versioned-iris-and-scheme-dates.md says which, and why.
 """
 
 from __future__ import annotations
@@ -12,11 +15,12 @@ import csv
 import json
 import re
 from dataclasses import dataclass
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
 import yaml
-from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Graph, Literal, Namespace, URIRef
+from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
 from yaml.constructor import ConstructorError
 
 if TYPE_CHECKING:
@@ -88,9 +92,17 @@ SOURCE = "source"
 FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, "broader", "related", "mappings", "names"}
 FIELDS |= {"deprecated", "replaced_by"}
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
+# A version path segment (`0.1.0`) starts with a digit, so it never collides with a scheme slug.
+SLUG = re.compile(r"^[a-z]")
 # A match: (scheme slug, concept id, family, version, pattern, matched names).
 Match = tuple[str, str, str, str, str, list[str]]
 LANG = "en"
+LANGUAGE = URIRef("http://id.loc.gov/vocabulary/iso639-1/en")
+CC0 = URIRef("https://creativecommons.org/publicdomain/zero/1.0/")
+TITLE = "R9lab reference vocabulary"
+BIBO = Namespace("http://purl.org/ontology/bibo/")
+# PyST accepts only draft, accepted and rejected; deprecation is owl:deprecated, so a deprecated concept stays accepted.
+ACCEPTED = URIRef("http://purl.org/ontology/bibo/status/accepted")
 
 
 @dataclass(frozen=True)
@@ -158,6 +170,11 @@ def validate(schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[
 
 def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
     errors = []
+    if not SLUG.match(scheme.slug):
+        errors.append(f"{scheme.slug}: slug must start with a lower-case letter")
+    created = scheme.meta.get("created")
+    if created is not None and (not isinstance(created, date) or isinstance(created, datetime)):
+        errors.append(f"{scheme.slug}: created must be a date (YYYY-MM-DD, unquoted), not {created!r}")
     letter = scheme.meta.get("id_letter")
     for cid, c in scheme.concepts.items():
         where = f"{scheme.slug}/{cid}"
@@ -349,6 +366,44 @@ def _cycles(scheme: Scheme) -> list[str]:
     return errors
 
 
+def diff(old: dict[str, Scheme], new: dict[str, Scheme]) -> tuple[list[str], bool]:
+    """The concepts added, deprecated, removed, remapped and relabelled from `old` to `new`, as Markdown lines.
+
+    The flag is False when a concept id in `old` is missing from `new`: an id that leaves use stays, deprecated.
+    """
+    before, after = ({f"{s.slug}/{cid}": c for s in v.values() for cid, c in s.concepts.items()} for v in (old, new))
+    sections: dict[str, list[str]] = {t: [] for t in ("Added", "Deprecated", "Removed", "Mappings", "Labels")}
+    for key in sorted(before.keys() | after.keys()):
+        a, b = before.get(key), after.get(key)
+        if b is None:
+            sections["Removed"].append(
+                f"- `{key}` {a and a.get('label')}: deprecate it with `replaced_by` instead of deleting it"
+            )
+            continue
+        if a is None:
+            sections["Added"].append(f"- `{key}` {b['label']}")
+            continue
+        if b.get("deprecated") and not a.get("deprecated"):
+            slug = key.partition("/")[0]
+            by = ", ".join(f"`{slug}/{ref}`" for ref in b.get("replaced_by") or [])
+            how = f"replaced by {by}" if by else "with no `replaced_by`"
+            sections["Deprecated"].append(f"- `{key}` {b['label']}, {how}")
+        if a.get("deprecated") and not b.get("deprecated"):
+            sections["Deprecated"].append(f"- `{key}` {b['label']}: no longer deprecated")
+        maps_a, maps_b = ({f"{rel} {prefix}:{local}" for rel, prefix, local in mappings(c)} for c in (a, b))
+        if maps_a != maps_b:
+            changes = [f"added {m}" for m in sorted(maps_b - maps_a)]
+            changes += [f"dropped {m}" for m in sorted(maps_a - maps_b)]
+            sections["Mappings"].append(f"- `{key}` {b['label']}: {'; '.join(changes)}")
+        if a.get("label") != b.get("label"):
+            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b['label']}")
+    lines = []
+    for title, items in sections.items():
+        if items:
+            lines += [f"### {title}", "", *items, ""]
+    return lines, not sections["Removed"]
+
+
 def check_codes(schemes: dict[str, Scheme], known: dict[str, set[str]]) -> list[str]:
     """Mappings to an outside scheme whose code is not in that scheme's pinned source.
 
@@ -415,31 +470,82 @@ def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:
     return URIRef(base + local)
 
 
-def to_graph(schemes: dict[str, Scheme], version: str) -> Graph:
-    """The whole vocabulary as one SKOS graph."""
+@dataclass(frozen=True)
+class About:
+    """What every scheme says about its release: version, the authors' ORCID iDs, landing page, and build date."""
+
+    version: str
+    orcids: list[str]
+    landing: str | None
+    modified: date | None
+
+    def describe(self, g: Graph, node: URIRef, title: str, created: date | None) -> None:
+        """Type `node` as a schema.org term set and add its title, version, dates, creators and landing page."""
+        g.add((node, RDF.type, SDO.DefinedTermSet))
+        g.add((node, SDO.name, Literal(title, lang=LANG)))
+        g.add((node, DCTERMS.title, Literal(title, lang=LANG)))
+        g.add((node, OWL.versionInfo, Literal(self.version)))
+        g.add((node, OWL.versionIRI, URIRef(f"{BASE}{self.version}/{str(node).removeprefix(BASE)}")))
+        g.add((node, DCTERMS.language, LANGUAGE))
+        for prop, value in ((DCTERMS.created, created), (DCTERMS.modified, self.modified)):
+            if value is not None:
+                g.add((node, prop, Literal(value)))
+        for orcid in self.orcids:
+            g.add((node, DCTERMS.creator, URIRef(orcid)))
+        if self.orcids:
+            g.add((node, DCTERMS.publisher, URIRef(self.orcids[0])))
+        if self.landing:
+            g.add((node, DCAT.landingPage, URIRef(self.landing)))
+
+
+def to_graph(
+    schemes: dict[str, Scheme],
+    version: str,
+    *,
+    orcids: list[str] | None = None,
+    landing: str | None = None,
+    modified: date | None = None,
+) -> Graph:
+    """The whole vocabulary as one SKOS graph, its schemes the parts of one `dcat:Dataset`.
+
+    `orcids` and `landing` are what `pipeline.citation` reads from CITATION.cff, the first iD the
+    publisher; `modified` is `dct:modified`. Without them those triples are left out.
+    """
     g = Graph()
-    g.bind("skos", SKOS)
-    g.bind("dcterms", DCTERMS)
+    namespaces = (("skos", SKOS), ("dcterms", DCTERMS), ("dcat", DCAT), ("schema", SDO), ("owl", OWL), ("bibo", BIBO))
+    for prefix, ns in namespaces:
+        g.bind(prefix, ns)
     for slug, scheme in schemes.items():
         g.bind(f"r9-{slug}", Namespace(scheme.iri))
+    about = About(version, orcids or [], landing, modified)
+    # The code-only schemes and the whole are as old as the oldest scheme written here.
+    created = min(filter(None, (s.meta.get("created") for s in schemes.values())), default=None)
+    vocab = URIRef(BASE)
+    g.add((vocab, RDF.type, DCAT.Dataset))
+    g.add((vocab, DCTERMS.license, CC0))
+    about.describe(g, vocab, TITLE, created)
     used_external: dict[str, set[str]] = {}
     for scheme in schemes.values():
-        _add_scheme(g, scheme, schemes, version, used_external)
+        _add_scheme(g, scheme, schemes, about, used_external)
+        g.add((vocab, DCTERMS.hasPart, URIRef(scheme.iri)))
     for prefix, codes in used_external.items():
-        _add_code_only_scheme(g, prefix, codes, version)
+        _add_code_only_scheme(g, prefix, codes, about, created)
+        g.add((vocab, DCTERMS.hasPart, URIRef(PREFIXES[prefix])))
     return g
 
 
 def _add_scheme(
-    g: Graph, scheme: Scheme, schemes: dict[str, Scheme], version: str, used_external: dict[str, set[str]]
+    g: Graph, scheme: Scheme, schemes: dict[str, Scheme], about: About, used_external: dict[str, set[str]]
 ) -> None:
     s = URIRef(scheme.iri)
     g.add((s, RDF.type, SKOS.ConceptScheme))
     g.add((s, SKOS.prefLabel, Literal(scheme.meta["title"], lang=LANG)))
+    g.add((s, BIBO.status, ACCEPTED))
+    g.add((s, DCTERMS.license, CC0))
     if desc := scheme.meta.get("description"):
         g.add((s, DCTERMS.description, Literal(desc.strip(), lang=LANG)))
-    g.add((s, OWL.versionInfo, Literal(version)))
-    g.add((s, DCTERMS.license, URIRef("https://creativecommons.org/publicdomain/zero/1.0/")))
+        g.add((s, SKOS.definition, Literal(desc.strip(), lang=LANG)))
+    about.describe(g, s, scheme.meta["title"], scheme.meta.get("created"))
     collection = scheme.meta.get("collection")
     if collection:
         coll = URIRef(f"{scheme.iri}collection")
@@ -459,7 +565,9 @@ def _add_scheme(
 def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> None:
     s = URIRef(scheme.iri)
     g.add((node, RDF.type, SKOS.Concept))
+    g.add((node, RDF.type, SDO.DefinedTerm))
     g.add((node, SKOS.inScheme, s))
+    g.add((node, BIBO.status, ACCEPTED))
     g.add((node, SKOS.prefLabel, Literal(c["label"], lang=LANG)))
     for field, prop in TEXT_FIELDS.items():
         for text in _texts(c, field):
@@ -483,26 +591,40 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
             g.add((node, DCTERMS.isReplacedBy, URIRef(scheme.iri + ref)))
 
 
-def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], version: str) -> None:
+def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], about: About, created: date | None) -> None:
     s = URIRef(PREFIXES[prefix])
     g.add((s, RDF.type, SKOS.ConceptScheme))
     g.add((s, SKOS.prefLabel, Literal(CODE_ONLY[prefix], lang=LANG)))
-    g.add((s, OWL.versionInfo, Literal(version)))
+    g.add((s, SKOS.definition, Literal(CODE_ONLY[prefix], lang=LANG)))
+    g.add((s, BIBO.status, ACCEPTED))
+    about.describe(g, s, CODE_ONLY[prefix], created)
     for code in sorted(codes):
         node = URIRef(PREFIXES[prefix] + code)
         g.add((node, RDF.type, SKOS.Concept))
+        g.add((node, RDF.type, SDO.DefinedTerm))
         g.add((node, SKOS.inScheme, s))
+        g.add((node, BIBO.status, ACCEPTED))
         g.add((node, SKOS.notation, Literal(code)))
         g.add((node, SKOS.prefLabel, Literal(code, lang=LANG)))
 
 
-def write(schemes: dict[str, Scheme], version: str, out: Path, matches: list[Match]) -> list[Path]:
+def write(
+    schemes: dict[str, Scheme],
+    version: str,
+    out: Path,
+    matches: list[Match],
+    *,
+    orcids: list[str] | None = None,
+    landing: str | None = None,
+    modified: date | None = None,
+) -> list[Path]:
     """Write `r9lab-vocabulary.ttl`, `.jsonld` and `name-matches.csv` into `out`.
 
     `matches` is `name_matches`: the CSV has one row per pattern and source (`bafu-2026-v1`), with its match count.
+    `orcids`, `landing` and `modified` are as in `to_graph`.
     """
     out.mkdir(parents=True, exist_ok=True)
-    g = to_graph(schemes, version)
+    g = to_graph(schemes, version, orcids=orcids, landing=landing, modified=modified)
     ttl, jsonld, names = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "name-matches.csv"
     g.serialize(ttl, format="turtle")
     g.serialize(jsonld, format="json-ld", auto_compact=True)

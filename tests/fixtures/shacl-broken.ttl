@@ -1,0 +1,31 @@
+# One break per rule in shapes/r9lab.shacl.ttl; tests/test_shacl.py expects each to be reported.
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix t: <https://w3id.org/r9lab/vocabulary/tools/> .
+
+# A scheme with none of the release metadata.
+t: a skos:ConceptScheme ;
+    skos:prefLabel "Workshop tools"@en .
+
+# A label in German only, and a mapping to a string.
+t:t01 a skos:Concept ;
+    skos:inScheme t: ;
+    skos:prefLabel "Handwerkzeug"@de ;
+    skos:exactMatch "wd:Q1" .
+
+# In no scheme.
+t:t02 a skos:Concept ;
+    skos:prefLabel "screwdriver"@en .
+
+# Replaced by a concept that is itself deprecated.
+t:t03 a skos:Concept ;
+    skos:inScheme t: ;
+    skos:prefLabel "old screwdriver"@en ;
+    owl:deprecated true ;
+    dcterms:isReplacedBy t:t04 .
+
+t:t04 a skos:Concept ;
+    skos:inScheme t: ;
+    skos:prefLabel "older screwdriver"@en ;
+    owl:deprecated true .
