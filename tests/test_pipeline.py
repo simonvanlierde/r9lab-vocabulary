@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import io
 import sqlite3
+import subprocess
 import tarfile
 import zipfile
+from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from r9lab_vocabulary import pipeline
+import rdflib
+from rdflib import DCTERMS
+
+from r9lab_vocabulary import pipeline, scheme
 
 if TYPE_CHECKING:
     import pytest
@@ -39,7 +44,11 @@ def test_rdf_writes_the_vocabulary(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": everything, "pmdco": everything})
     monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {}})
     assert pipeline.main(["rdf", "--out", str(tmp_path)]) == 0
-    assert (tmp_path / "r9lab-vocabulary.ttl").stat().st_size > 0
+    g = rdflib.Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
+    vocab = rdflib.URIRef(scheme.BASE)
+    head = subprocess.run(["git", "log", "-1", "--format=%cs"], capture_output=True, text=True, check=True).stdout  # noqa: S607
+    assert g.value(vocab, DCTERMS.modified) == rdflib.Literal(date.fromisoformat(head.strip()))
+    assert g.value(vocab, DCTERMS.creator) == rdflib.URIRef("https://orcid.org/0009-0006-6953-909X")
     header = (tmp_path / "name-matches.csv").read_text(encoding="utf-8").splitlines()[0]
     assert header == "concept,label,source,pattern,matches"
 

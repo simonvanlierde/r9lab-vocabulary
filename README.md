@@ -37,6 +37,15 @@ Concept ids are opaque and never reused: a concept that goes away is marked `dep
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
 only; none of their names is copied.
 
+Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`, a
+`dcat:Dataset` made of the schemes), carries `dct:title`, `dct:creator` and `dct:publisher`
+(the ORCID iDs in [`CITATION.cff`](CITATION.cff)), `dct:created` (the scheme's `created`),
+`dct:modified` (the date of the commit built), `dct:language`, `dcat:landingPage` and
+`owl:versionIRI`. A version IRI is the base, the version, then the scheme's path:
+`https://w3id.org/r9lab/vocabulary/0.1.0/materials/`
+([why](docs/decisions/0003-versioned-iris-and-scheme-dates.md)). Schemes are also typed
+`schema:DefinedTermSet` and concepts `schema:DefinedTerm`, for dataset search.
+
 ## Usage
 
 Get the built files from the [releases](https://github.com/simonvanlierde/r9lab-vocabulary/releases),

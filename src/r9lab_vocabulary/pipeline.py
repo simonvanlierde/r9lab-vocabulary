@@ -19,6 +19,7 @@ import io
 import json
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -27,12 +28,14 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 from dataclasses import dataclass
+from datetime import date
 from importlib.metadata import version
 from pathlib import Path
 from typing import TYPE_CHECKING, NoReturn, cast
 
 import rdflib
 import sourceledger
+import yaml
 from sourceledger import Source
 
 from r9lab_vocabulary import scheme
@@ -41,6 +44,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
 VOCABULARY = Path("vocabulary")
+CITATION = Path("CITATION.cff")
 DIST = Path("dist")
 PROCESSED = Path("data/processed")
 USER_AGENT = "r9lab-vocabulary (https://github.com/simonvanlierde/r9lab-vocabulary)"
@@ -182,6 +186,18 @@ def _versions(lists: dict[str, dict[str, list[str]]]) -> dict[str, set[str]]:
     return {family: set(vs) for family, vs in lists.items()}
 
 
+def commit_date() -> date | None:
+    """The date of the commit checked out, or None outside a git checkout.
+
+    It is `dct:modified`: the build date would make two builds of one commit differ.
+    """
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%cs"], capture_output=True, text=True, check=True).stdout  # noqa: S607
+    except OSError, subprocess.CalledProcessError:
+        return None
+    return date.fromisoformat(out.strip()) if out.strip() else None
+
+
 def rdf(out: Path) -> int:
     """Check the vocabulary against itself and the pinned sources, then write it to `out`."""
     schemes = scheme.load(VOCABULARY)
@@ -204,7 +220,11 @@ def rdf(out: Path) -> int:
     if errors:
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
-    for path in scheme.write(schemes, version("r9lab-vocabulary"), out, matches):
+    citation = yaml.safe_load(CITATION.read_text(encoding="utf-8"))
+    written = scheme.write(
+        schemes, version("r9lab-vocabulary"), out, matches, citation=citation, modified=commit_date()
+    )
+    for path in written:
         sys.stdout.write(f"{path}\n")
     return 0
 

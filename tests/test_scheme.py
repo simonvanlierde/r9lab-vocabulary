@@ -1,9 +1,10 @@
 """The vocabulary's own rules, on the real files and on small broken copies."""
 
+from datetime import date
 from pathlib import Path
 
 import pytest
-from rdflib import OWL, RDF, SKOS, XSD, Graph, Literal, URIRef
+from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, URIRef
 from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
@@ -11,6 +12,11 @@ from r9lab_vocabulary import scheme
 Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
 ROOT = Path(__file__).resolve().parent.parent
+# The ORCID iD ORCID itself publishes for tests.
+CITATION = {
+    "authors": [{"orcid": "https://orcid.org/0000-0002-1825-0097"}],
+    "repository-code": "https://example.org/r9lab-vocabulary",
+}
 # The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
 PILOT_KEYS = {
     "ferrous",
@@ -172,3 +178,29 @@ def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
     (tmp_path / "t.yaml").write_text("scheme: {slug: t, title: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
     with pytest.raises(ConstructorError, match="repeated key t01"):
         scheme.load(tmp_path)
+
+
+def test_each_scheme_says_who_made_it_when_and_which_version(schemes: Schemes):
+    g = scheme.to_graph(schemes, "1.2.3", citation=CITATION, modified=date(2026, 11, 26))
+    orcid = URIRef("https://orcid.org/0000-0002-1825-0097")
+    nodes = set(g.subjects(RDF.type, SKOS.ConceptScheme))
+    assert len(nodes) == 6  # four written here, two code-only
+    for s in nodes:
+        assert g.value(s, DCTERMS.creator) == orcid, s
+        assert g.value(s, DCTERMS.publisher) == orcid, s
+        assert g.value(s, DCTERMS.created) == Literal(date(2026, 11, 17)), s
+        assert g.value(s, DCTERMS.modified) == Literal(date(2026, 11, 26)), s
+        assert g.value(s, DCTERMS.title) is not None, s
+        assert g.value(s, DCTERMS.language) == scheme.LANGUAGE, s
+        assert g.value(s, DCAT.landingPage) == URIRef("https://example.org/r9lab-vocabulary"), s
+        assert (s, RDF.type, SDO.DefinedTermSet) in g, s
+    assert g.value(URIRef(schemes["materials"].iri), OWL.versionIRI) == URIRef(f"{scheme.BASE}1.2.3/materials/")
+
+
+def test_the_vocabulary_is_one_dataset_of_its_schemes(schemes: Schemes):
+    g = scheme.to_graph(schemes, "1.2.3", citation=CITATION, modified=date(2026, 11, 26))
+    vocab = URIRef(scheme.BASE)
+    assert {DCAT.Dataset, SDO.DefinedTermSet} <= set(g.objects(vocab, RDF.type))
+    assert set(g.objects(vocab, DCTERMS.hasPart)) == set(g.subjects(RDF.type, SKOS.ConceptScheme))
+    assert g.value(vocab, OWL.versionIRI) == URIRef(f"{scheme.BASE}1.2.3/")
+    assert set(g.subjects(RDF.type, SKOS.Concept)) == set(g.subjects(RDF.type, SDO.DefinedTerm))

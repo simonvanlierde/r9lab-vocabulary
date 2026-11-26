@@ -16,6 +16,7 @@ scheme:
   slug: materials
   id_letter: m
   title: R9lab material classes
+  created: 2026-11-17
   description: >
     Material classes for parts recovered from disassembled products, topped by Ashby's six
     material families, with crosswalks to CPC 2.1, PMDco, Wikidata and BAFU activity names.

@@ -7,3 +7,5 @@ structure, and add a record when you make a choice that is expensive to undo.
 | Record | Status | Date |
 | --- | --- | --- |
 | [0001](0001-start-from-project-templates.md) Start from project-templates | accepted | 2026-11-17 |
+| [0002](0002-yaml-source-skos-build.md) Hand-written YAML, built into SKOS | accepted | 2026-11-17 |
+| [0003](0003-versioned-iris-and-scheme-dates.md) Version IRIs under the base, dates from the sources and git | accepted | 2026-11-26 |
