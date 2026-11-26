@@ -1,0 +1,14 @@
+scheme:
+  slug: parts
+  id_letter: p
+  title: Fasteners
+  created: 2026-01-02
+  description: Fasteners, to pin what the build writes.
+  collection: Fasteners a pilot counts
+concepts:
+  p01:
+    label: screw
+    note: Any threaded fastener.
+    related: [p02]
+  p02:
+    label: nut

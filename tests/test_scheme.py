@@ -2,11 +2,12 @@
 
 import csv
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 import yaml
-from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Graph, Literal, URIRef
+from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Literal, URIRef
 from yaml.constructor import ConstructorError
 
 from r9lab_vocabulary import scheme
@@ -14,6 +15,8 @@ from r9lab_vocabulary import scheme
 Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
 ROOT = Path(__file__).resolve().parent.parent
+# The ORCID iD ORCID itself publishes for tests.
+TEST_ORCID = "https://orcid.org/0000-0002-1825-0097"
 # The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
 PILOT_KEYS = {
     "ferrous",
@@ -40,7 +43,8 @@ def schemes() -> dict[str, scheme.Scheme]:
 
 
 def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
-    return {"t": scheme.Scheme("t", meta or {"title": "t", "id_letter": "t"}, concepts)}
+    meta = {"title": "t", "id_letter": "t", **(meta or {})}
+    return {meta.get("slug", "t"): scheme.Scheme(meta.get("slug", "t"), meta, concepts)}
 
 
 def test_the_vocabulary_breaks_no_rule(schemes: Schemes):
@@ -66,16 +70,11 @@ def test_the_material_axis_is_topped_by_ashbys_six_families(schemes: Schemes):
     assert tops == {"metal", "polymer", "elastomer", "glass", "ceramic", "hybrid material"}
 
 
-# rdflib's JSON-LD parser builds a ConjunctiveGraph internally whatever the caller passes.
-@pytest.mark.filterwarnings("ignore:ConjunctiveGraph is deprecated:DeprecationWarning")
-def test_every_concept_is_in_its_scheme_and_round_trips_through_turtle(schemes: Schemes, tmp_path: Path):
-    scheme.write(schemes, "test", tmp_path, [])
-    g = Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
+def test_every_concept_is_in_its_scheme(schemes: Schemes):
+    g = scheme.to_graph(schemes, "test")
     for s in schemes.values():
         for cid in s.concepts:
             assert (URIRef(s.iri + cid), SKOS.inScheme, URIRef(s.iri)) in g
-    assert len(g) == len(scheme.to_graph(schemes, "test"))
-    assert len(Graph().parse(tmp_path / "r9lab-vocabulary.jsonld")) == len(g)
 
 
 @pytest.mark.parametrize("prefix", sorted(scheme.CODE_ONLY))
@@ -87,6 +86,12 @@ def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
     for node in nodes:
         # Every literal, not one prefLabel: a second label could carry a licensed name.
         assert {str(o) for o in g.objects(node) if isinstance(o, Literal)} == {str(node).removeprefix(base)}
+
+
+def test_cc0_covers_the_vocabulary_and_its_own_schemes_only(schemes: Schemes):
+    g = scheme.to_graph(schemes, "test")
+    licensed = {str(s) for s in g.subjects(DCTERMS.license, scheme.CC0)}
+    assert licensed == {scheme.BASE} | {s.iri for s in schemes.values()}
 
 
 def test_the_tag_mappings_break_no_rule(schemes: Schemes):
@@ -181,6 +186,9 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             "must be a non-empty pattern",
         ),
         ({"t01": {"label": "a", "mappings": {"exact": "wd:Q1"}}}, "mappings must map each relation to a list"),
+        ({"scheme": {"slug": "0-1"}}, "slug must start with a lower-case letter"),
+        ({"scheme": {"created": "2026-11-17"}}, "created must be a date"),
+        ({"scheme": {"created": datetime(2026, 11, 17, tzinfo=UTC)}}, "created must be a date"),
         ({"t01": {"label": "a", "definition": " "}}, "definition must be non-empty text"),
         ({"t01": {"label": "a", "note": ["x"]}}, "note must be non-empty text"),
         ({"t01": {"label": "a", "example": []}}, "example must be non-empty text"),
@@ -208,7 +216,9 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
-    errors = scheme.validate(one(concepts), VERSIONS)
+    # A row's "scheme" entry, never a concept id, sets the scheme's own fields.
+    meta = concepts.get("scheme")
+    errors = scheme.validate(one({k: v for k, v in concepts.items() if k != "scheme"}, meta), VERSIONS)
     assert any(message in e for e in errors), errors
 
 
@@ -301,6 +311,15 @@ def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
     (tmp_path / "t.yaml").write_text("scheme: {slug: t, title: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
     with pytest.raises(ConstructorError, match="repeated key t01"):
         scheme.load(tmp_path)
+
+
+def test_the_first_author_alone_publishes():
+    orcids = [TEST_ORCID, "https://orcid.org/0000-0001-5109-3700"]
+    g = scheme.to_graph(one({"t01": {"label": "a"}}), "1.2.3", orcids=orcids)
+    s = URIRef(scheme.BASE + "t/")
+    assert set(g.objects(s, DCTERMS.publisher)) == {URIRef(TEST_ORCID)}
+    assert len(set(g.objects(s, DCTERMS.creator))) == 2
+    assert g.value(s, OWL.versionIRI) == URIRef(f"{scheme.BASE}1.2.3/t/")
 
 
 ORCID = "https://orcid.org/0009-0006-6953-909X"
@@ -444,5 +463,5 @@ def test_validate_accepts(concepts: dict):
 
 
 def test_an_id_in_a_scheme_without_a_letter_needs_any_letter():
-    errors = scheme.validate(one({"01": {"label": "a"}}, {"title": "t"}), VERSIONS)
+    errors = scheme.validate(one({"01": {"label": "a"}}, {"id_letter": None}), VERSIONS)
     assert any("id must be a letter plus 2-4 digits" in e for e in errors), errors

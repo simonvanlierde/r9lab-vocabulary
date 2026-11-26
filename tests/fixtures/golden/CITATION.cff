@@ -1,0 +1,9 @@
+# The ORCID iD ORCID itself publishes for tests.
+cff-version: 1.2.0
+message: A fixture, not this project's citation.
+title: golden
+authors:
+  - given-names: "Josiah"
+    family-names: "Carberry"
+    orcid: "https://orcid.org/0000-0002-1825-0097"
+repository-code: "https://example.org/r9lab-vocabulary"

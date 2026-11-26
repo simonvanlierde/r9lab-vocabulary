@@ -50,6 +50,12 @@ Concept ids are opaque and never reused: a concept that goes away is marked `dep
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
 only; none of their names is copied.
 
+Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`, a
+`dcat:Dataset` made of the schemes), says who made it, when, and which release it is, with a
+version IRI such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`.
+[ADR 0004](docs/decisions/0004-versioned-iris-and-scheme-dates.md) lists the fields and where
+each comes from.
+
 ## Usage
 
 Get the built files from the [releases](https://github.com/simonvanlierde/r9lab-vocabulary/releases),
@@ -59,13 +65,20 @@ or build them:
 just update      # fetch the pinned CPC 2.1, PMDco and BAFU files, then write dist/
 just names       # print every name each pattern matches (--summary for counts)
 just wikidata    # print every Wikidata link beside the item's current label
+just diff v0.1.0 # what changed since a release, as Markdown for its notes
 ```
+
+`just diff <tag>` reads `vocabulary/` at the tag and lists the concepts added, deprecated and
+removed since, and those whose mappings or label changed. It exits 1 when a concept id at the
+tag is gone: deprecate a concept with `replaced_by`, never delete it.
 
 `just update` runs `just pipeline` and then `just rdf`, and prints how the match counts in
 `dist/name-matches.csv` changed. `just rdf` alone needs the pipeline output. It writes:
 
 - `dist/r9lab-vocabulary.ttl` and `dist/r9lab-vocabulary.jsonld`: the SKOS graph.
 - `dist/name-matches.csv`: each name pattern with its match count per version.
+- `dist/r9lab.shacl.ttl`: the vocabulary's own SHACL shapes. Check a copy of the graph with
+  `pyshacl -s r9lab.shacl.ttl r9lab-vocabulary.ttl`.
 - `dist/r9lab-vocabulary.sssom.tsv`: every mapping as an [SSSOM](https://mapping-commons.github.io/sssom/)
   row, for tools that read crosswalks without parsing SKOS. `just sssom-validate` checks it
   with sssom-py. Mappings from or to a deprecated concept are left out; the SKOS graph keeps
@@ -74,6 +87,11 @@ just wikidata    # print every Wikidata link beside the item's current label
   its IRI, label, label path from its top concept, definition, and the keys of the pilot
   classes it falls under (`pilot`). A model prompt can quote them. Evaluation answers are
   not kept in this repository.
+
+The shapes require an English `prefLabel` and an `inScheme` on every concept, IRIs as mapping
+targets, a replacement in use for a deprecated concept, and the release metadata above on every
+scheme. The tests run them, with [skohub-shapes](https://github.com/skohub-io/skohub-shapes)'
+SKOS rules (`shapes/skohub-skos.shacl.ttl`), on the graph `vocabulary/` builds.
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
@@ -141,6 +159,10 @@ just data-release   # write the folder to publish: the redistributable data, dat
 
 `just check` skips the tests that read the pipeline output when it is missing. `just test-full`
 runs the pipeline first and then every test, as CI does.
+
+`tests/test_golden.py` pins the Turtle a small fixture in `tests/fixtures/golden/` builds to. After
+a deliberate change to the output, rewrite it with `UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py`
+and read the diff.
 
 ## Pipeline
 

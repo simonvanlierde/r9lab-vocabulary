@@ -1,0 +1,21 @@
+# The golden fixture one release later: t04 added, t01 remapped, t02 relabelled.
+scheme:
+  slug: tools
+  id_letter: t
+  title: Workshop tools
+  created: 2026-01-01
+concepts:
+  t01:
+    label: hand tool
+    mappings: {close: ['wd:Q1'], related: ['unu1:0001']}
+  t02:
+    label: flat screwdriver
+    broader: [t01]
+    mappings: {close: ['parts:p01']}
+  t03:
+    label: old screwdriver
+    deprecated: true
+    replaced_by: [t02]
+  t04:
+    label: torque wrench
+    broader: [t01]

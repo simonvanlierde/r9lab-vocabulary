@@ -17,8 +17,10 @@ import argparse
 import csv
 import io
 import json
+import os
 import shutil
 import sqlite3
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -27,6 +29,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 from dataclasses import dataclass
+from datetime import UTC, date, datetime
 from importlib.metadata import version
 from pathlib import Path
 from typing import TYPE_CHECKING, NoReturn, cast
@@ -41,10 +44,12 @@ from r9lab_vocabulary import scheme
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
+ROOT = Path(__file__).resolve().parents[2]  # the checkout this module runs from, for its commit date
 VOCABULARY = Path("vocabulary")
+CITATION = Path("CITATION.cff")
+SHAPES = Path("shapes/r9lab.shacl.ttl")  # published beside the graph, so users can check their copy
 TAG_MAPPINGS = Path("mappings/r9lab-tags.sssom.tsv")
 DIST = Path("dist")
-CITATION = Path("CITATION.cff")  # its first author curates every mapping
 PROCESSED = Path("data/processed")
 USER_AGENT = "r9lab-vocabulary (https://github.com/simonvanlierde/r9lab-vocabulary)"
 CPC_SOURCE, PMDCO_SOURCE, WIKIDATA = "cpc21", "pmdco", "wd"
@@ -185,8 +190,45 @@ def _versions(lists: dict[str, dict[str, list[str]]]) -> dict[str, set[str]]:
     return {family: set(vs) for family, vs in lists.items()}
 
 
+def commit_date() -> date | None:
+    """`SOURCE_DATE_EPOCH` as a UTC date when set, else the date of the commit `ROOT` has checked out, else None.
+
+    It is `dct:modified`: the build date would make two builds of one commit differ. Git is not
+    let look above `ROOT`, so a tree unpacked inside another checkout does not take that one's date.
+    """
+    if epoch := os.environ.get("SOURCE_DATE_EPOCH"):
+        return datetime.fromtimestamp(int(epoch), UTC).date()
+    env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
+    try:
+        out = subprocess.run(  # noqa: S603
+            ["git", "-C", str(ROOT), "log", "-1", "--format=%cs"],  # noqa: S607
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        ).stdout
+    except OSError, subprocess.CalledProcessError:
+        return None
+    return date.fromisoformat(out.strip()) if out.strip() else None
+
+
+def citation(path: Path = CITATION) -> tuple[list[str], str | None]:
+    """The authors' ORCID iDs, in order, and `repository-code` from CITATION.cff; ValueError if no author has an iD."""
+    try:
+        cff = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        cff = None
+    cff = cff if isinstance(cff, dict) else {}
+    authors = cff.get("authors")
+    orcids = [a["orcid"] for a in authors or [] if isinstance(a, dict) and a.get("orcid")]
+    if orcids:
+        return orcids, cff.get("repository-code")
+    msg = f"{path} must list at least one author with an orcid"
+    raise ValueError(msg)
+
+
 def rdf(out: Path) -> int:
-    """Check the vocabulary against itself and the pinned sources, then write it to `out`."""
+    """Check the vocabulary against itself and the pinned sources, then write it and its SHACL shapes to `out`."""
     schemes = scheme.load(VOCABULARY)
     try:
         known = known_codes()
@@ -208,11 +250,20 @@ def rdf(out: Path) -> int:
     if errors:
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
+    if (modified := commit_date()) is None:
+        hint = f"set SOURCE_DATE_EPOCH or build in {ROOT} as a git checkout"
+        sys.stderr.write(f"error: no commit date for dct:modified: {hint}\n")
+        return 1
+    try:
+        orcids, repo = citation()
+    except ValueError as e:
+        sys.stderr.write(f"error: {e}\n")
+        return 1
     ver = version("r9lab-vocabulary")
-    author = yaml.safe_load(CITATION.read_text(encoding="utf-8"))["authors"][0]["orcid"]
     paths = [
-        *scheme.write(schemes, ver, out, matches),
-        scheme.write_sssom(schemes, ver, out, author),
+        *scheme.write(schemes, ver, out, matches, orcids=orcids, landing=repo, modified=modified),
+        Path(shutil.copy(SHAPES, out)),
+        scheme.write_sssom(schemes, ver, out, orcids[0]),  # the publisher, as in to_graph
         *scheme.write_labels(schemes, ver, out),
     ]
     sys.stdout.writelines(f"{path}\n" for path in paths)
@@ -292,8 +343,36 @@ def names(source: str | None, *, summary: bool) -> int:
     return 0
 
 
+def diff(ref: str) -> int:
+    """Print, as Markdown, the concepts added, deprecated, removed, remapped and relabelled since git `ref`.
+
+    Exits 1 when a concept id at `ref` is missing now: it must stay, deprecated, with `replaced_by`.
+    """
+    try:
+        archive = subprocess.run(  # noqa: S603
+            ["git", "archive", "--format=tar", "--", ref, str(VOCABULARY)],  # noqa: S607
+            capture_output=True,
+            check=True,
+        ).stdout
+    except subprocess.CalledProcessError as e:
+        sys.stderr.write(f"error: no {VOCABULARY}/ at {ref}: {e.stderr.decode().strip()}\n")
+        return 2
+    with tempfile.TemporaryDirectory() as tmp, tarfile.open(fileobj=io.BytesIO(archive)) as t:
+        t.extractall(tmp, filter="data")
+        try:
+            old = scheme.load(Path(tmp) / VOCABULARY)
+        except (yaml.YAMLError, ValueError, KeyError, TypeError) as e:
+            sys.stderr.write(f"error: cannot load {VOCABULARY}/ at {ref}: {e}\n")
+            return 2
+    lines, ok = scheme.diff(old, scheme.load(VOCABULARY))
+    sys.stdout.write(f"## Vocabulary changes since {ref}\n\n")
+    lines = lines or ["No concept added, deprecated, removed, remapped or relabelled."]
+    sys.stdout.writelines(f"{line}\n" for line in lines)
+    return 0 if ok else 1
+
+
 def main(argv: list[str] | None = None) -> int:
-    """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names [...]` or `wikidata`."""
+    """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names`, `wikidata` or `diff REF`."""
     args = sys.argv[1:] if argv is None else argv
     if args[:1] == ["rdf"]:
         p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
@@ -301,6 +380,10 @@ def main(argv: list[str] | None = None) -> int:
         return rdf(p.parse_args(args[1:]).out)
     if args[:1] == ["wikidata"]:
         return wikidata()
+    if args[:1] == ["diff"]:
+        p = argparse.ArgumentParser(prog="r9lab-vocabulary diff", description=diff.__doc__)
+        p.add_argument("ref", help="the git tag (or other ref) to compare against, such as v0.1.0")
+        return diff(p.parse_args(args[1:]).ref)
     if args[:1] == ["names"]:
         p = argparse.ArgumentParser(prog="r9lab-vocabulary names", description=names.__doc__)
         p.add_argument("--source", help="one name-list source, such as bafu-2026-v1 (default: all)")
@@ -312,7 +395,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def entry() -> NoReturn:
     """The `r9lab-vocabulary` command."""
-    if sys.argv[1:2] in (["rdf"], ["wikidata"], ["names"]):
+    if sys.argv[1:2] in (["rdf"], ["wikidata"], ["names"], ["diff"]):
         sys.exit(main())
     sourceledger.entry(parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
 
