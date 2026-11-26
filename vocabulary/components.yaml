@@ -79,7 +79,7 @@ concepts:
     definition: Electronic circuit formed on a small piece of semiconductor, sealed in a package with pins or pads, such as a processor or memory chip.
     source: https://www.wikidata.org/wiki/Q80831
     example: [a CPU, a DRAM chip, a flash memory chip, a microcontroller]
-    note: 'Not populated printed circuit board: a chip still soldered on stays part of the board, and a memory module is a board. Wikidata''s integrated circuit is the circuit itself; here the packaged chip is meant.'
+    note: 'Not populated printed circuit board: a chip still soldered on stays part of the board, and a memory module is a board. Wikidata''s item is the circuit itself; here it means the packaged chip.'
     broader: [c0007]
     mappings: {exact: ['wd:Q80831'], close: ['cpc:47160']}
     names:
@@ -89,7 +89,7 @@ concepts:
     definition: Passive two-terminal electronic component that stores energy in an electric field.
     source: https://www.wikidata.org/wiki/Q5322
     example: [an aluminium electrolytic capacitor, a ceramic chip capacitor, a film capacitor, a tantalum capacitor]
-    note: 'Includes supercapacitors. Not battery: a capacitor stores charge, not chemical energy. Not populated printed circuit board: a capacitor still soldered on stays part of the board.'
+    note: 'Not battery: a capacitor, supercapacitors included, stores charge, not chemical energy. Not populated printed circuit board: a capacitor still soldered on stays part of the board.'
     broader: [c0007]
     mappings: {exact: ['wd:Q5322'], close: ['cpc:47110']}
     names:
@@ -99,7 +99,7 @@ concepts:
     definition: Passive electronic component used for its electrical resistance.
     source: https://www.wikidata.org/wiki/Q5321
     example: [a carbon-film resistor, a surface-mount chip resistor, a potentiometer, a thermistor]
-    note: 'Includes variable resistors such as potentiometers and thermistors. Not populated printed circuit board: a resistor still soldered on stays part of the board.'
+    note: 'Not populated printed circuit board: a resistor still soldered on stays part of the board. Includes variable resistors such as potentiometers and thermistors.'
     broader: [c0007]
     mappings: {exact: ['wd:Q5321'], close: ['cpc:47120']}
     names:
@@ -118,7 +118,7 @@ concepts:
     label: inductor
     definition: Passive two-terminal component that stores energy in its magnetic field, usually a coil of wire, often round a ferrite core.
     source: https://www.wikidata.org/wiki/Q5325
-    example: [a toroidal choke, a surface-mount power inductor, a ferrite bead, a common-mode choke from a power supply]
+    example: [a toroidal choke, a surface-mount power inductor, a surface-mount ferrite bead, a common-mode choke from a power supply]
     note: 'Not transformer: an inductor works on one circuit, a transformer couples two or more. Wire unwound from an inductor goes by its metal.'
     broader: [c0007]
     mappings: {exact: ['wd:Q5325'], broad: ['cpc:46122']}
@@ -143,7 +143,7 @@ concepts:
     definition: Display panel or module that forms images with liquid crystals, lit by a backlight or by reflected light.
     source: https://www.wikidata.org/wiki/Q83341
     example: [a laptop LCD panel, a phone LCD module, a calculator's segment display, an LCD backlight unit]
-    note: 'Not LED or OLED display: an LCD with an LED backlight is still an LCD. Not a whole monitor or television, which is a product. Includes the backlight unit taken out with the panel.'
+    note: 'Not LED or OLED display: an LCD with an LED backlight is still an LCD. Not a whole monitor or television, which is a product. Includes the backlight unit, on its own or with the panel.'
     editorial_note: BAFU's "LCD flat screen, 17 inches" is a whole computer monitor (housing, circuit board and LCD module), so it is left out.
     broader: [c0014]
     mappings: {exact: ['wd:Q83341']}
