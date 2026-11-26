@@ -16,5 +16,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just update` fetches, builds and checks everything and prints how the match counts changed; `just test-full` runs the tests as CI does.
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
 - The weekly CI run checks every Wikidata link against the live API, so a merged or deleted item fails it.
+- Each product type links (`broadMatch`) to its WEEE Directive category, `weee6:1` to `weee6:6`, derived from its UNU-KEY. `just rdf` refuses any other `weee6` code.
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD

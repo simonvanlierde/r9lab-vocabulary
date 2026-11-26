@@ -31,7 +31,13 @@ PREFIXES = {
     # Code-only schemes minted here: the UNU-KEY names are CC BY-NC-SA, so only codes are kept.
     "unu1": f"{BASE}external/unu-key-v1/",
     "r9lab-cpv": f"{BASE}external/r9lab-cpv/",
+    # The six categories of Annex III to the WEEE Directive 2012/19/EU. They have no IRIs of
+    # their own, so each is a fragment on the directive's ELI, after its Annex III anchor.
+    "weee6": "http://data.europa.eu/eli/dir/2012/19/oj#anx_III-",
 }
+# Outside schemes whose whole code list is fixed by their source text, so it is pinned here
+# rather than in sources.toml.
+FIXED_CODES = {"weee6": {"1", "2", "3", "4", "5", "6"}}
 CODE_ONLY = {
     "unu1": "UNU-KEY v1 codes (codes only; names under CC BY-NC-SA 3.0 IGO are not copied)",
     "r9lab-cpv": "CPV codes as stored by R9lab (codes only, truncated as in the app)",
@@ -248,6 +254,8 @@ def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]
                 errors.append(f"{where}: {curie} does not exist")
         elif prefix not in PREFIXES:
             errors.append(f"{where}: unknown prefix in {curie}")
+        elif local not in FIXED_CODES.get(prefix, {local}):
+            errors.append(f"{where}: {curie} is not a {prefix} code")
         # SKOS integrity: exactMatch is disjoint with the hierarchical and associative matches.
         if curie in relation_of and relation_of[curie] != relation:
             errors.append(f"{where}: {curie} is both {relation_of[curie]} and {relation}")

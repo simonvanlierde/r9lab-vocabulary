@@ -15,6 +15,7 @@ the identifiers, except where a concept's own label is the common name of the th
 | CPC 2.1 subclass codes and IRIs | UN Statistics Division; IRIs as served by [vocab.sentier.dev](https://vocab.sentier.dev) | UN terms of use | `cpc:` mappings |
 | PMDco term IRIs | [materialdigital/core-ontology](https://github.com/materialdigital/core-ontology) v3.1.2 | CC BY 4.0 | `pmdco:` mappings |
 | Wikidata item ids | [Wikidata](https://www.wikidata.org) | CC0 1.0 | `wd:` mappings |
+| WEEE categories 1-6, as fragments on the directive's ELI; each product type's category is taken from its UNU-KEY by the UNU-KEY to EU-6 table | Directive 2012/19/EU, Annex III; Baldé et al., *The Global E-waste Monitor 2017*, Annexes, UNU, ITU and ISWA, 2017 | EU legal text, free reuse; codes only | `weee6:` mappings |
 | UNU-KEY v1 codes (codes only) | Forti et al., *E-waste Statistics: Guidelines on Classification, Reporting and Indicators*, 2nd ed., UNU, 2018 | CC BY-NC-SA 3.0 IGO; names not copied | `unu1:` mappings |
 | BAFU activity names, as regular expressions | Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 and BAFU:2026 v1 | Patterns only, no data | `names.bafu` fields |
 
