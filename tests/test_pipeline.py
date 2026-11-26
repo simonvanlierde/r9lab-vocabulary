@@ -7,12 +7,10 @@ import sqlite3
 import tarfile
 import zipfile
 from pathlib import Path
-from typing import TYPE_CHECKING
+
+import pytest
 
 from r9lab_vocabulary import pipeline
-
-if TYPE_CHECKING:
-    import pytest
 
 CPC = '"CPC21code","CPC21title"\r\n"4112","Crude steel"\r\n"4131","Silver, caf\xe9"\r\n'.encode("latin-1")
 PMDCO = b"""@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -76,8 +74,9 @@ def test_rdf_fails_on_a_name_pattern_that_matches_nothing(
     assert "'^copper, (primary|secondary|at regional storage)'" not in err
 
 
+# Namespaced, as the BAFU files are.
 ECOSPOLD1 = """<?xml version='1.0' encoding='UTF-8'?>
-<ecoSpold><dataset><metaInformation><processInformation>
+<ecoSpold xmlns="http://www.EcoInvent.org/EcoSpold01"><dataset><metaInformation><processInformation>
 <referenceFunction name="{name}" unit="kg"/><geography location="CH"/>
 </processInformation></metaInformation></dataset></ecoSpold>"""
 
@@ -114,6 +113,22 @@ def test_the_bafu_reader_takes_a_brightway_project_and_skips_biosphere_flows(tmp
         t.add(db, arcname="BAFU-2025-v2.abc/lci/databases.db")
     _, rows = pipeline.parse({"id": "bafu-2025-v2"}, buf.getvalue())
     assert rows == [{"code": "p1", "name": "Brass, at plant", "location": "RER"}]
+
+
+def test_the_bafu_reader_refuses_a_process_without_a_reference_function():
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("bafu-2026-v1/process_a1.xml", ECOSPOLD1.format(name="x").replace("referenceFunction", "other"))
+    with pytest.raises(ValueError, match=r"process_a1\.xml: no referenceFunction"):
+        pipeline.parse({"id": "bafu-2026-v1"}, buf.getvalue())
+
+
+def test_the_bafu_reader_refuses_a_brightway_archive_without_one_database():
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as t:
+        t.addfile(tarfile.TarInfo("BAFU-2025-v2.abc/README"), io.BytesIO())
+    with pytest.raises(ValueError, match="found 0"):
+        pipeline.parse({"id": "bafu-2025-v2"}, buf.getvalue())
 
 
 def test_rdf_reports_a_broken_pattern_instead_of_crashing(
