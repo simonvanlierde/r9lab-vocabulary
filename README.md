@@ -43,7 +43,7 @@ Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`
 `dct:modified` (the date of the commit built), `dct:language`, `dcat:landingPage` and
 `owl:versionIRI`. A version IRI is the base, the version, then the scheme's path:
 `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`
-([why](docs/decisions/0003-versioned-iris-and-scheme-dates.md)). Schemes are also typed
+([why](docs/decisions/0004-versioned-iris-and-scheme-dates.md)). Schemes are also typed
 `schema:DefinedTermSet` and concepts `schema:DefinedTerm`, for dataset search.
 
 ## Usage
