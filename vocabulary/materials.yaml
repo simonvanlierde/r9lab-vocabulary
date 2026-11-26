@@ -1,7 +1,8 @@
 # Material classes. Top level: Ashby's six material families (metals, polymers,
 # elastomers, glasses, ceramics, hybrids; Ashby, Materials Selection in Mechanical
-# Design, 5th ed., 2017). Levels 1-2 are the coarse classes; the leaves are the finer
-# arm (polymer families, alloys), used where a record names a grade.
+# Design, 5th ed., 2017, section 2.2, Fig. 2.1). Levels 1-2 are the coarse classes;
+# the leaves are the finer arm (polymer families, alloys), used where a record names a
+# grade.
 #
 # Mappings: cpc = CPC 2.1 subclass for the material in primary or semi-finished form
 # (close when the subclass is that material, broad when it covers more); pmdco = PMDco
@@ -36,14 +37,14 @@ concepts:
     broader: [m0002]
     mappings: {broad: ['pmdco:PMD_0020096', 'wd:Q11427'], close: ['cpc:41121']}
     names:
-      bafu: ['^steel, (converter|electric), (unalloyed|low-alloyed)', '^steel sheet', '^sheet rolling, steel']
+      bafu: ['^steel, (converter|electric), (unalloyed|low-alloyed)', '^steel sheet']
   m0004:
     label: stainless steel
     definition: Chromium-bearing steel that resists corrosion.
     broader: [m0002]
     mappings: {exact: ['pmdco:PMD_0010003', 'wd:Q172587'], broad: ['cpc:41122']}
     names:
-      bafu: ['^chromium steel 18/8', '^sheet rolling, chromium steel']
+      bafu: ['^chromium steel 18/8']
   m0005:
     label: cast iron
     definition: Iron-carbon alloy shaped by casting.
@@ -62,7 +63,7 @@ concepts:
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0020186', 'wd:Q447725'], close: ['cpc:41431']}
     names:
-      bafu: ['^aluminium, (primary|secondary|production mix)', '^sheet rolling, aluminium']
+      bafu: ['^aluminium, (primary|secondary|production mix)']
   m0008:
     label: magnesium alloy
     definition: Alloys based on magnesium, usually die-cast.
@@ -76,7 +77,7 @@ concepts:
     broader: [m0006]
     mappings: {exact: ['wd:Q753'], broad: ['cpc:41413']}
     names:
-      bafu: ['^copper, (primary|secondary|at regional storage)', '^copper sheet', '^wire drawing, copper']
+      bafu: ['^copper, (primary|secondary|at regional storage)', '^copper sheet']
   m0010:
     label: copper alloy
     definition: Alloys based on copper, such as brass and bronze.
@@ -166,7 +167,7 @@ concepts:
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050016', 'wd:Q146243'], broad: ['cpc:34720']}
     names:
-      bafu: ['^polystyrene']
+      bafu: ['^polystyrene(?! scrap)']
   m0025:
     label: acrylonitrile butadiene styrene
     note: ABS.
@@ -331,11 +332,11 @@ concepts:
     mappings: {exact: ['wd:Q2451477']}
   m0055:
     label: wood
-    note: Includes fibreboard and particle board.
+    note: Includes fibreboard and particle board, but not cement-bonded particle board, a wood-cement hybrid.
     broader: [m0054]
     mappings: {exact: ['wd:Q287'], broad: ['cpc:31']}
     names:
-      bafu: ['^(fibreboard|particle board)']
+      bafu: ['^(fibreboard|particle board)(?!, cement bonded)']
   m0056:
     label: paper and board
     broader: [m0054]

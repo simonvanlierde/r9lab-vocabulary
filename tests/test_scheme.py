@@ -95,9 +95,15 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"t01": {"label": "a", "broader": ["t09"]}}, "broader t09 does not exist"),
         ({"t01": {"label": "a"}, "t02": {"label": "A"}}, "label 'A' is also t01's"),
         ({"x01": {"label": "a"}}, "id must be t"),
+        ({"t1": {"label": "a"}}, "id must be t"),
+        ({"t00001": {"label": "a"}}, "id must be t"),
+        ({"t01": {"label": "a", "broader": ["t01"]}}, "loops back"),
         ({"t01": {"label": "a", "mappings": {"exact": ["wd:Q1"], "broad": ["wd:Q1"]}}}, "both exact and broad"),
         ({"t01": {"label": "a", "mappings": {"exact": ["zz:1"]}}}, "unknown prefix"),
         ({"t01": {"label": "a", "mappings": {"same": ["wd:Q1"]}}}, "unknown mapping relation"),
+        ({"t01": {"label": "a", "mappings": {"broad": ["weee6:7"]}}}, "weee6:7 is not a weee6 code"),
+        ({"t01": {"label": "a", "mappings": {"broad": ["unu1:0310"]}}}, "unu1:0310 is not a unu1 code"),
+        ({"t01": {"label": "a", "mappings": {"broad": ["unu2:0406"]}}}, "unu2:0406 is not a unu2 code"),
         ({"t01": {"label": "a", "replaced_by": ["t02"]}, "t02": {"label": "b"}}, "needs deprecated"),
         (
             {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "broader": ["t01"]}},
@@ -126,6 +132,14 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
         ({"scheme": {"slug": "0-1"}}, "slug must start with a lower-case letter"),
         ({"scheme": {"created": "2026-11-17"}}, "created must be a date"),
         ({"scheme": {"created": datetime(2026, 11, 17, tzinfo=UTC)}}, "created must be a date"),
+        ({"t01": {}}, "t/t01: no label"),
+        ({"t01": {"label": "a", "related": ["t09"]}}, "related t09 does not exist"),
+        ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t09"]}}, "replaced_by t09 does not exist"),
+        ({"t01": {"label": "a", "mappings": {"close": ["t:t09"]}}}, "t:t09 does not exist"),
+        (
+            {"t01": {"label": "a", "notation": "x"}, "t02": {"label": "b", "notation": "x"}},
+            "notation 'x' is also t01's",
+        ),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
@@ -133,6 +147,14 @@ def test_validate_catches(concepts: dict, message: str):
     meta = concepts.get("scheme")
     errors = scheme.validate(one({k: v for k, v in concepts.items() if k != "scheme"}, meta), VERSIONS)
     assert any(message in e for e in errors), errors
+
+
+def test_a_weee_category_link_points_into_annex_iii_of_the_directive():
+    schemes = one({"t01": {"label": "a", "mappings": {"broad": ["weee6:6"]}}})
+    assert scheme.validate(schemes, VERSIONS) == []
+    g = scheme.to_graph(schemes, "test")
+    target = URIRef("http://data.europa.eu/eli/dir/2012/19/oj#anx_III-6")
+    assert (URIRef(schemes["t"].iri + "t01"), SKOS.broadMatch, target) in g
 
 
 def test_a_deprecated_concept_is_marked_and_not_a_top_concept():
@@ -186,7 +208,7 @@ def test_each_scheme_says_who_made_it_when_and_which_version(schemes: Schemes):
     g = scheme.to_graph(schemes, "1.2.3", citation=CITATION, modified=date(2026, 11, 26))
     orcid = URIRef("https://orcid.org/0000-0002-1825-0097")
     nodes = set(g.subjects(RDF.type, SKOS.ConceptScheme))
-    assert len(nodes) == 6  # four written here, two code-only
+    assert len(nodes) == 7  # four written here, three code-only
     for s in nodes:
         assert g.value(s, DCTERMS.creator) == orcid, s
         assert g.value(s, DCTERMS.publisher) == orcid, s
@@ -220,3 +242,29 @@ def test_the_first_author_alone_publishes():
     s = URIRef(scheme.BASE + "t/")
     assert set(g.objects(s, DCTERMS.publisher)) == {URIRef("https://orcid.org/0000-0002-1825-0097")}
     assert len(set(g.objects(s, DCTERMS.creator))) == 2
+
+
+@pytest.mark.parametrize("slug", ["t", "wd"])
+def test_a_scheme_slug_taken_by_another_scheme_or_prefix_is_an_error(tmp_path: Path, slug: str):
+    (tmp_path / "a.yaml").write_text("scheme: {slug: t, title: a}\n")
+    (tmp_path / "b.yaml").write_text(f"scheme: {{slug: {slug}, title: b}}\n")
+    with pytest.raises(ValueError, match=rf"b\.yaml: scheme slug '{slug}' is already taken"):
+        scheme.load(tmp_path)
+
+
+@pytest.mark.parametrize(
+    "concepts",
+    [
+        {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "deprecated": True, "broader": ["t01"]}},
+        {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "a"}},
+        {"t01": {"label": "a", "notation": ""}, "t02": {"label": "b", "notation": ""}},
+    ],
+    ids=["deprecated-under-deprecated", "deprecated-label-reused", "empty-notations"],
+)
+def test_validate_accepts(concepts: dict):
+    assert scheme.validate(one(concepts), VERSIONS) == []
+
+
+def test_an_id_in_a_scheme_without_a_letter_needs_any_letter():
+    errors = scheme.validate(one({"01": {"label": "a"}}, {"id_letter": None}), VERSIONS)
+    assert any("id must be a letter plus 2-4 digits" in e for e in errors), errors
