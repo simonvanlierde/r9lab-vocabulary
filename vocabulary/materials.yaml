@@ -258,7 +258,7 @@ concepts:
       bafu: ['^polyurethane, (flexible|rigid) foam']
   m0038:
     label: elastomer
-    definition: Polymer that is rubbery at room temperature and recovers its shape after large strain.
+    definition: Rubbery material of long-chain molecules that recovers its shape after large strain.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [natural rubber, silicone rubber, EPDM, a thermoplastic elastomer]
     note: 'Not polymer: a hard plastic that does not spring back is a polymer. Wikidata calls elastomers plastics; Ashby keeps them a separate family, and so does this scheme.'
@@ -347,19 +347,19 @@ concepts:
     mappings: {exact: ['wd:Q2451477']}
   m0055:
     label: wood
+    note: 'Not paper and board, though both are wood fibre: a felted sheet such as cardboard is paper and board, while fibreboard and particle board are wood. Cement-bonded particle board is a wood-cement hybrid, not wood.'
     definition: Fibrous material from trees, solid or as engineered board.
     source: https://www.wikidata.org/wiki/Q287
     example: [solid wood, plywood, MDF, particle board]
-    note: 'Not paper and board, though both are wood fibre: fibreboard and particle board are wood. Cement-bonded particle board is a wood-cement hybrid, not wood.'
     broader: [m0054]
     mappings: {exact: ['wd:Q287'], broad: ['cpc:31']}
     names:
       bafu: ['^(fibreboard|particle board)(?!, cement bonded)']
   m0056:
     label: paper and board
+    example: [corrugated cardboard, paperboard packaging, a paper label, a paper insulation sheet from a transformer]
     definition: Sheet material of pressed plant fibres, from thin paper to corrugated cardboard.
     source: https://www.wikidata.org/wiki/Q11472
-    example: [corrugated cardboard, paperboard packaging, a paper label, a pressboard insulator sheet]
     note: 'Not wood: fibreboard and particle board are wood. Paper laminated with plastic or foil goes by its main material.'
     broader: [m0054]
     mappings: {close: ['wd:Q11472', 'cpc:321']}
