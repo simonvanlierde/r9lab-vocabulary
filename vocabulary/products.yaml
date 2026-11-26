@@ -148,7 +148,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q17517
     example: [a smartphone, a feature phone, a flip phone, a rugged phone]
     note: Not desk phone, which connects by wire. Not tablet, even one with a SIM slot.
-    editorial_note: All mobile phones in the corpus so far are smartphones. UNU-KEY puts mobile phones in 0306 and fixed telephones in 0305.
+    editorial_note: UNU-KEY puts mobile phones in 0306 and fixed telephones in 0305.
     broader: [p0002]
     mappings: {exact: ['wd:Q17517'], close: ['r9lab-cpv:3225'], broad: ['cpc:47222', 'unu1:0306', 'unu2:0306', 'weee6:6'], narrow: ['wd:Q22645']}
   p0016:

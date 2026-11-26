@@ -88,7 +88,7 @@ r9lab-tag:rubber	rubber	skos:closeMatch	materials:m0038	elastomer			semapv:Agent
 r9lab-tag:glass	glass	skos:exactMatch	materials:m0043	glass			semapv:AgentBasedMatching
 r9lab-tag:ferrite	ferrite	skos:exactMatch	materials:m0048	ferrite			semapv:AgentBasedMatching
 r9lab-tag:paper-resin%20composite	paper-resin composite	skos:broadMatch	materials:m0050	composite			semapv:AgentBasedMatching
-r9lab-tag:gf%2Bpa%20mix	gf+pa mix	skos:broadMatch	materials:m0051	glass-fibre reinforced polymer			semapv:AgentBasedMatching
+r9lab-tag:gf%2Bpa%20mix	gf+pa mix	skos:broadMatch	materials:m0031	polyamide			semapv:AgentBasedMatching
 r9lab-tag:foam	foam	skos:exactMatch	materials:m0053	foam			semapv:AgentBasedMatching
 r9lab-tag:mdf	mdf	skos:broadMatch	materials:m0055	wood			semapv:AgentBasedMatching
 r9lab-tag:paper	paper	skos:broadMatch	materials:m0056	paper and board			semapv:AgentBasedMatching
