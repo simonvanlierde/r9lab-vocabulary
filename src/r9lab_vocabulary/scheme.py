@@ -86,6 +86,12 @@ class Scheme:
     meta: dict[str, Any]
     concepts: dict[str, dict[str, Any]]
 
+    def __post_init__(self) -> None:
+        # A concept with nothing after its id in YAML loads as None; validate reports it as "no label".
+        for cid, c in self.concepts.items():
+            if c is None:
+                self.concepts[cid] = {}
+
     @property
     def iri(self) -> str:
         """The scheme's IRI; each concept's IRI is this plus its id."""
@@ -150,7 +156,7 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[
     errors += _duplicates(
         scheme, "label", lambda c: None if c.get("deprecated") else str(c.get("label", "")).casefold()
     )
-    errors += _duplicates(scheme, "notation", lambda c: c.get("notation"))
+    errors += _duplicates(scheme, "notation", lambda c: None if c.get("notation") is None else str(c["notation"]))
     errors += _cycles(scheme)
     return errors
 
@@ -178,9 +184,14 @@ def _validate_links(where: str, c: dict[str, Any], scheme: Scheme) -> list[str]:
                 errors.append(f"{where}: {field} {ref} is deprecated")
     if not c.get("deprecated") and c.get("replaced_by"):
         errors.append(f"{where}: replaced_by needs deprecated: true")
-    errors.extend(
-        f"{where}: replaced_by {ref} does not exist" for ref in c.get("replaced_by") or [] if ref not in scheme.concepts
-    )
+    for ref in c.get("replaced_by") or []:
+        target = scheme.concepts.get(ref)
+        if target is None:
+            errors.append(f"{where}: replaced_by {ref} does not exist")
+        elif target is c:
+            errors.append(f"{where}: replaced_by {ref} is itself")
+        elif target.get("deprecated"):
+            errors.append(f"{where}: replaced_by {ref} is deprecated")
     return errors
 
 

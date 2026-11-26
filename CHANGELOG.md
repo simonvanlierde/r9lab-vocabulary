@@ -27,4 +27,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - GPS navigation device is UNU-KEY 0402 (WEEE category 5), not 0305 (category 6), and radio is 0402 (v2: 0403), not 0201, as the guidelines' key descriptions and HS tables place them.
 - Steel, stainless steel, aluminium and copper no longer match the BAFU sheet-rolling and wire-drawing services.
 
+### Fixed
+
+- `just check` now rejects a notation written as `1` and as `"1"`, a `replaced_by` that points at the concept itself or at a deprecated concept, and a concept with an empty body (reported as "no label" instead of crashing).
+
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD
