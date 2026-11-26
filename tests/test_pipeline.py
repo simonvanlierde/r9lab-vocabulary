@@ -92,6 +92,8 @@ def test_rdf_without_an_orcid_in_citation_cff_is_an_error(
     (tmp_path / "vocabulary").mkdir()
     yaml_text = "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a}\n"
     (tmp_path / "vocabulary" / "t.yaml").write_text(yaml_text)
+    (tmp_path / "mappings").mkdir()
+    (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text("\t".join(scheme.TAG_COLUMNS) + "\n")
     if citation is not None:
         (tmp_path / "CITATION.cff").write_text(citation)
     monkeypatch.chdir(tmp_path)
@@ -199,6 +201,9 @@ def test_rdf_reports_a_broken_pattern_instead_of_crashing(
     (voc / "t.yaml").write_text(
         "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, names: {bafu: ['(']}}\n"
     )
+    (tmp_path / "mappings").mkdir()
+    header = "\t".join(scheme.TAG_COLUMNS)
+    (tmp_path / "mappings" / "r9lab-tags.sssom.tsv").write_text(f"{header}\n")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": set(), "pmdco": set()})
     monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {"2026-v1": ["Brass, at plant"]}})

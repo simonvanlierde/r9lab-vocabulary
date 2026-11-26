@@ -30,6 +30,6 @@ SPDX-License-Identifier = "CC0-1.0"
 
 # The vocabulary is a label set: CC0, so labels and links can flow to Wikidata and PyST.
 [[annotations]]
-path = "vocabulary/**"
+path = ["vocabulary/**", "mappings/**"]
 SPDX-FileCopyrightText = "2026 Simon van Lierde"
 SPDX-License-Identifier = "CC0-1.0"

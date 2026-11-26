@@ -35,6 +35,17 @@ today BAFU:2025 v2 and BAFU:2026 v1, and written out as `dist/name-matches.csv` 
 count per version. A pattern is a Python regular expression matched case-insensitively anywhere
 in the name (`re.search`).
 
+[`mappings/r9lab-tags.sssom.tsv`](mappings/r9lab-tags.sssom.tsv) maps each R9lab
+`Material:` or `Keyword:` tag, in lower case and typos included, to a concept, as
+[SSSOM](https://mapping-commons.github.io/sssom/): `skos:exactMatch`, `closeMatch`, or
+`broadMatch` when the tag is narrower than the concept. A tag with no concept maps to
+`sssom:NoTermFound`. Each tag's `subject_id` is `r9lab-tag:` plus the URL-encoded tag
+(`r9lab-tag:pc%2Babs`), so SSSOM tools that need an id can load the file. Joined on `concept`
+with `dist/name-matches.csv`, it gives each tag its BAFU activity names.
+
+An agent proposed every row (`semapv:AgentBasedMatching`). A person who checks a row puts their
+ORCID CURIE in its `reviewer_id`; a row with no reviewer is a proposal, not a curated mapping.
+
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
 only; none of their names is copied.
@@ -85,6 +96,23 @@ SKOS rules (`shapes/skohub-skos.shacl.ttl`), on the graph `vocabulary/` builds.
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id
 missing from the pinned files, a WEEE category other than 1 to 6, or a name pattern that matches no live name in a version.
+
+### Write a concept's text
+
+Each concept in `vocabulary/*.yaml` carries:
+
+- `definition`: one sentence (`skos:definition`), with `source` naming where it comes from,
+  as a URL or a citation such as `Ashby 2017, sec. 2.2` (`dcterms:source`).
+- `example`: one string or a list (`skos:example`), things a record would name.
+- `note`: what the concept leaves out and the nearest concept it is told apart from
+  (`skos:scopeNote`).
+- `editorial_note`: remarks for maintainers, such as a missing BAFU dataset
+  (`skos:editorialNote`).
+
+The vocabulary is CC0, so a definition is written in our own words: Ashby and IEC 60050
+are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they are.
+Concepts still without the three texts are listed in `tests/pending-text.txt`, and the tests
+fail on any other concept that lacks one.
 
 ### Suggested mappings
 

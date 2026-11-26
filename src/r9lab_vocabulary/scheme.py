@@ -17,6 +17,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
+from urllib.parse import quote
 
 import yaml
 from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
@@ -77,6 +78,19 @@ RELATIONS = {
     "narrow": SKOS.narrowMatch,
     "related": SKOS.relatedMatch,
 }
+# A concept's text fields; README "Write a concept's text" says what each holds.
+TEXT_FIELDS = {
+    "definition": SKOS.definition,
+    "example": SKOS.example,
+    "note": SKOS.scopeNote,
+    "editorial_note": SKOS.editorialNote,
+}
+MANY_TEXTS = {"example"}
+# Where the definition comes from: a URL, written as an IRI, or a citation.
+SOURCE = "source"
+# Every field a concept may carry; validate rejects any other, so a misspelt one is not lost.
+FIELDS = {"label", "notation", *TEXT_FIELDS, SOURCE, "broader", "related", "mappings", "names"}
+FIELDS |= {"deprecated", "replaced_by"}
 ID = re.compile(r"^[a-z][0-9]{2,4}$")
 # A version path segment (`0.1.0`) starts with a digit, so it never collides with a scheme slug.
 SLUG = re.compile(r"^[a-z]")
@@ -168,6 +182,8 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[
             errors.append(f"{where}: id must be {letter or 'a letter'} plus 2-4 digits")
         if not c.get("label"):
             errors.append(f"{where}: no label")
+        errors += [f"{where}: unknown field {k!r}" for k in sorted(set(c) - FIELDS)]
+        errors += _validate_text(where, c)
         errors += _validate_links(where, c, scheme)
         errors += _validate_mappings(where, c, schemes)
         errors += _validate_names(where, c, versions)
@@ -176,6 +192,25 @@ def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[
     )
     errors += _duplicates(scheme, "notation", lambda c: None if c.get("notation") is None else str(c["notation"]))
     errors += _cycles(scheme)
+    return errors
+
+
+def _texts(c: dict[str, Any], field: str) -> list[Any]:
+    """A text field's values: `example` may be one string or a list, every other field is one string."""
+    value = c.get(field)
+    if value is None:
+        return []
+    return value if field in MANY_TEXTS and isinstance(value, list) else [value]
+
+
+def _validate_text(where: str, c: dict[str, Any]) -> list[str]:
+    errors = [
+        f"{where}: {field} must be non-empty text"
+        for field in (*TEXT_FIELDS, SOURCE)
+        if field in c and not ((values := _texts(c, field)) and all(isinstance(t, str) and t.strip() for t in values))
+    ]
+    if SOURCE in c and not c.get("definition"):
+        errors.append(f"{where}: {SOURCE} needs a definition to cite")
     return errors
 
 
@@ -383,6 +418,52 @@ def check_codes(schemes: dict[str, Scheme], known: dict[str, set[str]]) -> list[
     ]
 
 
+NO_TERM = "sssom:NoTermFound"
+TAG_PREFIX = "r9lab-tag"
+TAG_COLUMNS = ("subject_id", "subject_label", "predicate_id", "object_id", "object_label", "mapping_justification")
+
+
+def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
+    """Rows of the SSSOM file that maps R9lab tags to concepts that break a rule.
+
+    A tag (`subject_label`) is lower case, as tags are matched, and appears once; its
+    `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is a SKOS match
+    property (`skos:exactMatch`, as `write_sssom` writes it), its justification a semapv
+    term, and its object a live concept here, under its current label, or
+    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`.
+    """
+    lines = path.read_text(encoding="utf-8").splitlines()
+    meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
+    prefixes = set(meta.get("curie_map") or {})
+    reader = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
+    if missing := [c for c in TAG_COLUMNS if c not in (reader.fieldnames or [])]:
+        return [f"{path.name}: no {', '.join(missing)} column"]
+    predicates = {f"skos:{p.fragment}" for p in RELATIONS.values()}
+    errors, seen = [], set()
+    for row in reader:
+        label, obj = row["subject_label"], row["object_id"]
+        where = f"{path.name}: {label!r}"
+        if label != label.strip().lower() or label in seen:
+            errors.append(f"{where} is not lower case or appears twice")
+        seen.add(label)
+        if row["subject_id"] != f"{TAG_PREFIX}:{quote(label, safe='')}":
+            errors.append(f"{where}: subject_id {row['subject_id']} is not {TAG_PREFIX}: plus the encoded tag")
+        if row["predicate_id"] not in predicates:
+            errors.append(f"{where}: unknown predicate {row['predicate_id']}")
+        if not row["mapping_justification"].startswith("semapv:"):
+            errors.append(f"{where}: justification {row['mapping_justification']!r} is not a semapv term")
+        curies = [row[c] for c in ("subject_id", "predicate_id", "object_id", "mapping_justification")]
+        curies += [r for r in [row.get("reviewer_id")] if r]
+        errors += [f"{where}: prefix of {c} is not in the curie_map" for c in curies if c.split(":")[0] not in prefixes]
+        slug, _, cid = obj.partition(":")
+        concept = schemes[slug].concepts.get(cid) if slug in schemes else None
+        if obj != NO_TERM and (concept is None or concept.get("deprecated")):
+            errors.append(f"{where}: {obj} is not a live concept")
+        elif row["object_label"] != (concept["label"] if concept else ""):
+            errors.append(f"{where}: object_label {row['object_label']!r} is not {obj}'s label")
+    return errors
+
+
 def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:
     """The IRI a CURIE stands for."""
     base = schemes[prefix].iri if prefix in schemes else PREFIXES[prefix]
@@ -488,9 +569,11 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
     g.add((node, SKOS.inScheme, s))
     g.add((node, BIBO.status, ACCEPTED))
     g.add((node, SKOS.prefLabel, Literal(c["label"], lang=LANG)))
-    for field, prop in (("definition", SKOS.definition), ("note", SKOS.scopeNote)):
-        if text := c.get(field):
+    for field, prop in TEXT_FIELDS.items():
+        for text in _texts(c, field):
             g.add((node, prop, Literal(text.strip(), lang=LANG)))
+    if source := c.get(SOURCE, "").strip():
+        g.add((node, DCTERMS.source, URIRef(source) if source.startswith(("http://", "https://")) else Literal(source)))
     if (notation := c.get("notation")) is not None:
         g.add((node, SKOS.notation, Literal(str(notation))))
     broader = c.get("broader") or []
