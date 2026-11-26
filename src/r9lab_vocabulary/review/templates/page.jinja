@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tag mapping review</title>
+<link rel="stylesheet" href="/static/review.css">
+<script src="/static/htmx.min.js"></script>
+<script src="/static/hx-sse.min.js"></script>
+<script src="/static/review.js" defer></script>
+</head>
+<body>
+<header>
+  <div hx-sse:connect="/progress" hx-swap="innerHTML">{% include "progress.jinja" %}</div>
+  <small>Reviewing as {{ s.reviewer }}. Keys: <kbd>a</kbd> agree, <kbd>u</kbd> unsure, <kbd>d</kbd> disagree.</small>
+</header>
+<main>{% include "card.jinja" %}</main>
+</body>
+</html>

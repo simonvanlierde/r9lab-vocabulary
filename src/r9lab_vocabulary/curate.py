@@ -12,6 +12,7 @@ from __future__ import annotations
 import csv
 import datetime as dt
 import io
+import os
 import re
 import sys
 from pathlib import Path
@@ -194,6 +195,14 @@ def write_published(root: Path = Path()) -> int:
         return fail(errors)
     (root / PUBLISHED).write_text(build(meta, predictions, reviews), encoding="utf-8")
     return 0
+
+
+def append_review(root: Path, row: dict[str, str]) -> None:
+    """Add one verdict to the end of the review log and flush it to disk, so a crash loses no verdict."""
+    with (root / REVIEWS).open("a", encoding="utf-8", newline="") as f:
+        csv.writer(f, delimiter="\t", lineterminator="\n").writerow([row.get(c, "") for c in REVIEW_COLUMNS])
+        f.flush()
+        os.fsync(f.fileno())
 
 
 def report(root: Path = Path()) -> int:

@@ -20,6 +20,15 @@ diff ref:
 curate:
     uv run python -m r9lab_vocabulary.curate build
 
+# Serve the tag-mapping review page on http://127.0.0.1:<port> for the rater in R9LAB_REVIEWER (an ORCID CURIE). Ctrl-C stops it and rebuilds the published file.
+review port="8740":
+    #!/usr/bin/env bash
+    set -u
+    trap true INT  # let Ctrl-C stop the page, then still rebuild
+    uv run --extra review python -m r9lab_vocabulary.review --port {{ port }}
+    status=$?
+    uv run python -m r9lab_vocabulary.curate build && exit "$status"
+
 # Fetch, build and check everything, write dist/, and print how the match counts changed since the last run.
 update:
     #!/usr/bin/env bash
