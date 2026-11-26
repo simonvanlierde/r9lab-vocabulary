@@ -24,7 +24,7 @@ from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, Name
 from yaml.constructor import ConstructorError
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Sequence
+    from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
     from pathlib import Path
 
 # NOTE: w3id.org/r9lab is not registered yet; the redirect is a PR to perma-id/w3id.org.
@@ -172,11 +172,12 @@ def mappings(concept: dict[str, Any]) -> Iterable[tuple[str, str, str]]:
             yield relation, prefix, local
 
 
-def validate(schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
+def validate(schemes: dict[str, Scheme], versions: Mapping[str, Collection[str]]) -> list[str]:
     """Every rule the vocabulary breaks, as `scheme/id: message`; empty when it is sound.
 
-    `versions` maps each name-list family (`bafu`) to its pinned versions (`2026-v1`): a
-    `names` entry for another family, or scoped to another version, is an error.
+    `versions` maps each name-list family (`bafu`) to its pinned versions (`2026-v1`), such as
+    the version -> names lists `name_matches` takes: a `names` entry for another family, or
+    scoped to another version, is an error.
     """
     errors: list[str] = []
     for scheme in schemes.values():
@@ -184,7 +185,7 @@ def validate(schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[
     return errors
 
 
-def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: dict[str, set[str]]) -> list[str]:
+def _validate_scheme(scheme: Scheme, schemes: dict[str, Scheme], versions: Mapping[str, Collection[str]]) -> list[str]:
     errors = []
     if not SLUG.match(scheme.slug):
         errors.append(f"{scheme.slug}: slug must start with a lower-case letter")
@@ -293,7 +294,7 @@ def _bad_name_entry(entry: object) -> bool:
     return not isinstance(entry, str) or not entry.strip()
 
 
-def _validate_names(where: str, c: dict[str, Any], versions: dict[str, set[str]]) -> list[str]:
+def _validate_names(where: str, c: dict[str, Any], versions: Mapping[str, Collection[str]]) -> list[str]:
     families = c.get("names") or {}
     if not isinstance(families, dict) or not all(isinstance(v, list) for v in families.values()):
         return [f"{where}: names must map each family to a list of patterns"]
@@ -366,20 +367,21 @@ def _validate_mappings(where: str, c: dict[str, Any], schemes: dict[str, Scheme]
     return errors
 
 
+def _above(s: Scheme, cid: str) -> Iterator[str]:
+    """Each concept up the `broader` links from `cid`, once, and `cid` if a chain loops back. Skips unknown ids."""
+    seen, todo = set(), list(s.concepts[cid].get("broader") or [])
+    while todo:
+        node = todo.pop()
+        if node in seen or node not in s.concepts:
+            continue
+        seen.add(node)
+        yield node
+        todo += s.concepts[node].get("broader") or []
+
+
 def _cycles(scheme: Scheme) -> list[str]:
-    errors = []
-    for start in scheme.concepts:
-        stack, seen = list(scheme.concepts[start].get("broader") or []), set()
-        while stack:
-            node = stack.pop()
-            if node == start:
-                errors.append(f"{scheme.slug}/{start}: broader chain loops back to itself")
-                break
-            if node in seen or node not in scheme.concepts:
-                continue
-            seen.add(node)
-            stack += scheme.concepts[node].get("broader") or []
-    return errors
+    loops = [cid for cid in scheme.concepts if cid in _above(scheme, cid)]
+    return [f"{scheme.slug}/{cid}: broader chain loops back to itself" for cid in loops]
 
 
 def diff(old: dict[str, Scheme], new: dict[str, Scheme]) -> tuple[list[str], bool]:
@@ -439,6 +441,13 @@ TAG_PREFIX = "r9lab-tag"
 TAG_COLUMNS = ("subject_id", "subject_label", "predicate_id", "object_id", "object_label", "mapping_justification")
 
 
+def read_sssom(path: Path) -> tuple[dict[str, Any], csv.DictReader[str]]:
+    """An SSSOM TSV file's `#` metadata block and its rows; a short row's missing fields are empty."""
+    lines = path.read_text(encoding="utf-8").splitlines()
+    meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
+    return meta, csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t", restval="")
+
+
 def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     """Rows of the SSSOM file that maps R9lab tags to concepts that break a rule.
 
@@ -449,12 +458,10 @@ def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`. A missing file is one error.
     """
     try:
-        lines = path.read_text(encoding="utf-8").splitlines()
+        meta, reader = read_sssom(path)
     except FileNotFoundError:
         return [f"{path}: missing"]
-    meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
     prefixes = set(meta.get("curie_map") or {})
-    reader = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t", restval="")
     if missing := [c for c in TAG_COLUMNS if c not in (reader.fieldnames or [])]:
         return [f"{path.name}: no {', '.join(missing)} column"]
     predicates = {f"skos:{p.fragment}" for p in RELATIONS.values()}
@@ -703,17 +710,6 @@ def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[s
     return inherited, own
 
 
-def _ancestors(s: Scheme, cid: str) -> set[str]:
-    """`cid` and every concept above it, through all its `broader` parents."""
-    seen, todo = set(), [cid]
-    while todo:
-        node = todo.pop()
-        if node not in seen:
-            seen.add(node)
-            todo.extend(s.concepts[node].get("broader") or [])
-    return seen
-
-
 def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
     """Per scheme, each non-deprecated concept by id: IRI, label, label path from its root, definition, pilot keys.
 
@@ -731,7 +727,8 @@ def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
                 chain.insert(0, node["broader"][0])
                 node = s.concepts[chain[0]]
             definition = s.concepts[cid].get("definition")
-            pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in _ancestors(s, cid)))
+            above = {cid, *_above(s, cid)}
+            pilot = own.get((slug, cid), set()).union(*(inherited.get((slug, a), set()) for a in above))
             concepts.append(
                 {
                     "id": cid,

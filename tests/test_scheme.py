@@ -1,12 +1,10 @@
 """The vocabulary's own rules, on the real files and on small broken copies."""
 
-import csv
 import json
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
-import yaml
 from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Literal, URIRef
 from yaml.constructor import ConstructorError
 
@@ -333,10 +331,8 @@ ORCID = "https://orcid.org/0009-0006-6953-909X"
 
 
 def read_sssom(path: Path) -> tuple[dict, list[dict[str, str]]]:
-    lines = path.read_text(encoding="utf-8").splitlines()
-    header = [line[1:] for line in lines if line.startswith("#")]
-    rows = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
-    return yaml.safe_load("\n".join(header)), list(rows)
+    meta, rows = scheme.read_sssom(path)
+    return meta, list(rows)
 
 
 def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tmp_path: Path):
