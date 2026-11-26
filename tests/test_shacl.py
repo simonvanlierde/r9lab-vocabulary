@@ -30,7 +30,7 @@ def _violations(data: Graph, shapes: Graph) -> set[str]:
 def test_the_build_conforms(root: Path, shapes: Graph):
     orcids, landing = pipeline.citation(root / "CITATION.cff")
     schemes = scheme.load(root / "vocabulary")
-    g = scheme.to_graph(schemes, "1.0.0", orcids=orcids, landing=landing, modified=date(2026, 2, 1))
+    g = scheme.to_graph(schemes, scheme.About("1.0.0", orcids, landing, date(2026, 2, 1)))
     assert _violations(g, shapes) == set()
 
 

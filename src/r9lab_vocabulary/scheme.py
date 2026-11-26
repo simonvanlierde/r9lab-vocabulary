@@ -24,7 +24,7 @@ from rdflib import DCAT, DCTERMS, OWL, RDF, SDO, SKOS, XSD, Graph, Literal, Name
 from yaml.constructor import ConstructorError
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Callable, Iterable, Sequence
     from pathlib import Path
 
 # NOTE: w3id.org/r9lab is not registered yet; the redirect is a PR to perma-id/w3id.org.
@@ -491,12 +491,16 @@ def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:
 
 @dataclass(frozen=True)
 class About:
-    """What every scheme says about its release: version, the authors' ORCID iDs, landing page, and build date."""
+    """What every scheme says about its release: version, the authors' ORCID iDs, landing page, and build date.
+
+    `orcids` and `landing` are what `pipeline.citation` reads from CITATION.cff, the first iD the
+    publisher; `modified` is `dct:modified`. Without them those triples are left out.
+    """
 
     version: str
-    orcids: list[str]
-    landing: str | None
-    modified: date | None
+    orcids: Sequence[str] = ()
+    landing: str | None = None
+    modified: date | None = None
 
     def describe(self, g: Graph, node: URIRef, title: str, created: date | None) -> None:
         """Type `node` as a schema.org term set and add its title, version, dates, creators and landing page."""
@@ -517,26 +521,14 @@ class About:
             g.add((node, DCAT.landingPage, URIRef(self.landing)))
 
 
-def to_graph(
-    schemes: dict[str, Scheme],
-    version: str,
-    *,
-    orcids: list[str] | None = None,
-    landing: str | None = None,
-    modified: date | None = None,
-) -> Graph:
-    """The whole vocabulary as one SKOS graph, its schemes the parts of one `dcat:Dataset`.
-
-    `orcids` and `landing` are what `pipeline.citation` reads from CITATION.cff, the first iD the
-    publisher; `modified` is `dct:modified`. Without them those triples are left out.
-    """
+def to_graph(schemes: dict[str, Scheme], about: About) -> Graph:
+    """The whole vocabulary as one SKOS graph, its schemes the parts of one `dcat:Dataset`, all described by `about`."""
     g = Graph()
     namespaces = (("skos", SKOS), ("dcterms", DCTERMS), ("dcat", DCAT), ("schema", SDO), ("owl", OWL), ("bibo", BIBO))
     for prefix, ns in namespaces:
         g.bind(prefix, ns)
     for slug, scheme in schemes.items():
         g.bind(f"r9-{slug}", Namespace(scheme.iri))
-    about = About(version, orcids or [], landing, modified)
     # The code-only schemes and the whole are as old as the oldest scheme written here.
     created = min(filter(None, (s.meta.get("created") for s in schemes.values())), default=None)
     vocab = URIRef(BASE)
@@ -627,23 +619,13 @@ def _add_code_only_scheme(g: Graph, prefix: str, codes: set[str], about: About, 
         g.add((node, SKOS.prefLabel, Literal(code, lang=LANG)))
 
 
-def write(
-    schemes: dict[str, Scheme],
-    version: str,
-    out: Path,
-    matches: list[Match],
-    *,
-    orcids: list[str] | None = None,
-    landing: str | None = None,
-    modified: date | None = None,
-) -> list[Path]:
+def write(schemes: dict[str, Scheme], about: About, out: Path, matches: list[Match]) -> list[Path]:
     """Write `r9lab-vocabulary.ttl`, `.jsonld` and `name-matches.csv` into `out`.
 
     `matches` is `name_matches`: the CSV has one row per pattern and source (`bafu-2026-v1`), with its match count.
-    `orcids`, `landing` and `modified` are as in `to_graph`.
     """
     out.mkdir(parents=True, exist_ok=True)
-    g = to_graph(schemes, version, orcids=orcids, landing=landing, modified=modified)
+    g = to_graph(schemes, about)
     ttl, jsonld, names = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "name-matches.csv"
     g.serialize(ttl, format="turtle")
     g.serialize(jsonld, format="json-ld", auto_compact=True)
@@ -656,11 +638,11 @@ def write(
     return [ttl, jsonld, names]
 
 
-def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str) -> Path:
+def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
     """Write `r9lab-vocabulary.sssom.tsv` into `out`: one SSSOM row per `mappings` entry.
 
     Every row is a person's curation, so its justification is `semapv:ManualMappingCuration`
-    and `author` (an ORCID IRI) is its author. Mappings from or to a deprecated concept are
+    and the publisher, `about`'s first ORCID iD, is its author. Mappings from or to a deprecated concept are
     left out: SSSOM has no field for a deprecated subject, and the SKOS graph keeps them.
     The YAML records no date per mapping, so there is no `mapping_date` column.
     """
@@ -675,10 +657,10 @@ def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str
     meta = {
         "curie_map": curie_map,
         "mapping_set_id": f"{BASE}r9lab-vocabulary.sssom.tsv",
-        "mapping_set_version": version,
-        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "mapping_set_version": about.version,
+        "license": str(CC0),
     }
-    author_id = f"orcid:{author.removeprefix(orcid)}"
+    author_id = f"orcid:{about.orcids[0].removeprefix(orcid)}"
     rows = sorted(
         (f"{slug}:{cid}", c["label"], f"skos:{RELATIONS[relation].fragment}", f"{prefix}:{local}")
         for slug, s in schemes.items()

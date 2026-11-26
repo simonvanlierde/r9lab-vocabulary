@@ -260,12 +260,12 @@ def rdf(out: Path) -> int:
     except ValueError as e:
         sys.stderr.write(f"error: {e}\n")
         return 1
-    ver = version("r9lab-vocabulary")
+    about = scheme.About(version("r9lab-vocabulary"), orcids, repo, modified)
     paths = [
-        *scheme.write(schemes, ver, out, matches, orcids=orcids, landing=repo, modified=modified),
+        *scheme.write(schemes, about, out, matches),
         Path(shutil.copy(SHAPES, out)),
-        scheme.write_sssom(schemes, ver, out, orcids[0]),  # the publisher, as in to_graph
-        *scheme.write_labels(schemes, ver, out),
+        scheme.write_sssom(schemes, about, out),
+        *scheme.write_labels(schemes, about.version, out),
     ]
     sys.stdout.writelines(f"{path}\n" for path in paths)
     return 0
