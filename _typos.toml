@@ -13,3 +13,7 @@ NdFeB = "NdFeB"
 Nd = "Nd"
 # Latin-1 test fixture: `caf` is the start of an escaped "café".
 caf = "caf"
+
+# R9lab tags are kept as users typed them, misspellings included.
+[files]
+extend-exclude = ["mappings/r9lab-tags.sssom.tsv"]

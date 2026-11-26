@@ -35,6 +35,17 @@ today BAFU:2025 v2 and BAFU:2026 v1, and written out as `dist/name-matches.csv` 
 count per version. A pattern is a Python regular expression matched case-insensitively anywhere
 in the name (`re.search`).
 
+[`mappings/r9lab-tags.sssom.tsv`](mappings/r9lab-tags.sssom.tsv) maps each R9lab
+`Material:` or `Keyword:` tag, in lower case and typos included, to a concept, as
+[SSSOM](https://mapping-commons.github.io/sssom/): `skos:exactMatch`, `closeMatch`, or
+`broadMatch` when the tag is narrower than the concept. A tag with no concept maps to
+`sssom:NoTermFound`. Each tag's `subject_id` is `r9lab-tag:` plus the URL-encoded tag
+(`r9lab-tag:pc%2Babs`), so SSSOM tools that need an id can load the file. Joined on `concept`
+with `dist/name-matches.csv`, it gives each tag its BAFU activity names.
+
+An agent proposed every row (`semapv:AgentBasedMatching`). A person who checks a row puts their
+ORCID CURIE in its `reviewer_id`; a row with no reviewer is a proposal, not a curated mapping.
+
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
 only; none of their names is copied.

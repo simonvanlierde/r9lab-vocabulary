@@ -13,6 +13,7 @@ import json
 import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
+from urllib.parse import quote
 
 import yaml
 from rdflib import DCTERMS, OWL, RDF, SKOS, XSD, Graph, Literal, Namespace, URIRef
@@ -360,6 +361,52 @@ def check_codes(schemes: dict[str, Scheme], known: dict[str, set[str]]) -> list[
         for _, prefix, local in mappings(c)
         if prefix in known and local not in known[prefix]
     ]
+
+
+NO_TERM = "sssom:NoTermFound"
+TAG_PREFIX = "r9lab-tag"
+TAG_COLUMNS = ("subject_id", "subject_label", "predicate_id", "object_id", "object_label", "mapping_justification")
+
+
+def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
+    """Rows of the SSSOM file that maps R9lab tags to concepts that break a rule.
+
+    A tag (`subject_label`) is lower case, as tags are matched, and appears once; its
+    `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is a SKOS match
+    property (`skos:exactMatch`, as `write_sssom` writes it), its justification a semapv
+    term, and its object a live concept here, under its current label, or
+    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`.
+    """
+    lines = path.read_text(encoding="utf-8").splitlines()
+    meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
+    prefixes = set(meta.get("curie_map") or {})
+    reader = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
+    if missing := [c for c in TAG_COLUMNS if c not in (reader.fieldnames or [])]:
+        return [f"{path.name}: no {', '.join(missing)} column"]
+    predicates = {f"skos:{p.fragment}" for p in RELATIONS.values()}
+    errors, seen = [], set()
+    for row in reader:
+        label, obj = row["subject_label"], row["object_id"]
+        where = f"{path.name}: {label!r}"
+        if label != label.strip().lower() or label in seen:
+            errors.append(f"{where} is not lower case or appears twice")
+        seen.add(label)
+        if row["subject_id"] != f"{TAG_PREFIX}:{quote(label, safe='')}":
+            errors.append(f"{where}: subject_id {row['subject_id']} is not {TAG_PREFIX}: plus the encoded tag")
+        if row["predicate_id"] not in predicates:
+            errors.append(f"{where}: unknown predicate {row['predicate_id']}")
+        if not row["mapping_justification"].startswith("semapv:"):
+            errors.append(f"{where}: justification {row['mapping_justification']!r} is not a semapv term")
+        curies = [row[c] for c in ("subject_id", "predicate_id", "object_id", "mapping_justification")]
+        curies += [r for r in [row.get("reviewer_id")] if r]
+        errors += [f"{where}: prefix of {c} is not in the curie_map" for c in curies if c.split(":")[0] not in prefixes]
+        slug, _, cid = obj.partition(":")
+        concept = schemes[slug].concepts.get(cid) if slug in schemes else None
+        if obj != NO_TERM and (concept is None or concept.get("deprecated")):
+            errors.append(f"{where}: {obj} is not a live concept")
+        elif row["object_label"] != (concept["label"] if concept else ""):
+            errors.append(f"{where}: object_label {row['object_label']!r} is not {obj}'s label")
+    return errors
 
 
 def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:

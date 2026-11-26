@@ -89,6 +89,49 @@ def test_licensed_schemes_keep_codes_only(schemes: Schemes, prefix: str):
         assert {str(o) for o in g.objects(node) if isinstance(o, Literal)} == {str(node).removeprefix(base)}
 
 
+def test_the_tag_mappings_break_no_rule(schemes: Schemes):
+    assert scheme.check_tag_mappings(schemes, ROOT / "mappings" / "r9lab-tags.sssom.tsv") == []
+
+
+def test_check_tag_mappings_catches(schemes: Schemes, tmp_path: Path):
+    path = tmp_path / "t.sssom.tsv"
+    j = "semapv:AgentBasedMatching"
+    path.write_text(
+        "#curie_map:\n#  materials: https://example.org/m/\n#  r9lab-tag: https://example.org/t/\n"
+        "#  semapv: https://w3id.org/semapv/vocab/\n#  skos: http://www.w3.org/2004/02/skos/core#\n"
+        "#  sssom: https://w3id.org/sssom/\n"
+        "subject_id\tsubject_label\tpredicate_id\tobject_id\tobject_label\tmapping_justification\n"
+        f"r9lab-tag:steel\tsteel\tskos:broadMatch\tmaterials:m0002\tferrous metal\t{j}\n"
+        f"r9lab-tag:steel\tsteel\tskos:exactMatch\tmaterials:m0003\tcarbon and low-alloy steel\t{j}\n"
+        f"r9lab-tag:Glass\tGlass\tskos:sameAs\tmaterials:m9999\t\t{j}\n"
+        "r9lab-tag:pe\tpe\texact\tmaterials:m0022\tpolyethylene\tby hand\n"
+        f"r9lab-tag:pc abs\tpc abs\tskos:exactMatch\tcomponents:c0001\tbattery\t{j}\n"
+        f"r9lab-tag:pp\tpp\tskos:exactMatch\tmaterials:m0023\tPP\t{j}\n"
+        f"r9lab-tag:fan%20blades\tfan blades\tskos:exactMatch\tsssom:NoTermFound\t\t{j}\n"
+    )
+    assert scheme.check_tag_mappings(schemes, path) == [
+        "t.sssom.tsv: 'steel' is not lower case or appears twice",
+        "t.sssom.tsv: 'Glass' is not lower case or appears twice",
+        "t.sssom.tsv: 'Glass': unknown predicate skos:sameAs",
+        "t.sssom.tsv: 'Glass': materials:m9999 is not a live concept",
+        "t.sssom.tsv: 'pe': unknown predicate exact",
+        "t.sssom.tsv: 'pe': justification 'by hand' is not a semapv term",
+        "t.sssom.tsv: 'pe': prefix of exact is not in the curie_map",
+        "t.sssom.tsv: 'pe': prefix of by hand is not in the curie_map",
+        "t.sssom.tsv: 'pc abs': subject_id r9lab-tag:pc abs is not r9lab-tag: plus the encoded tag",
+        "t.sssom.tsv: 'pc abs': prefix of components:c0001 is not in the curie_map",
+        "t.sssom.tsv: 'pp': object_label 'PP' is not materials:m0023's label",
+    ]
+
+
+def test_check_tag_mappings_needs_its_columns(schemes: Schemes, tmp_path: Path):
+    path = tmp_path / "t.sssom.tsv"
+    path.write_text("subject_label\tobject_id\nsteel\tmaterials:m0002\n")
+    assert scheme.check_tag_mappings(schemes, path) == [
+        "t.sssom.tsv: no subject_id, predicate_id, object_label, mapping_justification column"
+    ]
+
+
 def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Schemes):
     errors = scheme.check_codes(schemes, {"cpc": {"411"}})
     assert "materials/m0002: cpc:411 is not in the pinned cpc source" not in errors
