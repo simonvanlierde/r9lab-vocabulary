@@ -79,6 +79,29 @@ def test_licensed_schemes_keep_codes_only(schemes: Schemes):
         assert str(g.value(node, SKOS.prefLabel)) == str(node).removeprefix(base)
 
 
+def test_the_tag_mappings_break_no_rule(schemes: Schemes):
+    assert scheme.check_literal_mappings(schemes, ROOT / "mappings" / "r9lab-tags.sssom.tsv") == []
+
+
+def test_check_literal_mappings_catches(schemes: Schemes, tmp_path: Path):
+    path = tmp_path / "t.sssom.tsv"
+    path.write_text(
+        "#subject_type: rdfs literal\n"
+        "subject_label\tpredicate_id\tobject_id\n"
+        "steel\tskos:broadMatch\tmaterials:m0002\n"
+        "steel\tskos:exactMatch\tmaterials:m0003\n"
+        "Glass\tskos:sameAs\tmaterials:m9999\n"
+        "fan blades\tskos:exactMatch\tsssom:NoTermFound\n"
+    )
+    errors = scheme.check_literal_mappings(schemes, path)
+    assert errors == [
+        "t.sssom.tsv: 'steel' is not lower case or appears twice",
+        "t.sssom.tsv: 'Glass' is not lower case or appears twice",
+        "t.sssom.tsv: 'Glass': unknown predicate skos:sameAs",
+        "t.sssom.tsv: 'Glass': materials:m9999 is not a live concept",
+    ]
+
+
 def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Schemes):
     errors = scheme.check_codes(schemes, {"cpc": {"411"}})
     assert "materials/m0002: cpc:411 is not in the pinned cpc source" not in errors

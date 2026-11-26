@@ -1,0 +1,107 @@
+#curie_map:
+#  components: https://w3id.org/r9lab/vocabulary/components/
+#  materials: https://w3id.org/r9lab/vocabulary/materials/
+#  orcid: https://orcid.org/
+#  semapv: https://w3id.org/semapv/vocab/
+#  skos: http://www.w3.org/2004/02/skos/core#
+#  sssom: https://w3id.org/sssom/
+#mapping_set_id: https://w3id.org/r9lab/vocabulary/r9lab-tags.sssom.tsv
+#mapping_set_title: R9lab material and keyword tags to R9lab vocabulary concepts
+#license: https://creativecommons.org/publicdomain/zero/1.0/
+#subject_type: rdfs literal
+subject_label	predicate_id	object_id	comment	mapping_justification	author_id
+battery pack	skos:broadMatch	components:c0001		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+battery packs	skos:broadMatch	components:c0001		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+lithium battery	skos:broadMatch	components:c0001	primary or rechargeable	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+li-polymer battery	skos:broadMatch	components:c0002		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+lithium-ion battery	skos:exactMatch	components:c0002		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+ni-mh battery	skos:exactMatch	components:c0003		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+antena pcb	skos:broadMatch	components:c0006	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+computer cards	skos:broadMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+graphics card	skos:broadMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+motherboard	skos:broadMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pcb antena	skos:broadMatch	components:c0006	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pcb antenna	skos:broadMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+populated circuit board	skos:exactMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+populated printed circuit board	skos:exactMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+populated printed circuitboard	skos:exactMatch	components:c0006	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+ram	skos:broadMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+ssd pcb	skos:broadMatch	components:c0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+diode	skos:broadMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electrical componenents	skos:closeMatch	components:c0007	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electrical component	skos:closeMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electrical components	skos:closeMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electrical componets	skos:closeMatch	components:c0007	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electronic component	skos:exactMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electronic components	skos:exactMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+fuse	skos:broadMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+mosfet	skos:broadMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+transistor	skos:broadMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+varistor	skos:broadMatch	components:c0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+processor	skos:broadMatch	components:c0008		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+capacitor	skos:exactMatch	components:c0009		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+resistor	skos:exactMatch	components:c0010		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+led	skos:exactMatch	components:c0011		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+iron core inductor	skos:broadMatch	components:c0012		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+transformer	skos:exactMatch	components:c0013		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+trasformer	skos:exactMatch	components:c0013	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+lcd	skos:exactMatch	components:c0015		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+lcd screen	skos:exactMatch	components:c0015		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+lcd touchscreen	skos:broadMatch	components:c0015		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+flex cable	skos:broadMatch	components:c0017		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+insulated cable	skos:exactMatch	components:c0017		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+insulated usb a cable	skos:broadMatch	components:c0017		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+insulated usb c cable	skos:broadMatch	components:c0017		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+insulated wire	skos:exactMatch	components:c0017		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+power cord	skos:broadMatch	components:c0017		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+static magnet	skos:exactMatch	components:c0019		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+neodymium	skos:closeMatch	components:c0020	names the element	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+speaker module	skos:closeMatch	components:c0023		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+speaker moudule	skos:closeMatch	components:c0023	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+bimetal	skos:broadMatch	materials:m0001		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+steel	skos:broadMatch	materials:m0002	unqualified steel; could be carbon or stainless	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+copper-aluminium heatsink	skos:broadMatch	materials:m0006		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+aluminium	skos:closeMatch	materials:m0007		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+copper	skos:exactMatch	materials:m0009		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+brass	skos:exactMatch	materials:m0011		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+palstic	skos:closeMatch	materials:m0020	misspelt	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+plastic	skos:closeMatch	materials:m0020		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+abs+pa mix	skos:broadMatch	materials:m0021		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+abs+ps mix	skos:broadMatch	materials:m0021		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+hdpe	skos:broadMatch	materials:m0022		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pe	skos:exactMatch	materials:m0022		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pp	skos:exactMatch	materials:m0023		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+ps	skos:exactMatch	materials:m0024		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+abs	skos:exactMatch	materials:m0025		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pc	skos:exactMatch	materials:m0026		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pc+abs	skos:exactMatch	materials:m0027		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pc+abs mix	skos:exactMatch	materials:m0027		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pvc	skos:exactMatch	materials:m0029		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pet	skos:exactMatch	materials:m0030		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+nylon	skos:closeMatch	materials:m0031		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pa	skos:exactMatch	materials:m0031		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+thermoset plastic	skos:exactMatch	materials:m0034		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+bakalite	skos:exactMatch	materials:m0036	misspelt Bakelite	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pf	skos:exactMatch	materials:m0036	phenol formaldehyde	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+rubber	skos:closeMatch	materials:m0038		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+glass	skos:exactMatch	materials:m0043		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+ferrite	skos:exactMatch	materials:m0048		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+paper-resin composite	skos:broadMatch	materials:m0050		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+gf+pa mix	skos:broadMatch	materials:m0051		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+foam	skos:exactMatch	materials:m0053		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+mdf	skos:broadMatch	materials:m0055		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+paper	skos:broadMatch	materials:m0056		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+cloth	skos:closeMatch	materials:m0057		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+synthetic wool	skos:broadMatch	materials:m0057		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+brushless motor stator	skos:exactMatch	sssom:NoTermFound	part of c0022	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+camera module	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+carbon	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electrical motor part	skos:exactMatch	sssom:NoTermFound	part of c0022	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+electronic foil	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+fan blades	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+keyboard module	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+laser module	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+lightbulb	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+microphone module	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+pcb	skos:exactMatch	sssom:NoTermFound	bare (c0005) or populated (c0006)	semapv:ManualMappingCuration	orcid:0009-0006-6953-909X
+touchpad	skos:exactMatch	sssom:NoTermFound		semapv:ManualMappingCuration	orcid:0009-0006-6953-909X

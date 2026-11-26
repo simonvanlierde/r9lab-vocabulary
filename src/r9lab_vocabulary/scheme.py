@@ -285,6 +285,32 @@ def check_codes(schemes: dict[str, Scheme], known: dict[str, set[str]]) -> list[
     ]
 
 
+NO_TERM = "sssom:NoTermFound"
+
+
+def check_literal_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
+    """Rows of an SSSOM literal-mapping file (`subject_label` to concept) that break a rule.
+
+    A label is lower case, as the tags are matched, and appears once. Its predicate is one of
+    `RELATIONS`, and its object is a live concept here or `sssom:NoTermFound`.
+    """
+    lines = [line for line in path.read_text(encoding="utf-8").splitlines() if not line.startswith("#")]
+    errors, seen = [], set()
+    for row in csv.DictReader(lines, delimiter="\t"):
+        label, obj = row["subject_label"], row["object_id"]
+        where = f"{path.name}: {label!r}"
+        if label != label.strip().lower() or label in seen:
+            errors.append(f"{where} is not lower case or appears twice")
+        seen.add(label)
+        if row["predicate_id"].removeprefix("skos:").removesuffix("Match") not in RELATIONS:
+            errors.append(f"{where}: unknown predicate {row['predicate_id']}")
+        slug, _, cid = obj.partition(":")
+        concept = schemes[slug].concepts.get(cid) if slug in schemes else None
+        if obj != NO_TERM and (concept is None or concept.get("deprecated")):
+            errors.append(f"{where}: {obj} is not a live concept")
+    return errors
+
+
 def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:
     """The IRI a CURIE stands for."""
     base = schemes[prefix].iri if prefix in schemes else PREFIXES[prefix]
