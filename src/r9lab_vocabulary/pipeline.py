@@ -208,7 +208,11 @@ def rdf(out: Path) -> int:
         return 1
     ver = version("r9lab-vocabulary")
     author = yaml.safe_load(CITATION.read_text(encoding="utf-8"))["authors"][0]["orcid"]
-    paths = [*scheme.write(schemes, ver, out, matches), scheme.write_sssom(schemes, ver, out, author)]
+    paths = [
+        *scheme.write(schemes, ver, out, matches),
+        scheme.write_sssom(schemes, ver, out, author),
+        *scheme.write_labels(schemes, ver, out),
+    ]
     sys.stdout.writelines(f"{path}\n" for path in paths)
     return 0
 

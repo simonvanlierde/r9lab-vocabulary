@@ -1,5 +1,6 @@
 """The vocabulary's own rules, on the real files and on small broken copies."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -214,3 +215,37 @@ def test_sssom_leaves_out_mappings_from_or_to_a_deprecated_concept(tmp_path: Pat
     )
     _, rows = read_sssom(scheme.write_sssom(schemes, "test", tmp_path, ORCID))
     assert [(r["subject_id"], r["object_id"]) for r in rows] == [("t:t02", "wd:Q2")]
+
+
+def test_labels_list_every_live_concept_once_in_id_order(schemes: Schemes, tmp_path: Path):
+    json_path, md_path = scheme.write_labels(schemes, "0.1.0", tmp_path)
+    doc = json.loads(json_path.read_text(encoding="utf-8"))
+    assert doc["version"] == "0.1.0"
+    assert [s["slug"] for s in doc["schemes"]] == list(schemes)
+    for s in doc["schemes"]:
+        ids = [c["id"] for c in s["concepts"]]
+        assert ids == sorted(cid for cid, c in schemes[s["slug"]].concepts.items() if not c.get("deprecated"))
+    concepts = {c["id"]: c for s in doc["schemes"] for c in s["concepts"]}
+    assert concepts["m0003"] == {
+        "id": "m0003",
+        "iri": f"{schemes['materials'].iri}m0003",
+        "label": "carbon and low-alloy steel",
+        "path": ["metal", "ferrous metal", "carbon and low-alloy steel"],
+        "definition": "Steel without the chromium content of stainless steel, including galvanised sheet.",
+        "pilot": ["ferrous"],
+    }
+    assert concepts["s01"]["pilot"] == ["ferrous"]
+    assert concepts["c0006"]["pilot"] == ["electronics"]
+    md = md_path.read_text(encoding="utf-8")
+    assert "## R9lab material classes" in md
+    assert "| m0003 | carbon and low-alloy steel | metal > ferrous metal > carbon and low-alloy steel |" in md
+
+
+def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
+    schemes = one({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]}, "t02": {"label": "b"}})
+    json_path, md_path = scheme.write_labels(schemes, "test", tmp_path)
+    doc = json.loads(json_path.read_text(encoding="utf-8"))
+    assert doc["schemes"][0]["concepts"] == [
+        {"id": "t02", "iri": f"{schemes['t'].iri}t02", "label": "b", "path": ["b"], "definition": None, "pilot": []}
+    ]
+    assert "t01" not in md_path.read_text(encoding="utf-8")

@@ -57,6 +57,10 @@ just wikidata    # print every Wikidata link beside the item's current label
   row, for tools that read crosswalks without parsing SKOS. `just sssom-validate` checks it
   with sssom-py. Mappings from or to a deprecated concept are left out; the SKOS graph keeps
   them. The file has no `mapping_date` column, because the YAML records no date per mapping.
+- `dist/labels.json` and `dist/labels.md`: per scheme, each non-deprecated concept by id with
+  its IRI, label, label path from its top concept, definition, and the keys of the pilot
+  classes it falls under (`pilot`). A model prompt can quote them. Evaluation answers are
+  not kept in this repository.
 
 `just rdf` refuses to write anything while a rule is broken: an unknown `broader`, a cycle,
 a duplicate label, an `exactMatch` that is also a `broadMatch`, a CPC code or PMDco id

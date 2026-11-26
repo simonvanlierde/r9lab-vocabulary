@@ -9,6 +9,7 @@ this vocabulary (its `slug`).
 from __future__ import annotations
 
 import csv
+import json
 import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -428,3 +429,76 @@ def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str
         w.writerow(["subject_id", "subject_label", "predicate_id", "object_id", "mapping_justification", "author_id"])
         w.writerows((*row, "semapv:ManualMappingCuration", author_id) for row in rows)
     return path
+
+
+def _pilot_keys(schemes: dict[str, Scheme]) -> dict[tuple[str, str], set[str]]:
+    """(slug, id) -> the keys of the collection members that map onto it as exact, close or narrow.
+
+    A member's key is its notation, and a member carries its own key.
+    """
+    out: dict[tuple[str, str], set[str]] = {}
+    for slug, s in schemes.items():
+        if not s.meta.get("collection"):
+            continue
+        for cid, c in s.concepts.items():
+            if c.get("deprecated"):
+                continue
+            key = str(c.get("notation", cid))
+            out.setdefault((slug, cid), set()).add(key)
+            for relation, prefix, local in mappings(c):
+                if relation in {"exact", "close", "narrow"} and prefix in schemes:
+                    out.setdefault((prefix, local), set()).add(key)
+    return out
+
+
+def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
+    """Per scheme, each non-deprecated concept by id: IRI, label, label path from its root, definition, pilot keys.
+
+    The path follows the first `broader`. `pilot` holds the key of each pilot class that maps
+    onto the concept or one of its ancestors.
+    """
+    pilot = _pilot_keys(schemes)
+    out = []
+    for slug, s in schemes.items():
+        concepts = []
+        for cid in sorted(cid for cid, c in s.concepts.items() if not c.get("deprecated")):
+            chain, node = [cid], s.concepts[cid]
+            while node.get("broader"):
+                chain.insert(0, node["broader"][0])
+                node = s.concepts[chain[0]]
+            definition = s.concepts[cid].get("definition")
+            concepts.append(
+                {
+                    "id": cid,
+                    "iri": s.iri + cid,
+                    "label": s.concepts[cid]["label"],
+                    "path": [s.concepts[a]["label"] for a in chain],
+                    "definition": definition.strip() if definition else None,
+                    "pilot": sorted(set().union(*(pilot.get((slug, a), set()) for a in chain))),
+                }
+            )
+        out.append({"slug": slug, "title": s.meta["title"], "iri": s.iri, "concepts": concepts})
+    return out
+
+
+def write_labels(schemes: dict[str, Scheme], version: str, out: Path) -> list[Path]:
+    """Write `labels.json` and `labels.md` into `out`: `labels`, as data and as a table per scheme."""
+    out.mkdir(parents=True, exist_ok=True)
+    data = labels(schemes)
+    json_path, md_path = out / "labels.json", out / "labels.md"
+    json_path.write_text(
+        json.dumps({"version": version, "schemes": data}, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    lines = [f"# R9lab vocabulary labels {version}"]
+    for s in data:
+        lines += ["", f"## {s['title']}", "", "| id | label | path | definition | pilot |", "|---|---|---|---|---|"]
+        lines += [
+            "| "
+            + " | ".join(
+                (c["id"], c["label"], " > ".join(c["path"]), c["definition"] or "", ", ".join(c["pilot"]))
+            ).replace("\n", " ")
+            + " |"
+            for c in s["concepts"]
+        ]
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return [json_path, md_path]

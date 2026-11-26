@@ -17,5 +17,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `just wikidata` lists every Wikidata link beside the item's current label and fails on a missing or redirected item.
 - The weekly CI run checks every Wikidata link against the live API, so a merged or deleted item fails it.
 - `just rdf` also writes `r9lab-vocabulary.sssom.tsv`, every curated mapping as an SSSOM row with its curator's ORCID; `just sssom-validate` checks it with sssom-py. Mappings a tool suggests stay in a separate file until a person promotes them.
+- `just rdf` also writes `labels.json` and `labels.md`: each non-deprecated concept with its label, ancestor path, definition and pilot classes, as text for model prompts.
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD
