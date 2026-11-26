@@ -42,6 +42,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
 VOCABULARY = Path("vocabulary")
+TAG_MAPPINGS = Path("mappings/r9lab-tags.sssom.tsv")
 DIST = Path("dist")
 CITATION = Path("CITATION.cff")  # its first author curates every mapping
 PROCESSED = Path("data/processed")
@@ -191,6 +192,7 @@ def rdf(out: Path) -> int:
         known = known_codes()
         lists = name_lists()
         errors = scheme.validate(schemes, _versions(lists)) + scheme.check_codes(schemes, known)
+        errors += scheme.check_tag_mappings(schemes, TAG_MAPPINGS)
     except FileNotFoundError as e:
         sys.stderr.write(f"error: {e}\n")
         return 3

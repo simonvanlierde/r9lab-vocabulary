@@ -2,6 +2,8 @@
 
 They skip until the pipeline has run. CI runs it first and sets
 PIPELINE_OUTPUT_REQUIRED=1, so there a missing output fails instead of skipping.
+The narrowed-pattern test also runs on a literal copy of the names, so `just check`
+covers it without the pipeline.
 """
 
 from __future__ import annotations
@@ -84,3 +86,32 @@ def test_every_branch_of_an_alternation_matches_something(matches: list[scheme.M
                 if not any(re.search(one, n, re.IGNORECASE) for n in hits):
                     dead.append((f"{slug}/{cid}", pattern, branch))
     assert sorted(set(dead)) == []
+
+
+# Names a narrowed pattern must leave out ("not") or take ("is"), as spelt in both pinned BAFU releases.
+_CELLS = ["LFP", "LTO", "Li-ion, NMC111", "NCA", "NMC-111", "NMC-622"]
+NARROWED = {
+    "Polystyrene scrap, old, at plant": {"not": {"materials/m0024"}},
+    "Particle board, cement bonded, at plant": {"not": {"materials/m0055"}},
+    "LCD flat screen, 17 inches, at plant": {"not": {"components/c0015"}},
+    "Sheet rolling, steel": {"not": {"materials/m0003"}},
+    "Sheet rolling, chromium steel": {"not": {"materials/m0004"}},
+    "Sheet rolling, aluminium": {"not": {"materials/m0007"}},
+    "Wire drawing, copper": {"not": {"materials/m0009"}},
+    **{f"Battery cell, {c}": {"is": {"components/c0024"}, "not": {"components/c0002"}} for c in _CELLS},
+}
+
+
+@pytest.mark.parametrize("source", ["literal", "pinned"])
+def test_the_narrowed_patterns_keep_their_names_out(source: str, request: pytest.FixtureRequest):
+    if source == "pinned":
+        lists = request.getfixturevalue("lists")
+        assert all(set(NARROWED) <= set(names) for names in lists["bafu"].values())
+    else:
+        lists = {"bafu": {"2025-v2": list(NARROWED), "2026-v1": list(NARROWED)}}
+    hit: dict[str, set[str]] = {n: set() for n in NARROWED}
+    for slug, cid, _, _, _, names in scheme.name_matches(scheme.load(ROOT / "vocabulary"), lists):
+        for n in set(names) & set(NARROWED):
+            hit[n].add(f"{slug}/{cid}")
+    wrong = {n: hit[n] for n, want in NARROWED.items() if hit[n] & want["not"] or not want.get("is", set()) <= hit[n]}
+    assert wrong == {}
