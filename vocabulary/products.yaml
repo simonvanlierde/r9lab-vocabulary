@@ -97,8 +97,7 @@ concepts:
     definition: Expansion card that produces the image signal sent to a display.
     source: https://www.wikidata.org/wiki/Q4308
     example: [a PCIe graphics card, a low-profile graphics card, a workstation graphics card, an AGP video card]
-    note: 'Not populated printed circuit board: a board taken off the card is a component.'
-    editorial_note: Whether a PC part such as a graphics card is a product of its own is still open.
+    note: 'Not populated printed circuit board: a card that arrives on its own is this product, but one taken out of a PC during a teardown is a populated printed circuit board.'
     broader: [p0001]
     mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0302', 'unu2:0302', 'weee6:6'], close: ['r9lab-cpv:3023713']}
   p0011:
