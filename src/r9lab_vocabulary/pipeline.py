@@ -39,7 +39,7 @@ import sourceledger
 import yaml
 from sourceledger import Source
 
-from r9lab_vocabulary import checks, export, scheme
+from r9lab_vocabulary import _bafu_cache, checks, export, scheme
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -53,6 +53,8 @@ DIST = Path("dist")
 PROCESSED = Path("data/processed")
 USER_AGENT = "r9lab-vocabulary (https://github.com/simonvanlierde/r9lab-vocabulary)"
 CPC_SOURCE, PMDCO_SOURCE, WIKIDATA = "cpc21", "pmdco", "wd"
+BAFU_FAMILY = "bafu"
+_BAFU_READER_VERSION = _bafu_cache.reader_version(Path(__file__))
 NAME_COLUMNS = ["code", "name", "location"]
 IMPLEMENTED = "implemented"
 XML_CHUNK = 8192  # bytes fed per step; parsing stops at the first chunk holding the whole head
@@ -131,7 +133,7 @@ class NameList:
 
 NAME_LISTS = {
     # BAFU marks a withdrawn dataset by prefixing its name with "xx" or "xxx".
-    "bafu": NameList(parse_bafu, lambda name: not name.lower().startswith("xx")),
+    BAFU_FAMILY: NameList(parse_bafu, lambda name: not name.lower().startswith("xx")),
 }
 
 
@@ -153,6 +155,15 @@ def parse(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str
     if (family := source["id"].partition("-")[0]) in NAME_LISTS:
         return NAME_COLUMNS, NAME_LISTS[family].read(payload)
     return sourceledger.parse_source(source, payload)
+
+
+def _parse_for_build(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str]]]:
+    source_id = source["id"]
+    if source_id.partition("-")[0] != BAFU_FAMILY:
+        return parse(source, payload)
+    return NAME_COLUMNS, _bafu_cache.read_names(
+        source_id, payload, columns=NAME_COLUMNS, reader=NAME_LISTS["bafu"].read, version=_BAFU_READER_VERSION
+    )
 
 
 # Outside schemes whose codes `rdf` checks against a processed source: prefix -> (source id, code column).
@@ -378,7 +389,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names`, `wikidata` or `diff REF`."""
     args = sys.argv[1:] if argv is None else argv
     if not args or args[0] not in OWN:
-        return sourceledger.main(args, parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
+        return sourceledger.main(args, parse=_parse_for_build, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
     try:
         if args[:1] == ["rdf"]:
             p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
@@ -404,7 +415,7 @@ def entry() -> NoReturn:
     """The `r9lab-vocabulary` command."""
     if sys.argv[1:2] and sys.argv[1] in OWN:
         sys.exit(main())
-    sourceledger.entry(parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
+    sourceledger.entry(parse=_parse_for_build, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
 
 
 if __name__ == "__main__":

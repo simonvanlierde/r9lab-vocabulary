@@ -35,6 +35,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- `just build` can reuse BAFU activity names from an unchanged archive. [The data directory](data/README.md) explains how to clear the local cache.
 - `lithium-ion battery` now matches battery packs only, including "Battery, rechargeable, prismatic, LiNCM"; the cells moved to `lithium-ion cell`.
 - The BAFU patterns for wood, polystyrene and liquid-crystal display no longer match cement-bonded particle board, polystyrene scrap or the 17-inch LCD monitor.
 - GPS navigation device is UNU-KEY 0402 (WEEE category 5), not 0305 (category 6), and radio is 0402 (v2: 0403), not 0201, as the guidelines' key descriptions and HS tables place them.
