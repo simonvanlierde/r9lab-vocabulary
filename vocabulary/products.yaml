@@ -23,41 +23,81 @@ scheme:
 concepts:
   p0001:
     label: computing equipment
+    definition: Family of products that process or store data, with the peripherals, add-in cards and power units made for them.
+    example: [a laptop, a tablet, a computer mouse, a graphics card]
+    note: 'Not telecommunications equipment: a router or a phone goes there, though UNU-KEY puts routers in 0301 with computer peripherals. Its types span WEEE 2 (laptops and tablets, which have screens) and WEEE 6.'
     mappings: {close: ['cpc:452']}
   p0002:
     label: telecommunications equipment
+    definition: Family of products that send or receive voice, data or radio signals, such as phones, routers and satellite navigation receivers.
+    source: https://www.wikidata.org/wiki/Q1780509
+    example: [a smartphone, a desk phone, a home router, a car GPS navigator]
+    note: 'Not computing equipment: a docking station or laptop charger goes there. Wikidata''s telecommunications device covers any telecom hardware; here it gathers whole products only, and takes in GPS receivers, which UNU-KEY files under 0402.'
     mappings: {close: ['wd:Q1780509']}
   p0003:
     label: audio and video equipment
+    definition: Family of products that play, receive or control sound or pictures, such as headphones, speakers, radios and remote controls.
+    source: https://www.wikidata.org/wiki/Q581105
+    example: [a pair of headphones, a Bluetooth speaker, a clock radio, a TV remote control]
+    note: 'Not telecommunications equipment: a phone plays sound but goes there. Wikidata''s consumer electronics is wider and takes in computers and phones; here only sound and picture products. Its types sit in UNU-KEY 04xx, WEEE 5.'
     mappings: {close: ['wd:Q581105']}
   p0004:
     label: lighting equipment
+    definition: 'Family of products that give light: lamps and the luminaires that hold or include them.'
+    example: [an LED bulb, a desk lamp, a ceiling luminaire, a bedside lamp]
+    note: Not a display backlight, which belongs to a display. Lamps (UNU-KEY 0505, WEEE 3) and luminaires (0506, WEEE 5) fall on different sides of the WEEE line.
     mappings: {close: ['cpc:4653']}
   p0005:
     label: small household appliance
-    mappings: {exact: ['wd:Q3558289'], close: ['cpc:4481']}
+    definition: Family of portable household appliances that do tasks such as heating water, preparing food, ironing or moving air.
+    source: https://www.wikidata.org/wiki/Q3558289
+    example: [an electric kettle, a toaster, a clothes iron, a desk fan]
+    note: 'Not personal care appliance: a shaver or hair dryer goes there, though both families sit in UNU-KEY 02xx, WEEE 5. Not a large appliance such as a washing machine or fridge (UNU-KEY 01xx). Power strips are kept here for now.'
+    mappings: {close: ['cpc:4481', 'wd:Q3558289']}
   p0006:
     label: personal care appliance
+    definition: Family of small electric appliances for grooming or caring for the body, such as shavers, hair dryers and foot files.
+    example: [an electric shaver, a hair dryer, an electric toothbrush, a hair straightener]
+    note: 'Not small household appliance: a clothes iron or fan goes there. Its types sit in UNU-KEY 0205, WEEE 5.'
     mappings: {broad: ['cpc:44816']}
   p0007:
     label: laptop
+    definition: Portable personal computer that folds shut, with a built-in screen, keyboard and battery.
+    source: https://www.wikidata.org/wiki/Q3962
+    example: [a notebook computer, a netbook, a convertible 2-in-1 laptop, a mobile workstation]
+    note: 'Not tablet: a tablet has no hinged keyboard. Both are UNU-KEY 0303 and WEEE 2. Not laptop charger, which is recorded as a product of its own.'
     broader: [p0001]
     mappings: {exact: ['wd:Q3962'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['r9lab-cpv:302131']}
   p0008:
     label: tablet
+    definition: Portable computer in one flat unit with a touchscreen, circuitry and battery, and no fixed keyboard.
+    source: https://www.wikidata.org/wiki/Q155972
+    example: [a 10-inch touchscreen tablet, a mini tablet, the screen unit of a detachable 2-in-1, a rugged field tablet]
+    note: 'Not laptop: a laptop folds shut over a fixed keyboard. Not mobile phone, which is UNU-KEY 0306; tablets are 0303 with laptops.'
     broader: [p0001]
     mappings: {exact: ['wd:Q155972'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['r9lab-cpv:302132']}
   p0009:
     label: docking station
+    definition: Device that a laptop or mobile device plugs into to break out its ports, and often to charge it.
+    source: https://www.wikidata.org/wiki/Q1233773
+    example: [a USB-C laptop dock, a port replicator, a desktop charging cradle]
+    note: 'Not laptop charger: a charger only supplies power, while a dock also passes data or video. Both are UNU-KEY 0301, WEEE 6.'
     broader: [p0001]
     mappings: {exact: ['wd:Q1233773'], broad: ['cpc:45290', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0010:
     label: graphics card
+    definition: Expansion card that produces the image signal sent to a display.
+    source: https://www.wikidata.org/wiki/Q4308
+    example: [a PCIe graphics card, a low-profile graphics card, a workstation graphics card, an AGP video card]
+    note: A PC component; whether it is stand-alone EEE is debatable. Not populated printed circuit board.
     broader: [p0001]
-    note: A PC component; whether it is stand-alone EEE is debatable.
     mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0302', 'unu2:0302', 'weee6:6'], close: ['r9lab-cpv:3023713']}
   p0011:
     label: computer power supply
+    definition: Power supply unit fitted inside a desktop computer that turns mains power into the low DC voltages its parts use.
+    source: https://www.wikidata.org/wiki/Q3972
+    example: [an ATX power supply, an SFX power supply, a modular power supply, a server power supply]
+    note: 'Not laptop charger: an external adapter in its own case with a cable is a laptop charger. Both are CPC 46122 and UNU-KEY 0301.'
     broader: [p0001]
     mappings: {exact: ['wd:Q3972'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0012:
