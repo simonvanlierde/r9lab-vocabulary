@@ -175,17 +175,17 @@ concepts:
     definition: Thermoplastic polymer of styrene, solid or expanded into foam, as in housings, trays and packaging.
     source: https://www.wikidata.org/wiki/Q146243
     example: [HIPS, a refrigerator inner liner, an EPS packaging block, a clear GPPS crisper tray]
-    note: 'Not acrylonitrile butadiene styrene: ABS also holds styrene but is its own class. Includes general-purpose (GPPS), high-impact (HIPS) and expanded (EPS) polystyrene.'
+    note: 'Not ABS: it also holds styrene but is its own class. Includes general-purpose (GPPS), high-impact (HIPS) and expanded (EPS) polystyrene.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050016', 'wd:Q146243'], broad: ['cpc:34720']}
     names:
       bafu: ['^polystyrene(?! scrap)']
   m0025:
-    label: acrylonitrile butadiene styrene
-    definition: Tough thermoplastic made from acrylonitrile, butadiene and styrene, as in moulded device housings.
+    label: ABS
+    definition: Acrylonitrile butadiene styrene, a tough thermoplastic, as in moulded device housings.
     source: https://www.wikidata.org/wiki/Q143496
-    example: [ABS, a printer housing, a vacuum cleaner body, a keyboard keycap]
-    note: 'ABS. Not polycarbonate/ABS blend: a part marked PC+ABS goes there. Not polystyrene: HIPS has no acrylonitrile.'
+    example: [a printer housing, a vacuum cleaner body, a keyboard keycap, a toy brick]
+    note: 'Not polycarbonate/ABS blend: a part marked PC+ABS goes there. Not polystyrene: HIPS has no acrylonitrile.'
     broader: [m0021]
     mappings: {exact: ['wd:Q143496'], broad: ['cpc:34720']}
     names:
@@ -204,16 +204,16 @@ concepts:
     label: polycarbonate/ABS blend
     definition: Blend of polycarbonate and ABS, common in device housings.
     example: [PC/ABS, a laptop base marked PC+ABS, a charger case, a monitor bezel]
-    note: 'Not polycarbonate or acrylonitrile butadiene styrene: a part marked with only one of the two goes to that class.'
+    note: 'Not polycarbonate or ABS: a part marked with only one of the two goes to that class.'
     editorial_note: Wikidata has no item for this blend.
     broader: [m0021]
     related: [m0025, m0026]
   m0028:
-    label: poly(methyl methacrylate)
-    definition: Transparent thermoplastic, commonly called acrylic, as in light guides, display covers and lenses.
+    label: acrylic (PMMA)
+    definition: Poly(methyl methacrylate), a clear thermoplastic, as in light guides, display covers and lenses.
     source: https://www.wikidata.org/wiki/Q146123
-    example: [PMMA, an acrylic sheet, a backlight light guide plate, a lamp diffuser]
-    note: 'PMMA, acrylic. Not glass: a clear acrylic panel is a polymer. Not polycarbonate: PC is tougher and is its own class.'
+    example: [an acrylic sheet, a backlight light guide plate, a lamp diffuser]
+    note: 'Not glass: a clear acrylic panel is a polymer. Not polycarbonate: PC is tougher and is its own class.'
     broader: [m0021]
     mappings: {exact: ['wd:Q146123'], broad: ['cpc:34790']}
     names:
@@ -249,11 +249,11 @@ concepts:
     names:
       bafu: ['^nylon 6']
   m0032:
-    label: polyoxymethylene
-    definition: Stiff, low-friction engineering thermoplastic of repeating oxymethylene units, as in gears, clips and slides.
+    label: acetal (POM)
+    definition: Polyoxymethylene, a stiff, low-friction thermoplastic, as in gears, clips and slides.
     source: https://www.wikidata.org/wiki/Q146139
-    example: [POM, an acetal gear, a snap-fit clip, a drawer slide]
-    note: 'POM, acetal. Not polyamide: nylon gears look alike but are PA.'
+    example: [an acetal gear, a snap-fit clip, a drawer slide]
+    note: 'Not polyamide: nylon gears look alike but are PA.'
     editorial_note: No BAFU dataset; needs a proxy.
     broader: [m0021]
     mappings: {exact: ['wd:Q146139'], broad: ['cpc:34740']}
