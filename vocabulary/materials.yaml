@@ -282,6 +282,7 @@ concepts:
   m0027:
     label: polycarbonate/ABS blend
     definition: Blend of polycarbonate and ABS, common in device housings.
+    source: https://doi.org/10.1002/cssc.202502161
     example: [PC/ABS, a laptop base marked PC+ABS, a charger case, a monitor bezel]
     note: 'Not polycarbonate or ABS: a part marked with only one of the two goes to that class.'
     editorial_note: Wikidata has no item for this blend.
@@ -485,7 +486,7 @@ concepts:
       bafu: ['^ferrite']
   m0049:
     label: hybrid material
-    definition: Family of materials made of more than one constituent, such as composites, foams, natural materials and textiles, as Ashby groups them.
+    definition: Family of materials built from more than one phase, or from a solid with gas or voids through it, such as composites, foams, textiles and natural materials like wood and leather.
     source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
     example: [FR-4, a carbon-fibre panel, plywood, a foam gasket]
     note: 'Not a part of separate materials: a part that can be taken apart is recorded by each material. Covers composites, foams, natural materials and textiles.'
