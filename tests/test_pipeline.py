@@ -37,11 +37,11 @@ def test_rdf_writes_the_vocabulary(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     monkeypatch.chdir(Path(__file__).resolve().parent.parent)
     everything = type("All", (set,), {"__contains__": lambda *_: True})()
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": everything, "pmdco": everything})
-    monkeypatch.setattr(pipeline, "bafu_names", dict)
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {}})
     assert pipeline.main(["rdf", "--out", str(tmp_path)]) == 0
     assert (tmp_path / "r9lab-vocabulary.ttl").stat().st_size > 0
-    header = (tmp_path / "bafu-candidates.csv").read_text(encoding="utf-8").splitlines()[0]
-    assert header == "concept,label,release,pattern,matches"
+    header = (tmp_path / "name-matches.csv").read_text(encoding="utf-8").splitlines()[0]
+    assert header == "concept,label,source,pattern,matches"
 
 
 def test_rdf_fails_on_a_code_the_sources_lack(
@@ -49,7 +49,7 @@ def test_rdf_fails_on_a_code_the_sources_lack(
 ):
     monkeypatch.chdir(Path(__file__).resolve().parent.parent)
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": set(), "pmdco": set()})
-    monkeypatch.setattr(pipeline, "bafu_names", dict)
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {}})
     assert pipeline.main(["rdf", "--out", str(tmp_path)]) == 1
     assert "cpc:411 is not in the pinned cpc source" in capsys.readouterr().err
 
@@ -63,16 +63,16 @@ def test_rdf_before_the_sources_are_built_is_an_error_not_a_traceback(
     assert capsys.readouterr().err.startswith("error: data/processed/cpc21.parquet")
 
 
-def test_rdf_fails_on_a_bafu_pattern_that_matches_nothing(
+def test_rdf_fails_on_a_name_pattern_that_matches_nothing(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ):
     monkeypatch.chdir(Path(__file__).resolve().parent.parent)
     everything = type("All", (set,), {"__contains__": lambda *_: True})()
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": everything, "pmdco": everything})
-    monkeypatch.setattr(pipeline, "bafu_names", lambda: {"2026-v1": ["Copper, primary, at refinery"]})
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {"2026-v1": ["Copper, primary, at refinery"]}})
     assert pipeline.main(["rdf", "--out", str(tmp_path)]) == 1
     err = capsys.readouterr().err
-    assert "'^cast iron' matches no live activity in BAFU 2026-v1" in err
+    assert "bafu pattern '^cast iron' matches no live name in bafu-2026-v1" in err
     assert "'^copper, (primary|secondary|at regional storage)'" not in err
 
 
@@ -122,24 +122,76 @@ def test_rdf_reports_a_broken_pattern_instead_of_crashing(
     voc = tmp_path / "vocabulary"
     voc.mkdir()
     (voc / "t.yaml").write_text(
-        "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, bafu: ['(']}\n"
+        "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, names: {bafu: ['(']}}\n"
     )
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": set(), "pmdco": set()})
-    monkeypatch.setattr(pipeline, "bafu_names", lambda: {"2026-v1": ["Brass, at plant"]})
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {"2026-v1": ["Brass, at plant"]}})
     assert pipeline.main(["rdf", "--out", str(tmp_path / "dist")]) == 1
     assert "t/t01: bafu pattern '(':" in capsys.readouterr().err
 
 
-def test_bafu_reports_a_broken_pattern_instead_of_crashing(
+def test_names_reports_a_broken_pattern_instead_of_crashing(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ):
     voc = tmp_path / "vocabulary"
     voc.mkdir()
     (voc / "t.yaml").write_text(
-        "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, bafu: ['(']}\n"
+        "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, names: {bafu: ['(']}}\n"
     )
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(pipeline, "bafu_names", lambda: {"2026-v1": ["Brass, at plant"]})
-    assert pipeline.main(["bafu"]) == 1
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {"2026-v1": ["Brass, at plant"]}})
+    assert pipeline.main(["names"]) == 1
     assert "t/t01: bafu pattern '(':" in capsys.readouterr().err
+
+
+def test_withdrawn_bafu_datasets_are_not_live():
+    live = pipeline.NAME_LISTS["bafu"].live
+    assert live("Steel sheet, at plant")
+    assert not live("xx Steel sheet, old, at plant")
+    assert not live("XXX Tin, at plant")
+
+
+def test_the_ecospold1_head_stops_before_the_exchanges():
+    # Malformed past the parser's first read: a full parse would raise.
+    junk = "</processInformation>" + " " * 70_000 + "<<broken"
+    head = ECOSPOLD1.format(name="Brass, at plant").replace("</processInformation>", junk)
+    assert pipeline.ecospold1_head(head.encode()) == ("Brass, at plant", "CH")
+
+
+def _three_names(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    voc = tmp_path / "vocabulary"
+    voc.mkdir()
+    (voc / "t.yaml").write_text(
+        "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a, names: {bafu: ['^brass']}}\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    lists = {"bafu": {"2025-v2": ["Brass, at plant"], "2026-v1": ["Brass, at plant", "Brass, at regional storage"]}}
+    monkeypatch.setattr(pipeline, "name_lists", lambda: lists)
+
+
+def test_names_lists_every_match_of_one_source(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    _three_names(monkeypatch, tmp_path)
+    assert pipeline.main(["names", "--source", "bafu-2026-v1"]) == 0
+    assert capsys.readouterr().out.splitlines() == [
+        "t/t01\tbafu-2026-v1\t^brass\tBrass, at plant",
+        "t/t01\tbafu-2026-v1\t^brass\tBrass, at regional storage",
+    ]
+
+
+def test_names_summary_counts_per_source(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    _three_names(monkeypatch, tmp_path)
+    assert pipeline.main(["names", "--summary"]) == 0
+    assert capsys.readouterr().out.splitlines() == ["t/t01\tbafu-2025-v2\t1\t^brass", "t/t01\tbafu-2026-v1\t2\t^brass"]
+
+
+def test_names_rejects_an_unknown_source(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    _three_names(monkeypatch, tmp_path)
+    assert pipeline.main(["names", "--source", "bafu-2031-v1"]) == 2
+    assert "known: bafu-2025-v2, bafu-2026-v1" in capsys.readouterr().err

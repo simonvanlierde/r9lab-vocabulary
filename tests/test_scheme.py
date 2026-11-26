@@ -9,7 +9,7 @@ from yaml.constructor import ConstructorError
 from r9lab_vocabulary import scheme
 
 Schemes = dict[str, scheme.Scheme]
-RELEASES = {"2025-v2", "2026-v1"}
+VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
 ROOT = Path(__file__).resolve().parent.parent
 # The pilot's frozen L1 keys (photo-study pilot registration, 5 November 2026).
 PILOT_KEYS = {
@@ -36,7 +36,7 @@ def one(concepts: dict, meta: dict | None = None) -> dict[str, scheme.Scheme]:
 
 
 def test_the_vocabulary_breaks_no_rule(schemes: Schemes):
-    assert scheme.validate(schemes, RELEASES) == []
+    assert scheme.validate(schemes, VERSIONS) == []
 
 
 def test_the_pilot_collection_keeps_the_frozen_keys(schemes: Schemes):
@@ -100,58 +100,71 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b", "broader": ["t01"]}},
             "broader t01 is deprecated",
         ),
-        ({"t01": {"label": "a", "bafu": ["("]}}, "bafu pattern"),
-        ({"t01": {"label": "a", "bafu": [{"pattern": "^x"}]}}, "non-empty releases list"),
+        ({"t01": {"label": "a", "names": {"bafu": ["("]}}}, "bafu pattern '('"),
+        ({"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x"}]}}}, "non-empty versions list"),
         (
-            {"t01": {"label": "a", "bafu": [{"pattern": "^x", "releases": ["2026-v1"], "since": 1}]}},
+            {"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x", "versions": ["2026-v1"], "since": 1}]}}},
             "exactly a pattern",
         ),
-        ({"t01": {"label": "a", "bafu": [{"pattern": "^x", "releases": ["2031-v1"]}]}}, "unknown release '2031-v1'"),
-        ({"t01": {"label": "a", "bafu": "^ab"}}, "bafu must be a list"),
-        ({"t01": {"label": "a", "bafu": [""]}}, "must be a non-empty pattern"),
-        ({"t01": {"label": "a", "bafu": [None]}}, "must be a non-empty pattern"),
-        ({"t01": {"label": "a", "bafu": [{"pattern": "^x", "releases": "2026-v1"}]}}, "must be a non-empty pattern"),
+        (
+            {"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x", "versions": ["2031-v1"]}]}}},
+            "unknown version '2031-v1'",
+        ),
+        ({"t01": {"label": "a", "names": {"ecoinvent": ["^x"]}}}, "family 'ecoinvent' has no pinned source"),
+        ({"t01": {"label": "a", "names": ["^ab"]}}, "names must map each family to a list"),
+        ({"t01": {"label": "a", "names": {"bafu": "^ab"}}}, "names must map each family to a list"),
+        ({"t01": {"label": "a", "names": {"bafu": [""]}}}, "must be a non-empty pattern"),
+        ({"t01": {"label": "a", "names": {"bafu": [None]}}}, "must be a non-empty pattern"),
+        (
+            {"t01": {"label": "a", "names": {"bafu": [{"pattern": "^x", "versions": "2026-v1"}]}}},
+            "must be a non-empty pattern",
+        ),
         ({"t01": {"label": "a", "mappings": {"exact": "wd:Q1"}}}, "mappings must map each relation to a list"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
-    errors = scheme.validate(one(concepts), RELEASES)
+    errors = scheme.validate(one(concepts), VERSIONS)
     assert any(message in e for e in errors), errors
 
 
 def test_a_deprecated_concept_is_marked_and_not_a_top_concept():
     schemes = one({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]}, "t02": {"label": "b"}})
-    assert scheme.validate(schemes, RELEASES) == []
+    assert scheme.validate(schemes, VERSIONS) == []
     g = scheme.to_graph(schemes, "test")
     old = URIRef(schemes["t"].iri + "t01")
     assert (old, OWL.deprecated, Literal("true", datatype=XSD.boolean)) in g
     assert (old, SKOS.topConceptOf, URIRef(schemes["t"].iri)) not in g
 
 
-def test_bafu_patterns_search_live_names_of_the_releases_they_apply_to():
+def test_name_patterns_search_the_versions_they_apply_to():
     schemes = one(
         {
-            "t01": {"label": "a", "bafu": ["^steel sheet", {"pattern": "^tin\\b", "releases": ["2026-v1"]}]},
-            "t02": {"label": "b", "deprecated": True, "bafu": ["^steel"]},
+            "t01": {
+                "label": "a",
+                "names": {"bafu": ["^steel sheet", {"pattern": "^tin\\b", "versions": ["2026-v1"]}]},
+            },
+            "t02": {"label": "b", "deprecated": True, "names": {"bafu": ["^steel"]}},
         }
     )
-    names = {
-        "2025-v2": ["Steel sheet, uncoated, at plant", "xx Steel sheet, old, at plant", "Tin, at plant"],
-        "2026-v1": ["STEEL SHEET, zinc-coated", "Tin, at regional storage", "Tinplate"],
+    lists = {
+        "bafu": {
+            "2025-v2": ["Steel sheet, uncoated, at plant", "Tin, at plant"],
+            "2026-v1": ["STEEL SHEET, zinc-coated", "Tin, at regional storage", "Tinplate"],
+        }
     }
-    assert scheme.bafu_matches(schemes, names) == [
-        ("t", "t01", "2025-v2", "^steel sheet", ["Steel sheet, uncoated, at plant"]),
-        ("t", "t01", "2026-v1", "^steel sheet", ["STEEL SHEET, zinc-coated"]),
-        ("t", "t01", "2026-v1", "^tin\\b", ["Tin, at regional storage"]),
+    assert scheme.name_matches(schemes, lists) == [
+        ("t", "t01", "bafu", "2025-v2", "^steel sheet", ["Steel sheet, uncoated, at plant"]),
+        ("t", "t01", "bafu", "2026-v1", "^steel sheet", ["STEEL SHEET, zinc-coated"]),
+        ("t", "t01", "bafu", "2026-v1", "^tin\\b", ["Tin, at regional storage"]),
     ]
 
 
-def test_bafu_candidates_has_one_row_per_pattern_and_release(tmp_path: Path):
-    schemes = one({"t01": {"label": "a", "bafu": ["^x"]}})
-    scheme.write(schemes, "test", tmp_path, [("t", "t01", "2026-v1", "^x", ["X, at plant", "x2"])])
-    assert (tmp_path / "bafu-candidates.csv").read_text(encoding="utf-8").splitlines() == [
-        "concept,label,release,pattern,matches",
-        f"{schemes['t'].iri}t01,a,2026-v1,^x,2",
+def test_name_matches_has_one_row_per_pattern_and_source(tmp_path: Path):
+    schemes = one({"t01": {"label": "a", "names": {"bafu": ["^x"]}}})
+    scheme.write(schemes, "test", tmp_path, [("t", "t01", "bafu", "2026-v1", "^x", ["X, at plant", "x2"])])
+    assert (tmp_path / "name-matches.csv").read_text(encoding="utf-8").splitlines() == [
+        "concept,label,source,pattern,matches",
+        f"{schemes['t'].iri}t01,a,bafu-2026-v1,^x,2",
     ]
 
 
