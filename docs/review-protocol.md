@@ -1,7 +1,11 @@
 # Review protocol for the tag mappings
 
-Version 0, 26 November 2026. A change to these rules gets a new version and date here; each
-verdict carries its `review_date`, so it can be matched to the rules it followed.
+Version 1, 26 November 2026. A change to these rules gets a new version and date here; each
+verdict carries its `review_date`, so it can be matched to the rules it followed. Version 0, of the
+same date, recorded no verdicts.
+
+Version 1 adds undo and pause, leaves time away from the card out of `review_seconds`, and shows
+the three verdicts alike, with no colour and no button focused when a card appears.
 
 ## What a rater judges
 
@@ -25,6 +29,8 @@ they misspell.
 - Each rater gets every proposal once, in an order set by their ORCID, so two raters see different
   orders and one rater sees the same order after a restart. A new proposal slots in without
   moving the others.
+- The three verdicts look alike and keep one order (Agree, Unsure, Disagree). When a card appears,
+  focus is on the tag, never on a verdict.
 - Raters work alone. The page shows how many cards each rater has judged, never their verdicts.
 - Do not look a card up elsewhere before the verdict; the time a verdict takes is part of the
   record.
@@ -34,8 +40,13 @@ they misspell.
 Each verdict appends one row to `mappings/r9lab-tags/reviews.sssom.tsv`: the mapping, the
 rater's ORCID CURIE (`reviewer_id`), `reviewer_agreement` (1 agree, -1 disagree, 0 unsure),
 `review_date` (the UTC date), and `review_seconds`, the time from the card's first showing since the
-page last started to the verdict, measured on the server. The page shows each card once; a rater who
-changes their mind adds a row to the log by hand. Their latest row counts, and the earlier one stays.
+page last started to the verdict, measured on the server, less the time the page reports the card
+was hidden (another tab, a minimised window) or paused. A rater takes a break with Pause (`p`),
+which hides the card and stops the clock.
+
+The page shows each card once. Undo (`z`) brings back the last card judged on this page, once; its
+new verdict is a new row. For an older verdict, a rater who changes their mind adds a row to the
+log by hand. The latest row counts, and the earlier ones stay.
 
 ## How verdicts become the published file
 

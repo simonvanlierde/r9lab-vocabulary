@@ -20,14 +20,13 @@ diff ref:
 curate:
     uv run python -m r9lab_vocabulary.curate build
 
-# Serve the tag-mapping review page on http://127.0.0.1:<port> for the rater in R9LAB_REVIEWER (an ORCID CURIE). Ctrl-C stops it and rebuilds the published file.
+# Serve the tag-mapping review page on http://127.0.0.1:<port> for the rater in R9LAB_REVIEWER (an ORCID CURIE). Ctrl-C stops it and rebuilds the published file; just still reports the run as interrupted.
 review port="8740":
     #!/usr/bin/env bash
     set -u
     trap true INT  # let Ctrl-C stop the page, then still rebuild
     uv run --extra review python -m r9lab_vocabulary.review --port {{ port }}
     status=$?
-    [ "$status" -eq 130 ] && status=0  # Ctrl-C is the normal way to stop it
     uv run python -m r9lab_vocabulary.curate build || exit
     exit "$status"
 

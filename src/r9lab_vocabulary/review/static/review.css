@@ -1,13 +1,35 @@
-:root { color-scheme: light dark; font: 17px/1.45 system-ui, sans-serif; }
-body { margin: 0 auto; padding: 1rem; max-width: 34rem; }
-header small, #progress { opacity: .7; margin: 0 0 .25rem; }
-#card { border: 1px solid #8885; border-radius: .75rem; padding: 1rem; margin-top: 1rem; }
+/* System colours only, so light and dark get the same emphasis. The three verdicts share one
+   style: no colour may hint that one of them is right. */
+:root {
+  color-scheme: light dark;
+  font: 17px/1.45 system-ui, sans-serif;
+  --muted: color-mix(in srgb, CanvasText 72%, Canvas);
+  --line: color-mix(in srgb, CanvasText 45%, Canvas);
+}
+body { margin: 0 auto; padding: 1rem; max-width: 34rem; background: Canvas; color: CanvasText; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 1rem; }
+header > div { flex: 1 1 auto; }
+#progress, .help, .note, .hint, .last, #paused { color: var(--muted); }
+#progress, .help { margin: 0 0 .25rem; }
+.help { flex-basis: 100%; font-size: .9rem; }
+.help a { color: inherit; text-underline-offset: .15em; }
+kbd { font: .85em ui-monospace, monospace; padding: 0 .3em; border: 1px solid var(--line); border-radius: .25rem; }
+#card > form:first-child, .done { border: 1px solid var(--line); border-radius: .75rem; padding: 1rem; margin: 1rem 0 0; }
 .tag { font-size: 1.6rem; font-weight: 600; margin: 0; }
-.relation { opacity: .75; margin: .25rem 0; }
+.tag:focus, .done:focus { outline: none; } /* focused by script to start the card, not operated */
+.relation { font-weight: 600; margin: .25rem 0; }
 .concept { font-size: 1.25rem; margin: 0; }
-.definition, .note { margin: .5rem 0 0; }
-.note { opacity: .75; font-size: .9rem; }
+.concept small { font-size: .7em; color: var(--muted); }
+.definition, .note, .hint { margin: .5rem 0 0; }
+.note, .hint { font-size: .9rem; }
 .verdicts { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: 1rem; }
-button { font: inherit; min-height: 3rem; border-radius: .5rem; border: 1px solid GrayText; }
-button[value="agree"] { background: #2a7d2e26; }
-button[value="disagree"] { background: #b3261e26; }
+button { font: inherit; color: CanvasText; background: Canvas; border: 1px solid var(--line); border-radius: .5rem; }
+.verdicts button { min-height: 3rem; }
+button:hover:not(:disabled) { background: color-mix(in srgb, CanvasText 8%, Canvas); }
+button:disabled { opacity: .5; }
+button:focus-visible { outline: 3px solid Highlight; outline-offset: 2px; }
+.last { font-size: .9rem; margin: .5rem 0 0; }
+.last p { margin: 0; }
+.last button, #pause { font-size: .9rem; padding: .15rem .6rem; margin-left: .25rem; }
+#paused { border: 1px dashed var(--line); border-radius: .75rem; padding: 1rem; margin: 1rem 0 0; }
+::selection { background: Highlight; color: HighlightText; }
