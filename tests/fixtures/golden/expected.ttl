@@ -16,7 +16,6 @@
         r9-parts:,
         r9-tools: ;
     dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
-    dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
     dcterms:modified "2026-02-01"^^xsd:date ;
     dcterms:publisher <https://orcid.org/0000-0002-1825-0097> ;
     dcterms:title "R9lab reference vocabulary"@en ;
@@ -50,7 +49,6 @@ r9-tools:t03 a skos:Concept,
     dcterms:created "2026-01-01"^^xsd:date ;
     dcterms:creator <https://orcid.org/0000-0002-1825-0097> ;
     dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
-    dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
     dcterms:modified "2026-02-01"^^xsd:date ;
     dcterms:publisher <https://orcid.org/0000-0002-1825-0097> ;
     dcterms:title "UNU-KEY v1 codes (codes only; names under CC BY-NC-SA 3.0 IGO are not copied)"@en ;

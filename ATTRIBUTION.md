@@ -21,9 +21,6 @@ the identifiers, except where a concept's own label is the common name of the th
 | UNU-KEY v2 codes (codes only), and the v1 code list | Lysaght et al., *E-waste Statistics: Guidelines on Classifications, Reporting and Indicators*, 3rd ed., UNITAR, 2026, [doi:10.5281/zenodo.18328494](https://doi.org/10.5281/zenodo.18328494), Tables 2 and 19 | CC BY-NC-SA 4.0; names not copied | `unu2:` mappings; `FIXED_CODES` in `scheme.py` |
 | BAFU activity names, as regular expressions | Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 and BAFU:2026 v1 | Patterns only, no data | `names.bafu` fields |
 
-The code-only schemes (`unu-key-v1`, `unu-key-v2`, `r9lab-cpv`) are CC0 like the rest of the vocabulary,
-because they keep only the codes and copy no names.
-
 ## Source data
 
 This repository doesn't redistribute source data. `data/raw/` and

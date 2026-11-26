@@ -405,7 +405,6 @@ class About:
         g.add((node, DCTERMS.title, Literal(title, lang=LANG)))
         g.add((node, OWL.versionInfo, Literal(self.version)))
         g.add((node, OWL.versionIRI, URIRef(f"{BASE}{self.version}/{str(node).removeprefix(BASE)}")))
-        g.add((node, DCTERMS.license, CC0))
         g.add((node, DCTERMS.language, LANGUAGE))
         for prop, value in ((DCTERMS.created, created), (DCTERMS.modified, self.modified)):
             if value is not None:
@@ -460,6 +459,7 @@ def _add_scheme(
     g.add((s, RDF.type, SKOS.ConceptScheme))
     g.add((s, SKOS.prefLabel, Literal(scheme.meta["title"], lang=LANG)))
     g.add((s, BIBO.status, ACCEPTED))
+    g.add((s, DCTERMS.license, CC0))
     if desc := scheme.meta.get("description"):
         g.add((s, DCTERMS.description, Literal(desc.strip(), lang=LANG)))
         g.add((s, SKOS.definition, Literal(desc.strip(), lang=LANG)))
