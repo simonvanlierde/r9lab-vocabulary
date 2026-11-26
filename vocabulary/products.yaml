@@ -6,7 +6,9 @@
 # cpc: CPC 2.1 subclass, broad unless the subclass is the type itself. unu1 and unu2:
 # UNU-KEY v1 and v2 codes, checked against the key descriptions and the HS and CPC tables
 # of the E-waste Statistics Guidelines (2nd ed. 2018, 3rd ed. 2026). v2 follows the v1 code
-# by Annex 2 of the 3rd edition, except where its HS table moved the product.
+# by Annex 2 of the 3rd edition, except where its HS table moved the product. Where a key's
+# description names the product, that key wins over the HS and CPC tables, which map whole
+# trade classes coarser than these types.
 # r9lab-cpv: the CPV code R9lab stores for the type today (truncated as in the app).
 # weee6: category 1-6 of Annex III to Directive 2012/19/EU (WEEE), derived from the
 # unu1 code by the UNU-KEY to EU-6 table of the Global E-waste Monitor 2017 annexes, which
@@ -54,11 +56,14 @@ concepts:
   p0010:
     label: graphics card
     broader: [p0001]
-    note: A PC component; whether it is stand-alone EEE is debatable.
-    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0302', 'unu2:0302', 'weee6:6'], close: ['r9lab-cpv:3023713']}
+    editorial_note: >
+      A PC component; whether it is stand-alone EEE is debatable. UNU-KEY counts final goods
+      only and no key names parts, so 0301 (small IT) is the nearest key.
+    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023713']}
   p0011:
     label: computer power supply
     broader: [p0001]
+    editorial_note: An internal part; as for p0010, 0301 (small IT) is the nearest UNU-KEY.
     mappings: {exact: ['wd:Q3972'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0012:
     label: computer mouse
@@ -72,7 +77,8 @@ concepts:
     label: laptop charger
     definition: External power adapter for a laptop.
     broader: [p0001]
-    mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
+    editorial_note: The UNU-KEY 0201 description lists adapters.
+    mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0015:
     label: mobile phone
     broader: [p0002]
@@ -143,7 +149,9 @@ concepts:
   p0030:
     label: power strip
     broader: [p0005]
-    note: Whether a passive power strip is EEE in scope varies by member state.
+    editorial_note: >
+      Whether a passive power strip is EEE in scope varies by member state. No UNU-KEY
+      description or table names power strips; 0201 is the nearest key.
     mappings: {exact: ['wd:Q1754646'], broad: ['cpc:46212', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0031:
     label: electric shaver

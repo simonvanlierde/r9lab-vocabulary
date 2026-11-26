@@ -25,7 +25,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Each scheme and the vocabulary as a whole (a `dcat:Dataset` of the schemes) say who made them, when, and which release they are, with a version IRI such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`, and carry the fields PyST needs. `just rdf` takes the date from `SOURCE_DATE_EPOCH` when set.
 - SHACL shapes, published as `r9lab.shacl.ttl` beside the graph: every concept has an English label and a scheme, mappings point at IRIs, a deprecated concept is replaced by one in use, and every scheme carries its release metadata. The tests run them with skohub-shapes' SKOS rules.
 - `just rdf` also writes `r9lab-vocabulary.sssom.tsv`, every curated mapping as an SSSOM row with its curator's ORCID; `just sssom-validate` and CI check it with sssom-py. Mappings a tool suggests stay in a separate file until a person promotes them.
-- `just rdf` also writes `labels.json` and `labels.md`: each non-deprecated concept with its label, ancestor path, definition and pilot classes, as text for model prompts.
+- `just rdf` also writes `labels.json` and `labels.md`: each non-deprecated concept with its label, ancestor path, definition and pilot classes, as text for model prompts. `labels.json` also carries each concept's scope note and examples, but never its editorial note.
 - Each product type links (`broadMatch`) to its WEEE Directive category, `weee6:1` to `weee6:6`, derived from its UNU-KEY. `just rdf` refuses any other `weee6` code.
 - Each product type with a UNU-KEY v1 code also links to its UNU-KEY v2 code (`unu2:`), from the 2026 E-waste Statistics Guidelines. `just rdf` refuses a `unu1` or `unu2` code that is not in that edition's key list.
 - A `lithium-ion cell` component (c0024), related to `lithium-ion battery`, takes the BAFU "Battery cell, ..." datasets.
@@ -35,6 +35,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `lithium-ion battery` now matches battery packs only, including "Battery, rechargeable, prismatic, LiNCM"; the cells moved to `lithium-ion cell`.
 - The BAFU patterns for wood, polystyrene and liquid-crystal display no longer match cement-bonded particle board, polystyrene scrap or the 17-inch LCD monitor.
 - GPS navigation device is UNU-KEY 0402 (WEEE category 5), not 0305 (category 6), and radio is 0402 (v2: 0403), not 0201, as the guidelines' key descriptions and HS tables place them.
+- Laptop charger is UNU-KEY 0201 (WEEE category 5), not 0301, because the 0201 description lists adapters, and graphics card is 0301, not 0302 (desktops). Where a key description names a product, it wins over the HS and CPC tables.
 - Steel, stainless steel, aluminium and copper no longer match the BAFU sheet-rolling and wire-drawing services.
 
 ### Fixed
