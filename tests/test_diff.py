@@ -81,3 +81,42 @@ def test_just_diff_reads_the_vocabulary_at_a_tag(
     assert "- `parts/p01` screw: deprecate it" in capsys.readouterr().out
     assert pipeline.main(["diff", "v9"]) == 2
     assert "v9" in capsys.readouterr().err
+
+
+def test_the_diff_reports_an_undeprecation_and_a_deprecation_with_no_replacement():
+    old = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a", "deprecated": True}, "t02": {"label": "b"}})}
+    new = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a"}, "t02": {"label": "b", "deprecated": True}})}
+    lines, ok = scheme.diff(old, new)
+    assert ok
+    assert "- `t/t02` b, with no `replaced_by`" in lines
+    assert "- `t/t01` a: no longer deprecated" in lines
+
+
+def _tagged(tmp_path: Path, yaml_text: str) -> None:
+    (tmp_path / "vocabulary").mkdir()
+    (tmp_path / "vocabulary" / "t.yaml").write_text(yaml_text)
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "add", "vocabulary")
+    _git(tmp_path, "commit", "-q", "-m", "old")
+    _git(tmp_path, "tag", "v1.0.0")
+
+
+def test_just_diff_of_an_unloadable_ref_is_an_error_not_a_traceback(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    _tagged(tmp_path, "scheme: {slug: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
+    (tmp_path / "vocabulary" / "t.yaml").write_text("scheme: {slug: t}\nconcepts: {}\n")
+    monkeypatch.chdir(tmp_path)
+    assert pipeline.main(["diff", "v1.0.0"]) == 2
+    assert "error: cannot load vocabulary/ at v1.0.0: " in capsys.readouterr().err
+
+
+def test_just_diff_reads_a_ref_that_looks_like_an_option_as_a_ref(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    _tagged(tmp_path, "scheme: {slug: t}\nconcepts:\n  t01: {label: a}\n")
+    monkeypatch.chdir(tmp_path)
+    assert pipeline.diff(f"--output={tmp_path / 'out.tar'}") == 2
+    assert "not a valid object name: --output=" in capsys.readouterr().err
+    assert pipeline.main(["diff", "v1.0.0"]) == 0
+    assert capsys.readouterr().out.endswith("No concept added, deprecated, removed, remapped or relabelled.\n")

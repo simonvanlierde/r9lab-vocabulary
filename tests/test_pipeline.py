@@ -3,21 +3,19 @@
 from __future__ import annotations
 
 import io
+import os
 import sqlite3
 import subprocess
 import tarfile
 import zipfile
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING
 
+import pytest
 import rdflib
 from rdflib import DCTERMS
 
 from r9lab_vocabulary import pipeline, scheme
-
-if TYPE_CHECKING:
-    import pytest
 
 CPC = '"CPC21code","CPC21title"\r\n"4112","Crude steel"\r\n"4131","Silver, caf\xe9"\r\n'.encode("latin-1")
 PMDCO = b"""@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -43,15 +41,72 @@ def test_rdf_writes_the_vocabulary(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     everything = type("All", (set,), {"__contains__": lambda *_: True})()
     monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": everything, "pmdco": everything})
     monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {}})
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1767225600")  # 2026-01-01T00:00:00Z
     assert pipeline.main(["rdf", "--out", str(tmp_path)]) == 0
     g = rdflib.Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
     vocab = rdflib.URIRef(scheme.BASE)
-    head = subprocess.run(["git", "log", "-1", "--format=%cs"], capture_output=True, text=True, check=True).stdout  # noqa: S607
-    assert g.value(vocab, DCTERMS.modified) == rdflib.Literal(date.fromisoformat(head.strip()))
+    assert g.value(vocab, DCTERMS.modified) == rdflib.Literal(date(2026, 1, 1))
     assert g.value(vocab, DCTERMS.creator) == rdflib.URIRef("https://orcid.org/0009-0006-6953-909X")
     assert (tmp_path / "r9lab.shacl.ttl").read_bytes() == Path("shapes/r9lab.shacl.ttl").read_bytes()
     header = (tmp_path / "name-matches.csv").read_text(encoding="utf-8").splitlines()[0]
     assert header == "concept,label,source,pattern,matches"
+
+
+def test_commit_date_takes_source_date_epoch_first(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1767225600")
+    assert pipeline.commit_date() == date(2026, 1, 1)
+
+
+def _commit_on(repo: Path, day: str) -> None:
+    env = {"GIT_COMMITTER_DATE": f"{day}T12:00:00Z", "GIT_AUTHOR_DATE": f"{day}T12:00:00Z", "PATH": os.environ["PATH"]}
+    for args in (["init", "-q"], ["commit", "-q", "--allow-empty", "-m", "x"]):
+        subprocess.run(  # noqa: S603
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false", *args],  # noqa: S607
+            cwd=repo,
+            env=env,
+            check=True,
+            capture_output=True,
+        )
+
+
+def test_commit_date_reads_the_package_checkout_not_one_around_it(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.delenv("SOURCE_DATE_EPOCH", raising=False)
+    _commit_on(tmp_path, "2026-03-04")
+    monkeypatch.setattr(pipeline, "ROOT", tmp_path)
+    assert pipeline.commit_date() == date(2026, 3, 4)
+    (tmp_path / "unpacked").mkdir()
+    monkeypatch.setattr(pipeline, "ROOT", tmp_path / "unpacked")
+    assert pipeline.commit_date() is None
+
+
+def test_rdf_without_a_commit_date_is_an_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    monkeypatch.chdir(Path(__file__).resolve().parent.parent)
+    everything = type("All", (set,), {"__contains__": lambda *_: True})()
+    monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": everything, "pmdco": everything})
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {}})
+    monkeypatch.setattr(pipeline, "commit_date", lambda: None)
+    assert pipeline.main(["rdf", "--out", str(tmp_path)]) == 1
+    assert "error: no commit date" in capsys.readouterr().err
+    assert not (tmp_path / "r9lab-vocabulary.ttl").exists()
+
+
+@pytest.mark.parametrize("citation", [None, "", "authors:\n  - family-names: x\n"])
+def test_rdf_without_an_orcid_in_citation_cff_is_an_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str], citation: str | None
+):
+    (tmp_path / "vocabulary").mkdir()
+    yaml_text = "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a}\n"
+    (tmp_path / "vocabulary" / "t.yaml").write_text(yaml_text)
+    if citation is not None:
+        (tmp_path / "CITATION.cff").write_text(citation)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": set(), "pmdco": set()})
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {}})
+    monkeypatch.setenv("SOURCE_DATE_EPOCH", "1767225600")
+    assert pipeline.main(["rdf", "--out", str(tmp_path / "dist")]) == 1
+    assert capsys.readouterr().err.startswith("error: CITATION.cff")
 
 
 def test_rdf_fails_on_a_code_the_sources_lack(

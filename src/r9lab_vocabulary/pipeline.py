@@ -17,6 +17,7 @@ import argparse
 import csv
 import io
 import json
+import os
 import shutil
 import sqlite3
 import subprocess
@@ -28,10 +29,10 @@ import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from importlib.metadata import version
 from pathlib import Path
-from typing import TYPE_CHECKING, NoReturn, cast
+from typing import TYPE_CHECKING, Any, NoReturn, cast
 
 import rdflib
 import sourceledger
@@ -43,6 +44,7 @@ from r9lab_vocabulary import scheme
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
 
+ROOT = Path(__file__).resolve().parents[2]  # the checkout this module runs from, for its commit date
 VOCABULARY = Path("vocabulary")
 CITATION = Path("CITATION.cff")
 SHAPES = Path("shapes/r9lab.shacl.ttl")  # published beside the graph, so users can check their copy
@@ -188,15 +190,39 @@ def _versions(lists: dict[str, dict[str, list[str]]]) -> dict[str, set[str]]:
 
 
 def commit_date() -> date | None:
-    """The date of the commit checked out, or None outside a git checkout.
+    """`SOURCE_DATE_EPOCH` as a UTC date when set, else the date of the commit `ROOT` has checked out, else None.
 
-    It is `dct:modified`: the build date would make two builds of one commit differ.
+    It is `dct:modified`: the build date would make two builds of one commit differ. Git is not
+    let look above `ROOT`, so a tree unpacked inside another checkout does not take that one's date.
     """
+    if epoch := os.environ.get("SOURCE_DATE_EPOCH"):
+        return datetime.fromtimestamp(int(epoch), UTC).date()
+    env = {**os.environ, "GIT_CEILING_DIRECTORIES": str(ROOT.parent)}
     try:
-        out = subprocess.run(["git", "log", "-1", "--format=%cs"], capture_output=True, text=True, check=True).stdout  # noqa: S607
+        out = subprocess.run(  # noqa: S603
+            ["git", "-C", str(ROOT), "log", "-1", "--format=%cs"],  # noqa: S607
+            capture_output=True,
+            text=True,
+            check=True,
+            env=env,
+        ).stdout
     except OSError, subprocess.CalledProcessError:
         return None
     return date.fromisoformat(out.strip()) if out.strip() else None
+
+
+def _citation() -> dict[str, Any]:
+    """CITATION.cff, which must name at least one author by ORCID iD; ValueError if not."""
+    try:
+        citation = yaml.safe_load(CITATION.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        citation = None
+    authors = citation.get("authors") if isinstance(citation, dict) else None
+    orcid = isinstance(authors, list) and any(isinstance(a, dict) and a.get("orcid") for a in authors)
+    if isinstance(citation, dict) and orcid:
+        return citation
+    msg = f"{CITATION} must list at least one author with an orcid"
+    raise ValueError(msg)
 
 
 def rdf(out: Path) -> int:
@@ -221,10 +247,16 @@ def rdf(out: Path) -> int:
     if errors:
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
-    citation = yaml.safe_load(CITATION.read_text(encoding="utf-8"))
-    written = scheme.write(
-        schemes, version("r9lab-vocabulary"), out, matches, citation=citation, modified=commit_date()
-    )
+    if (modified := commit_date()) is None:
+        hint = f"set SOURCE_DATE_EPOCH or build in {ROOT} as a git checkout"
+        sys.stderr.write(f"error: no commit date for dct:modified: {hint}\n")
+        return 1
+    try:
+        citation = _citation()
+    except ValueError as e:
+        sys.stderr.write(f"error: {e}\n")
+        return 1
+    written = scheme.write(schemes, version("r9lab-vocabulary"), out, matches, citation=citation, modified=modified)
     written.append(Path(shutil.copy(SHAPES, out)))
     for path in written:
         sys.stdout.write(f"{path}\n")
@@ -311,7 +343,7 @@ def diff(ref: str) -> int:
     """
     try:
         archive = subprocess.run(  # noqa: S603
-            ["git", "archive", "--format=tar", ref, str(VOCABULARY)],  # noqa: S607
+            ["git", "archive", "--format=tar", "--", ref, str(VOCABULARY)],  # noqa: S607
             capture_output=True,
             check=True,
         ).stdout
@@ -320,10 +352,15 @@ def diff(ref: str) -> int:
         return 2
     with tempfile.TemporaryDirectory() as tmp, tarfile.open(fileobj=io.BytesIO(archive)) as t:
         t.extractall(tmp, filter="data")
-        old = scheme.load(Path(tmp) / VOCABULARY)
+        try:
+            old = scheme.load(Path(tmp) / VOCABULARY)
+        except (yaml.YAMLError, ValueError, KeyError, TypeError) as e:
+            sys.stderr.write(f"error: cannot load {VOCABULARY}/ at {ref}: {e}\n")
+            return 2
     lines, ok = scheme.diff(old, scheme.load(VOCABULARY))
     sys.stdout.write(f"## Vocabulary changes since {ref}\n\n")
-    sys.stdout.writelines(f"{line}\n" for line in lines or ["No concept changed."])
+    lines = lines or ["No concept added, deprecated, removed, remapped or relabelled."]
+    sys.stdout.writelines(f"{line}\n" for line in lines)
     return 0 if ok else 1
 
 
