@@ -13,7 +13,7 @@ import re
 import pytest
 from conftest import ROOT, built
 
-from r9lab_vocabulary import pipeline, scheme
+from r9lab_vocabulary import checks, pipeline, scheme
 
 
 @pytest.fixture(scope="module")
@@ -22,7 +22,7 @@ def known() -> dict[str, set[str]]:
 
 
 def test_every_cpc_code_and_pmdco_id_is_in_the_pinned_sources(known: dict[str, set[str]]):
-    assert scheme.check_codes(scheme.load(ROOT / "vocabulary"), known) == []
+    assert checks.check_codes(scheme.load(ROOT / "vocabulary"), known) == []
 
 
 def test_the_pinned_sources_are_the_expected_size(known: dict[str, set[str]]):
@@ -37,7 +37,7 @@ def lists() -> dict[str, dict[str, list[str]]]:
 
 @pytest.fixture(scope="module")
 def matches(lists: dict[str, dict[str, list[str]]]) -> list[scheme.Match]:
-    return scheme.name_matches(scheme.load(ROOT / "vocabulary"), lists)
+    return checks.name_matches(scheme.load(ROOT / "vocabulary"), lists)
 
 
 def test_the_pinned_bafu_releases_are_the_published_size(lists: dict[str, dict[str, list[str]]]):
@@ -85,7 +85,7 @@ def test_the_narrowed_patterns_keep_their_names_out(source: str, request: pytest
     else:
         lists = {"bafu": {"2025-v2": list(NARROWED), "2026-v1": list(NARROWED)}}
     hit: dict[str, set[str]] = {n: set() for n in NARROWED}
-    for slug, cid, _, _, _, names in scheme.name_matches(scheme.load(ROOT / "vocabulary"), lists):
+    for slug, cid, _, _, _, names in checks.name_matches(scheme.load(ROOT / "vocabulary"), lists):
         for n in set(names) & set(NARROWED):
             hit[n].add(f"{slug}/{cid}")
     wrong = {n: hit[n] for n, want in NARROWED.items() if hit[n] & want["not"] or not want.get("is", set()) <= hit[n]}
