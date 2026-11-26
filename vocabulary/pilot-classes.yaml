@@ -70,11 +70,11 @@ concepts:
     mappings: {close: ['materials:m0038']}
   s08:
     label: cable
+    note: 'Not electronics: a flexible printed circuit is a printed board. Not non-ferrous: a bare copper strip has no insulation, and enamelled winding wire wound into a coil, motor or transformer goes by its metal.'
     notation: cable
     definition: 'An electric cable or wire: one or more insulated conductors, with or without plugs.'
     source: https://www.wikidata.org/wiki/Q188447
     example: [a power cord, a USB cable, an internal wire harness, a ribbon cable]
-    note: 'Not electronics: a flexible printed circuit is a printed board. Not non-ferrous: a bare copper strip has no insulation.'
     mappings: {exact: ['components:c0017']}
   s09:
     label: magnet
