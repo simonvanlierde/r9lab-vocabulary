@@ -43,8 +43,16 @@ in the name (`re.search`).
 (`r9lab-tag:pc%2Babs`), so SSSOM tools that need an id can load the file. Joined on `concept`
 with `dist/name-matches.csv`, it gives each tag its BAFU activity names.
 
-An agent proposed every row (`semapv:AgentBasedMatching`). A person who checks a row puts their
-ORCID CURIE in its `reviewer_id`; a row with no reviewer is a proposal, not a curated mapping.
+That file is built, by `just curate`, from a review log in
+[`mappings/r9lab-tags/`](mappings/r9lab-tags/). `predictions.sssom.tsv` holds what machines
+proposed (`semapv:AgentBasedMatching` and other machine justifications), with no reviewer.
+`reviews.sssom.tsv` gets one row per rater per verdict: their ORCID CURIE in `reviewer_id`,
+`reviewer_agreement` 1 (agree), -1 (disagree) or 0 (unsure), `review_date`, and the seconds the
+verdict took in `review_seconds`. A rater's latest row for a mapping counts. The built file keeps
+every proposal no rater rejected, with the raters who agreed in `reviewer_id`; a row with no
+reviewer is still a proposal, not a curated mapping. A proposal with one rater for and one
+against stays, without a reviewer, until a third look.
+[ADR 0005](docs/decisions/0005-mapping-review-log.md) says why it is a log.
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
