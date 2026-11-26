@@ -43,8 +43,18 @@ in the name (`re.search`).
 (`r9lab-tag:pc%2Babs`), so SSSOM tools that need an id can load the file. Joined on `concept`
 with `dist/name-matches.csv`, it gives each tag its BAFU activity names.
 
-An agent proposed every row (`semapv:AgentBasedMatching`). A person who checks a row puts their
-ORCID CURIE in its `reviewer_id`; a row with no reviewer is a proposal, not a curated mapping.
+That file is built, by `just curate`, from a review log in
+[`mappings/r9lab-tags/`](mappings/r9lab-tags/). `predictions.sssom.tsv` holds what machines
+proposed (`semapv:AgentBasedMatching` and other machine justifications), with no reviewer.
+`reviews.sssom.tsv` gets one row per rater per verdict: their ORCID CURIE in `reviewer_id`,
+`reviewer_agreement` 1 (agree), -1 (disagree) or 0 (unsure), `review_date`, and the seconds the
+verdict took in `review_seconds`. A rater's latest row for a mapping counts. The built file keeps
+every proposal no rater rejected, with the raters who agreed in `reviewer_id`; a row with no
+reviewer is still a proposal, not a curated mapping. A proposal with one rater for and one
+against stays, without a reviewer, until the rater against it changes their verdict. A tag whose
+only proposal every rater rejected fails `just check` until it gets a new proposal, or
+`sssom:NoTermFound`. Verdicts on a withdrawn proposal stay in the log, and `just check` warns about them.
+[ADR 0005](docs/decisions/0005-mapping-review-log.md) says why it is a log.
 
 Concept ids are opaque and never reused: a concept that goes away is marked `deprecated`,
 with `replaced_by`, and stays in the file. Licensed code lists (UNU-KEYs) are linked by code
@@ -114,6 +124,24 @@ The vocabulary is CC0, so a definition is written in our own words: Ashby and IE
 are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they are.
 Concepts still without the three texts are listed in `tests/pending-text.txt`, and the tests
 fail on any other concept that lacks one.
+
+### Sort a part
+
+The notes follow these rules, and a new note must not break them:
+
+- A part goes by the material that makes up most of its mass. That holds for filled grades
+  too: PA66-GF30 is polyamide, but a silicone thermal pad that is mostly ceramic filler goes by the ceramic.
+- A foam goes by its polymer when the record names it, and a metal foam goes by its metal.
+- Glass-fibre reinforced polymer is for laminates and continuous-fibre or resin parts. Woven
+  glass fabric is glass fibre, not textile.
+- A plated part goes by its base metal, unless the record lists the plating on its own.
+- Enamelled winding wire in a coil, motor or transformer goes by its metal, not cable.
+- Ferrous means iron-based (Ashby). Stainless steel has at least 10.5 % chromium.
+- Elastomers are their own family. "Polymer" means plastics.
+- A battery is one or more cells fitted for use (IEC 60050-482). A bare cell cut from a pack
+  is a lithium-ion cell. The pilot's battery class takes both.
+- In the pilot, a ceramic part is "other", and a fabric that is mostly plastic by mass is
+  "plastic".
 
 ### Suggested mappings
 

@@ -1,0 +1,108 @@
+#curie_map:
+#  components: https://w3id.org/r9lab/vocabulary/components/
+#  materials: https://w3id.org/r9lab/vocabulary/materials/
+#  orcid: https://orcid.org/
+#  r9lab-tag: https://w3id.org/r9lab/vocabulary/tags/
+#  semapv: https://w3id.org/semapv/vocab/
+#  skos: http://www.w3.org/2004/02/skos/core#
+#  sssom: https://w3id.org/sssom/
+#mapping_set_id: https://w3id.org/r9lab/vocabulary/r9lab-tags/predictions.sssom.tsv
+#mapping_set_title: Machine-proposed mappings from R9lab tags to R9lab vocabulary concepts,
+#  before review
+#license: https://creativecommons.org/publicdomain/zero/1.0/
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_tool	comment	mapping_justification
+r9lab-tag:battery%20pack	battery pack	skos:broadMatch	components:c0001	battery			semapv:AgentBasedMatching
+r9lab-tag:battery%20packs	battery packs	skos:broadMatch	components:c0001	battery			semapv:AgentBasedMatching
+r9lab-tag:lithium%20battery	lithium battery	skos:broadMatch	components:c0001	battery		primary or rechargeable	semapv:AgentBasedMatching
+r9lab-tag:li-polymer%20battery	li-polymer battery	skos:broadMatch	components:c0002	lithium-ion battery			semapv:AgentBasedMatching
+r9lab-tag:lithium-ion%20battery	lithium-ion battery	skos:exactMatch	components:c0002	lithium-ion battery			semapv:AgentBasedMatching
+r9lab-tag:ni-mh%20battery	ni-mh battery	skos:exactMatch	components:c0003	nickel-metal hydride battery			semapv:AgentBasedMatching
+r9lab-tag:antena%20pcb	antena pcb	skos:broadMatch	components:c0006	populated printed circuit board		misspelt	semapv:AgentBasedMatching
+r9lab-tag:computer%20cards	computer cards	skos:broadMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:graphics%20card	graphics card	skos:broadMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:motherboard	motherboard	skos:broadMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:pcb%20antena	pcb antena	skos:broadMatch	components:c0006	populated printed circuit board		misspelt	semapv:AgentBasedMatching
+r9lab-tag:pcb%20antenna	pcb antenna	skos:broadMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:populated%20circuit%20board	populated circuit board	skos:exactMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:populated%20printed%20circuit%20board	populated printed circuit board	skos:exactMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:populated%20printed%20circuitboard	populated printed circuitboard	skos:exactMatch	components:c0006	populated printed circuit board		misspelt	semapv:AgentBasedMatching
+r9lab-tag:ram	ram	skos:broadMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:ssd%20pcb	ssd pcb	skos:broadMatch	components:c0006	populated printed circuit board			semapv:AgentBasedMatching
+r9lab-tag:diode	diode	skos:broadMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:electrical%20componenents	electrical componenents	skos:closeMatch	components:c0007	electronic component		misspelt	semapv:AgentBasedMatching
+r9lab-tag:electrical%20component	electrical component	skos:closeMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:electrical%20components	electrical components	skos:closeMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:electrical%20componets	electrical componets	skos:closeMatch	components:c0007	electronic component		misspelt	semapv:AgentBasedMatching
+r9lab-tag:electronic%20component	electronic component	skos:exactMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:electronic%20components	electronic components	skos:exactMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:fuse	fuse	skos:broadMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:mosfet	mosfet	skos:broadMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:transistor	transistor	skos:broadMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:varistor	varistor	skos:broadMatch	components:c0007	electronic component			semapv:AgentBasedMatching
+r9lab-tag:processor	processor	skos:broadMatch	components:c0008	integrated circuit			semapv:AgentBasedMatching
+r9lab-tag:capacitor	capacitor	skos:exactMatch	components:c0009	capacitor			semapv:AgentBasedMatching
+r9lab-tag:resistor	resistor	skos:exactMatch	components:c0010	resistor			semapv:AgentBasedMatching
+r9lab-tag:led	led	skos:exactMatch	components:c0011	light-emitting diode			semapv:AgentBasedMatching
+r9lab-tag:iron%20core%20inductor	iron core inductor	skos:broadMatch	components:c0012	inductor			semapv:AgentBasedMatching
+r9lab-tag:transformer	transformer	skos:exactMatch	components:c0013	transformer			semapv:AgentBasedMatching
+r9lab-tag:trasformer	trasformer	skos:exactMatch	components:c0013	transformer		misspelt	semapv:AgentBasedMatching
+r9lab-tag:lcd	lcd	skos:exactMatch	components:c0015	liquid-crystal display			semapv:AgentBasedMatching
+r9lab-tag:lcd%20screen	lcd screen	skos:exactMatch	components:c0015	liquid-crystal display			semapv:AgentBasedMatching
+r9lab-tag:lcd%20touchscreen	lcd touchscreen	skos:broadMatch	components:c0015	liquid-crystal display			semapv:AgentBasedMatching
+r9lab-tag:flex%20cable	flex cable	skos:broadMatch	components:c0017	cable			semapv:AgentBasedMatching
+r9lab-tag:insulated%20cable	insulated cable	skos:exactMatch	components:c0017	cable			semapv:AgentBasedMatching
+r9lab-tag:insulated%20usb%20a%20cable	insulated usb a cable	skos:broadMatch	components:c0017	cable			semapv:AgentBasedMatching
+r9lab-tag:insulated%20usb%20c%20cable	insulated usb c cable	skos:broadMatch	components:c0017	cable			semapv:AgentBasedMatching
+r9lab-tag:insulated%20wire	insulated wire	skos:exactMatch	components:c0017	cable			semapv:AgentBasedMatching
+r9lab-tag:power%20cord	power cord	skos:broadMatch	components:c0017	cable			semapv:AgentBasedMatching
+r9lab-tag:static%20magnet	static magnet	skos:exactMatch	components:c0019	permanent magnet			semapv:AgentBasedMatching
+r9lab-tag:neodymium	neodymium	skos:closeMatch	components:c0020	neodymium magnet		names the element	semapv:AgentBasedMatching
+r9lab-tag:speaker%20module	speaker module	skos:closeMatch	components:c0023	loudspeaker driver			semapv:AgentBasedMatching
+r9lab-tag:speaker%20moudule	speaker moudule	skos:closeMatch	components:c0023	loudspeaker driver		misspelt	semapv:AgentBasedMatching
+r9lab-tag:bimetal	bimetal	skos:broadMatch	materials:m0001	metal			semapv:AgentBasedMatching
+r9lab-tag:steel	steel	skos:broadMatch	materials:m0002	ferrous metal		unqualified steel; could be carbon or stainless	semapv:AgentBasedMatching
+r9lab-tag:copper-aluminium%20heatsink	copper-aluminium heatsink	skos:broadMatch	materials:m0006	non-ferrous metal			semapv:AgentBasedMatching
+r9lab-tag:aluminium	aluminium	skos:closeMatch	materials:m0007	aluminium alloy			semapv:AgentBasedMatching
+r9lab-tag:copper	copper	skos:exactMatch	materials:m0009	copper			semapv:AgentBasedMatching
+r9lab-tag:brass	brass	skos:exactMatch	materials:m0011	brass			semapv:AgentBasedMatching
+r9lab-tag:palstic	palstic	skos:closeMatch	materials:m0020	polymer		misspelt	semapv:AgentBasedMatching
+r9lab-tag:plastic	plastic	skos:closeMatch	materials:m0020	polymer			semapv:AgentBasedMatching
+r9lab-tag:abs%2Bpa%20mix	abs+pa mix	skos:broadMatch	materials:m0021	thermoplastic			semapv:AgentBasedMatching
+r9lab-tag:abs%2Bps%20mix	abs+ps mix	skos:broadMatch	materials:m0021	thermoplastic			semapv:AgentBasedMatching
+r9lab-tag:hdpe	hdpe	skos:broadMatch	materials:m0022	polyethylene			semapv:AgentBasedMatching
+r9lab-tag:pe	pe	skos:exactMatch	materials:m0022	polyethylene			semapv:AgentBasedMatching
+r9lab-tag:pp	pp	skos:exactMatch	materials:m0023	polypropylene			semapv:AgentBasedMatching
+r9lab-tag:ps	ps	skos:exactMatch	materials:m0024	polystyrene			semapv:AgentBasedMatching
+r9lab-tag:abs	abs	skos:exactMatch	materials:m0025	ABS			semapv:AgentBasedMatching
+r9lab-tag:pc	pc	skos:exactMatch	materials:m0026	polycarbonate			semapv:AgentBasedMatching
+r9lab-tag:pc%2Babs	pc+abs	skos:exactMatch	materials:m0027	polycarbonate/ABS blend			semapv:AgentBasedMatching
+r9lab-tag:pc%2Babs%20mix	pc+abs mix	skos:exactMatch	materials:m0027	polycarbonate/ABS blend			semapv:AgentBasedMatching
+r9lab-tag:pvc	pvc	skos:exactMatch	materials:m0029	polyvinyl chloride			semapv:AgentBasedMatching
+r9lab-tag:pet	pet	skos:exactMatch	materials:m0030	polyethylene terephthalate			semapv:AgentBasedMatching
+r9lab-tag:nylon	nylon	skos:closeMatch	materials:m0031	polyamide			semapv:AgentBasedMatching
+r9lab-tag:pa	pa	skos:exactMatch	materials:m0031	polyamide			semapv:AgentBasedMatching
+r9lab-tag:thermoset%20plastic	thermoset plastic	skos:exactMatch	materials:m0034	thermoset			semapv:AgentBasedMatching
+r9lab-tag:bakalite	bakalite	skos:exactMatch	materials:m0036	phenolic resin		misspelt Bakelite	semapv:AgentBasedMatching
+r9lab-tag:pf	pf	skos:exactMatch	materials:m0036	phenolic resin		phenol formaldehyde	semapv:AgentBasedMatching
+r9lab-tag:rubber	rubber	skos:closeMatch	materials:m0038	elastomer			semapv:AgentBasedMatching
+r9lab-tag:glass	glass	skos:exactMatch	materials:m0043	glass			semapv:AgentBasedMatching
+r9lab-tag:ferrite	ferrite	skos:exactMatch	materials:m0048	ferrite			semapv:AgentBasedMatching
+r9lab-tag:paper-resin%20composite	paper-resin composite	skos:broadMatch	materials:m0050	composite			semapv:AgentBasedMatching
+r9lab-tag:gf%2Bpa%20mix	gf+pa mix	skos:broadMatch	materials:m0051	glass-fibre reinforced polymer			semapv:AgentBasedMatching
+r9lab-tag:foam	foam	skos:exactMatch	materials:m0053	foam			semapv:AgentBasedMatching
+r9lab-tag:mdf	mdf	skos:broadMatch	materials:m0055	wood			semapv:AgentBasedMatching
+r9lab-tag:paper	paper	skos:broadMatch	materials:m0056	paper and board			semapv:AgentBasedMatching
+r9lab-tag:cloth	cloth	skos:closeMatch	materials:m0057	textile			semapv:AgentBasedMatching
+r9lab-tag:synthetic%20wool	synthetic wool	skos:broadMatch	materials:m0057	textile			semapv:AgentBasedMatching
+r9lab-tag:brushless%20motor%20stator	brushless motor stator	skos:exactMatch	sssom:NoTermFound			part of c0022	semapv:AgentBasedMatching
+r9lab-tag:camera%20module	camera module	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:carbon	carbon	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:electrical%20motor%20part	electrical motor part	skos:exactMatch	sssom:NoTermFound			part of c0022	semapv:AgentBasedMatching
+r9lab-tag:electronic%20foil	electronic foil	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:fan%20blades	fan blades	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:keyboard%20module	keyboard module	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:laser%20module	laser module	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:lightbulb	lightbulb	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:microphone%20module	microphone module	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:pcb	pcb	skos:exactMatch	sssom:NoTermFound			bare (c0005) or populated (c0006)	semapv:AgentBasedMatching
+r9lab-tag:touchpad	touchpad	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
