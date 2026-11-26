@@ -23,5 +23,9 @@ update:
     if diff "$old" dist/name-matches.csv; then echo "name matches unchanged"; fi
 
 # The tests that read the pinned sources fail, instead of skipping, when the pipeline output is missing. As CI runs them.
-test-full: pipeline rdf
+test-full: pipeline rdf sssom-validate
     PIPELINE_OUTPUT_REQUIRED=1 uv run pytest
+
+# Check dist/r9lab-vocabulary.sssom.tsv against the SSSOM schema with sssom-py, run by uvx so it stays out of the lock. Needs `just rdf` first.
+sssom-validate:
+    uvx --from sssom==0.4.23 sssom validate dist/r9lab-vocabulary.sssom.tsv

@@ -387,3 +387,44 @@ def write(schemes: dict[str, Scheme], version: str, out: Path, matches: list[Mat
             label = schemes[slug].concepts[cid]["label"]
             w.writerow([schemes[slug].iri + cid, label, f"{family}-{ver}", pattern, len(hits)])
     return [ttl, jsonld, names]
+
+
+def write_sssom(schemes: dict[str, Scheme], version: str, out: Path, author: str) -> Path:
+    """Write `r9lab-vocabulary.sssom.tsv` into `out`: one SSSOM row per `mappings` entry.
+
+    Every row is a person's curation, so its justification is `semapv:ManualMappingCuration`
+    and `author` (an ORCID IRI) is its author. Mappings from or to a deprecated concept are
+    left out: SSSOM has no field for a deprecated subject, and the SKOS graph keeps them.
+    The YAML records no date per mapping, so there is no `mapping_date` column.
+    """
+    orcid = "https://orcid.org/"
+    curie_map = {
+        **PREFIXES,
+        **{slug: s.iri for slug, s in schemes.items()},
+        "orcid": orcid,
+        "semapv": "https://w3id.org/semapv/vocab/",
+        "skos": str(SKOS),
+    }
+    meta = {
+        "curie_map": curie_map,
+        "mapping_set_id": f"{BASE}r9lab-vocabulary.sssom.tsv",
+        "mapping_set_version": version,
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+    }
+    author_id = f"orcid:{author.removeprefix(orcid)}"
+    rows = sorted(
+        (f"{slug}:{cid}", c["label"], f"skos:{RELATIONS[relation].fragment}", f"{prefix}:{local}")
+        for slug, s in schemes.items()
+        for cid, c in s.concepts.items()
+        if not c.get("deprecated")
+        for relation, prefix, local in mappings(c)
+        if not (prefix in schemes and schemes[prefix].concepts[local].get("deprecated"))
+    )
+    path = out / "r9lab-vocabulary.sssom.tsv"
+    out.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as f:
+        f.writelines(f"#{line}\n" for line in yaml.safe_dump(meta, sort_keys=False).splitlines())
+        w = csv.writer(f, delimiter="\t", lineterminator="\n")
+        w.writerow(["subject_id", "subject_label", "predicate_id", "object_id", "mapping_justification", "author_id"])
+        w.writerows((*row, "semapv:ManualMappingCuration", author_id) for row in rows)
+    return path

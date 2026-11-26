@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+import yaml
 from rdflib import OWL, RDF, SKOS, XSD, Graph, Literal, URIRef
 from yaml.constructor import ConstructorError
 
@@ -172,3 +173,44 @@ def test_a_repeated_concept_id_is_an_error_not_an_overwrite(tmp_path: Path):
     (tmp_path / "t.yaml").write_text("scheme: {slug: t, title: t}\nconcepts:\n  t01: {label: a}\n  t01: {label: b}\n")
     with pytest.raises(ConstructorError, match="repeated key t01"):
         scheme.load(tmp_path)
+
+
+ORCID = "https://orcid.org/0009-0006-6953-909X"
+
+
+def read_sssom(path: Path) -> tuple[dict, list[dict[str, str]]]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    header = [line[1:] for line in lines if line.startswith("#")]
+    rows = [line.split("\t") for line in lines if not line.startswith("#")]
+    return yaml.safe_load("\n".join(header)), [dict(zip(rows[0], r, strict=True)) for r in rows[1:]]
+
+
+def test_sssom_has_a_metadata_block_and_one_row_per_mapping(schemes: Schemes, tmp_path: Path):
+    meta, rows = read_sssom(scheme.write_sssom(schemes, "0.1.0", tmp_path, ORCID))
+    assert meta["mapping_set_id"] == f"{scheme.BASE}r9lab-vocabulary.sssom.tsv"
+    assert meta["mapping_set_version"] == "0.1.0"
+    assert meta["license"] == "https://creativecommons.org/publicdomain/zero/1.0/"
+    assert meta["curie_map"]["materials"] == schemes["materials"].iri
+    assert meta["curie_map"]["cpc"] == scheme.PREFIXES["cpc"]
+    assert len(rows) == sum(1 for s in schemes.values() for c in s.concepts.values() for _ in scheme.mappings(c))
+    assert {
+        "subject_id": "materials:m0001",
+        "subject_label": "metal",
+        "predicate_id": "skos:exactMatch",
+        "object_id": "wd:Q11426",
+        "mapping_justification": "semapv:ManualMappingCuration",
+        "author_id": "orcid:0009-0006-6953-909X",
+    } in rows
+    keys = [(r["subject_id"], r["predicate_id"], r["object_id"]) for r in rows]
+    assert keys == sorted(keys)
+
+
+def test_sssom_leaves_out_mappings_from_or_to_a_deprecated_concept(tmp_path: Path):
+    schemes = one(
+        {
+            "t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"], "mappings": {"exact": ["wd:Q1"]}},
+            "t02": {"label": "b", "mappings": {"exact": ["wd:Q2"], "related": ["t:t01"]}},
+        }
+    )
+    _, rows = read_sssom(scheme.write_sssom(schemes, "test", tmp_path, ORCID))
+    assert [(r["subject_id"], r["object_id"]) for r in rows] == [("t:t02", "wd:Q2")]
