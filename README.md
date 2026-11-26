@@ -208,7 +208,11 @@ this repository reuses, and on what terms.
 Commit `data/fetches.jsonl` after a fetch that changes it: it holds checksums, not
 data, and is the history of every version of each source. Once a week, CI fetches again
 and comments on a "Source data revised upstream" issue when a source changed, so keep
-Issues turned on for this repository.
+Issues turned on for this repository. A source with a `sha256` pin in `sources.toml` (every
+implemented one here) never reaches that issue: new bytes fail `just fetch` on every run, pull
+requests included, and the weekly run opens or comments on a "Weekly pipeline run failed" issue
+instead. Pin the new
+hash once you have checked the revision.
 
 ## License
 

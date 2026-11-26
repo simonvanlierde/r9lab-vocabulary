@@ -92,9 +92,10 @@ jobs:
       - run: uv run r9lab-vocabulary release "$RUNNER_TEMP/release"
       - run: uv run r9lab-vocabulary release --check "$RUNNER_TEMP/release"
 
-      # tests/test_published.py fails, not skips, when the output is missing. The
-      # literal-value tripwire runs only on the weekly schedule, so a publisher revision
-      # fails that run instead of a PR.
+      # tests/test_published.py fails, not skips, when the output is missing. TRIPWIRE
+      # turns on tests/test_live.py, the live Wikidata check, on the weekly schedule only.
+      # A publisher revision of a source with a `sha256` pin fails `fetch` above on every
+      # run, pull requests included.
       - run: uv run pytest
         env:
           PIPELINE_OUTPUT_REQUIRED: "1"
@@ -119,7 +120,9 @@ jobs:
 
   revisions:
     # Weekly only. Comments on one open issue when a publisher served new bytes for a
-    # source the committed fetch log already had.
+    # source the committed fetch log already had. Only a source with no `sha256` pin can
+    # produce that report, and every implemented source here is pinned: new bytes for a
+    # pinned one fail `fetch`, this job finds no report, and `notify` reports the failure.
     name: report revised sources
     needs: check
     if: ${{ !cancelled() && github.event_name == 'schedule' }}
@@ -157,7 +160,7 @@ jobs:
           fi
 
   notify:
-    # Scheduled runs only. A tripwire failure is the weekly run's signal, so it opens one
+    # Scheduled runs only. A tripwire or pinned-fetch failure is the weekly run's signal, so it opens one
     # issue, or comments on the open one.
     name: "python: report failure"
     needs: [check, revisions]
