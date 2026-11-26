@@ -72,7 +72,7 @@ r9lab-tag:hdpe	hdpe	skos:broadMatch	materials:m0022	polyethylene			semapv:AgentB
 r9lab-tag:pe	pe	skos:exactMatch	materials:m0022	polyethylene			semapv:AgentBasedMatching
 r9lab-tag:pp	pp	skos:exactMatch	materials:m0023	polypropylene			semapv:AgentBasedMatching
 r9lab-tag:ps	ps	skos:exactMatch	materials:m0024	polystyrene			semapv:AgentBasedMatching
-r9lab-tag:abs	abs	skos:exactMatch	materials:m0025	acrylonitrile butadiene styrene			semapv:AgentBasedMatching
+r9lab-tag:abs	abs	skos:exactMatch	materials:m0025	ABS			semapv:AgentBasedMatching
 r9lab-tag:pc	pc	skos:exactMatch	materials:m0026	polycarbonate			semapv:AgentBasedMatching
 r9lab-tag:pc%2Babs	pc+abs	skos:exactMatch	materials:m0027	polycarbonate/ABS blend			semapv:AgentBasedMatching
 r9lab-tag:pc%2Babs%20mix	pc+abs mix	skos:exactMatch	materials:m0027	polycarbonate/ABS blend			semapv:AgentBasedMatching
