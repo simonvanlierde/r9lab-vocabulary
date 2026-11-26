@@ -32,9 +32,9 @@ they misspell.
 
 Each verdict appends one row to `mappings/r9lab-tags/reviews.sssom.tsv`: the mapping, the
 rater's ORCID CURIE (`reviewer_id`), `reviewer_agreement` (1 agree, -1 disagree, 0 unsure),
-`review_date`, and `review_seconds`, the time from the card's first showing to the verdict, measured
-on the server. A restart of the page between showing and verdict leaves `review_seconds` empty.
-A rater who changes their mind adds a row; their latest row counts, and the earlier one stays.
+`review_date` (the UTC date), and `review_seconds`, the time from the card's first showing since the
+page last started to the verdict, measured on the server. The page shows each card once; a rater who
+changes their mind adds a row to the log by hand. Their latest row counts, and the earlier one stays.
 
 ## How verdicts become the published file
 

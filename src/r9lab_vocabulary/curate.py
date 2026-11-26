@@ -198,7 +198,13 @@ def write_published(root: Path = Path()) -> int:
 
 
 def append_review(root: Path, row: dict[str, str]) -> None:
-    """Add one verdict to the end of the review log and flush it to disk, so a crash loses no verdict."""
+    """Add one verdict to the end of the review log and flush it to disk, so a crash loses no verdict.
+
+    Refuses an empty log: a row appended there would have no header, and `build` would reject the file.
+    """
+    if (root / REVIEWS).stat().st_size == 0:
+        msg = f"{REVIEWS} is empty; restore its header from git before reviewing"
+        raise ValueError(msg)
     with (root / REVIEWS).open("a", encoding="utf-8", newline="") as f:
         csv.writer(f, delimiter="\t", lineterminator="\n").writerow([row.get(c, "") for c in REVIEW_COLUMNS])
         f.flush()

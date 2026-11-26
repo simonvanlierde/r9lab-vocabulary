@@ -8,6 +8,6 @@ header small, #progress { opacity: .7; margin: 0 0 .25rem; }
 .definition, .note { margin: .5rem 0 0; }
 .note { opacity: .75; font-size: .9rem; }
 .verdicts { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: 1rem; }
-button { font: inherit; min-height: 3rem; border-radius: .5rem; border: 1px solid #8887; }
+button { font: inherit; min-height: 3rem; border-radius: .5rem; border: 1px solid GrayText; }
 button[value="agree"] { background: #2a7d2e26; }
 button[value="disagree"] { background: #b3261e26; }

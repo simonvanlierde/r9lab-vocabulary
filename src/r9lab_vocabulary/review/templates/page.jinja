@@ -14,6 +14,6 @@
   <div hx-sse:connect="/progress" hx-swap="innerHTML">{% include "progress.jinja" %}</div>
   <small>Reviewing as {{ s.reviewer }}. Keys: <kbd>a</kbd> agree, <kbd>u</kbd> unsure, <kbd>d</kbd> disagree.</small>
 </header>
-<main>{% include "card.jinja" %}</main>
+<main aria-live="polite">{% include "card.jinja" %}</main>
 </body>
 </html>

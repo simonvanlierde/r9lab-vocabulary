@@ -27,7 +27,9 @@ review port="8740":
     trap true INT  # let Ctrl-C stop the page, then still rebuild
     uv run --extra review python -m r9lab_vocabulary.review --port {{ port }}
     status=$?
-    uv run python -m r9lab_vocabulary.curate build && exit "$status"
+    [ "$status" -eq 130 ] && status=0  # Ctrl-C is the normal way to stop it
+    uv run python -m r9lab_vocabulary.curate build || exit
+    exit "$status"
 
 # Fetch, build and check everything, write dist/, and print how the match counts changed since the last run.
 update:
