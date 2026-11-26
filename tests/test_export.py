@@ -45,6 +45,7 @@ def test_text_fields_are_written_as_skos_notes():
         "example": ["x", "y"],
         "note": "Not a b.",
         "editorial_note": "No BAFU dataset.",
+        "hidden": ["aa"],
         "source": "https://www.wikidata.org/wiki/Q1",
     }
     schemes = one(
@@ -60,6 +61,7 @@ def test_text_fields_are_written_as_skos_notes():
     assert set(g.objects(a, SKOS.example)) == {Literal("x", lang="en"), Literal("y", lang="en")}
     assert g.value(a, SKOS.scopeNote) == Literal("Not a b.", lang="en")
     assert g.value(a, SKOS.editorialNote) == Literal("No BAFU dataset.", lang="en")
+    assert g.value(a, SKOS.hiddenLabel) == Literal("aa", lang="en")
     assert g.value(a, DCTERMS.source) == URIRef("https://www.wikidata.org/wiki/Q1")
     assert g.value(b, DCTERMS.source) == Literal("Ashby 2017, sec. 2.2")
     assert g.value(URIRef(schemes["t"].iri + "t03"), DCTERMS.source) == URIRef("http://example.org/c")

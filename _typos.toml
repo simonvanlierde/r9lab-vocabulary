@@ -13,6 +13,8 @@ NdFeB = "NdFeB"
 Nd = "Nd"
 # Latin-1 test fixture: `caf` is the start of an escaped "café".
 caf = "caf"
+# Hidden labels keep the misspellings R9lab records use.
+trasformer = "trasformer"
 
 # R9lab tags are kept as users typed them, misspellings included.
 [files]

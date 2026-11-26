@@ -57,6 +57,7 @@ concepts:
       bafu: ['^printed wiring board, (surface mount|through-hole), .*surface']
   c0006:
     label: populated printed circuit board
+    hidden: [populated printed circuitboard]
     definition: Printed circuit board with its electronic components mounted, also called a printed circuit board assembly.
     source: https://www.wikidata.org/wiki/Q3951866
     example: [a motherboard, a phone logic board, a power-supply board, a hard-drive controller board]
@@ -128,6 +129,7 @@ concepts:
       bafu: ['^inductor']
   c0013:
     label: transformer
+    hidden: [trasformer]
     definition: Electrical device that transfers energy from one circuit to another by electromagnetic induction, built from windings on a core.
     source: https://www.wikidata.org/wiki/Q11658
     example: [a mains transformer from an old power supply, a microwave-oven transformer, a doorbell transformer]
@@ -232,3 +234,12 @@ concepts:
     mappings: {broad: ['wd:Q80097', 'cpc:46420']}
     names:
       bafu: ['^battery cell, ']
+  c0025:
+    label: laser module
+    definition: Laser diode built into a unit with its optics and drive circuit, which gives off a focused beam.
+    source: https://www.wikidata.org/wiki/Q321098
+    example: [an optical pickup from a DVD drive, a laser pointer head, a barcode scanner engine, a laser rangefinder module]
+    note: 'Not light-emitting diode: an LED gives off light that is not coherent. Not populated printed circuit board: a laser unit taken off its board as a whole is this class.'
+    editorial_note: Wikidata has no item for the module; wd:Q321098 is the laser diode inside it. No BAFU dataset.
+    broader: [c0007]
+    mappings: {related: ['wd:Q321098']}

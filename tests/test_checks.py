@@ -21,16 +21,19 @@ def test_check_tag_mappings_catches(schemes: Schemes, tmp_path: Path):
         "#  semapv: https://w3id.org/semapv/vocab/\n#  skos: http://www.w3.org/2004/02/skos/core#\n"
         "#  sssom: https://w3id.org/sssom/\n#  t: https://example.org/old/\n#  orcid: https://orcid.org/\n"
         "subject_id\tsubject_label\tpredicate_id\tobject_id\tobject_label\tmapping_justification\treviewer_id\n"
-        f"r9lab-tag:steel\tsteel\tskos:broadMatch\tmaterials:m0002\tferrous metal\t{j}\torcid:0000-0002-1825-0097\n"
-        f"r9lab-tag:steel\tsteel\tskos:exactMatch\tmaterials:m0003\tcarbon and low-alloy steel\t{j}\n"
-        f"r9lab-tag:Glass\tGlass\tskos:sameAs\tmaterials:m9999\t\t{j}\n"
-        "r9lab-tag:pe\tpe\texact\tmaterials:m0022\tpolyethylene\tby hand\n"
-        f"r9lab-tag:pc abs\tpc abs\tskos:exactMatch\tcomponents:c0001\tbattery\t{j}\n"
-        f"r9lab-tag:pp\tpp\tskos:exactMatch\tmaterials:m0023\tPP\t{j}\n"
-        f"r9lab-tag:fan%20blades\tfan blades\tskos:exactMatch\tsssom:NoTermFound\t\t{j}\n"
-        f"r9lab-tag:tin\ttin\tskos:exactMatch\tt:t01\told\t{j}\n"
-        f"r9lab-tag:wood\twood\tskos:exactMatch\tsssom:NoTermFound\twood\t{j}\n"
-        f"r9lab-tag:zinc\tzinc\tskos:exactMatch\tmaterials:m0002\tferrous metal\t{j}\tmyid:simon\n"
+        f"r9lab-tag:material/steel\tsteel\tskos:broadMatch\tmaterials:m0002\tferrous metal\t{j}"
+        "\torcid:0000-0002-1825-0097\n"
+        f"r9lab-tag:material/steel\tsteel\tskos:exactMatch\tmaterials:m0003\tcarbon and low-alloy steel\t{j}\n"
+        f"r9lab-tag:material/Glass\tGlass\tskos:sameAs\tmaterials:m9999\t\t{j}\n"
+        "r9lab-tag:material/pe\tpe\texact\tmaterials:m0022\tpolyethylene\tby hand\n"
+        f"r9lab-tag:pc%20abs\tpc abs\tskos:exactMatch\tcomponents:c0001\tbattery\t{j}\n"
+        f"r9lab-tag:material/pp\tpp\tskos:exactMatch\tmaterials:m0023\tPP\t{j}\n"
+        f"r9lab-tag:material/fan%20blades\tfan blades\tskos:exactMatch\tsssom:NoTermFound\t\t{j}\n"
+        f"r9lab-tag:material/tin\ttin\tskos:exactMatch\tt:t01\told\t{j}\n"
+        f"r9lab-tag:material/wood\twood\tskos:exactMatch\tsssom:NoTermFound\twood\t{j}\n"
+        f"r9lab-tag:material/zinc\tzinc\tskos:exactMatch\tmaterials:m0002\tferrous metal\t{j}\tmyid:simon\n"
+        f"r9lab-tag:material/brass\tbrass\tskos:exactMatch\tmaterials:m0011\tbrass\t{j}\n"
+        f"r9lab-tag:keyword/brass\tbrass\tskos:exactMatch\tmaterials:m0011\tbrass\t{j}\n"
     )
     assert checks.check_tag_mappings(schemes, path) == [
         "t.sssom.tsv: 'steel' is not lower case or appears twice",
@@ -41,7 +44,7 @@ def test_check_tag_mappings_catches(schemes: Schemes, tmp_path: Path):
         "t.sssom.tsv: 'pe': justification 'by hand' is not a semapv term",
         "t.sssom.tsv: 'pe': prefix of exact is not in the curie_map",
         "t.sssom.tsv: 'pe': prefix of by hand is not in the curie_map",
-        "t.sssom.tsv: 'pc abs': subject_id r9lab-tag:pc abs is not r9lab-tag: plus the encoded tag",
+        "t.sssom.tsv: 'pc abs': subject_id r9lab-tag:pc%20abs is not r9lab-tag: plus a field and the tag",
         "t.sssom.tsv: 'pc abs': prefix of components:c0001 is not in the curie_map",
         "t.sssom.tsv: 'pp': object_label 'PP' is not materials:m0023's label",
         "t.sssom.tsv: 'tin': t:t01 is not a live concept",

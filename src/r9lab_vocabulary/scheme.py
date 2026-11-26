@@ -81,8 +81,9 @@ TEXT_FIELDS = {
     "example": SKOS.example,
     "note": SKOS.scopeNote,
     "editorial_note": SKOS.editorialNote,
+    "hidden": SKOS.hiddenLabel,
 }
-MANY_TEXTS = {"example"}
+MANY_TEXTS = {"example", "hidden"}
 # Where the definition comes from: a URL, written as an IRI, or a citation.
 SOURCE = "source"
 # A match: (scheme slug, concept id, family, version, pattern, matched names).
