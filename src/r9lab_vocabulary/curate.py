@@ -10,6 +10,7 @@ proposal no rater rejected, with the raters who agreed in `reviewer_id`. `docs/d
 from __future__ import annotations
 
 import csv
+import datetime as dt
 import io
 import re
 import sys
@@ -63,8 +64,8 @@ def latest_verdicts(reviews: list[dict[str, str]]) -> dict[tuple[str, str, str],
 def build(meta: dict, predictions: list[dict[str, str]], reviews: list[dict[str, str]]) -> str:
     """The published file: each proposal no rater rejected, with the raters who agreed as `reviewer_id`.
 
-    A proposal one rater agrees with and another rejects stays, with no reviewer, until a third look
-    settles it; one that only drew rejections is left out.
+    A proposal one rater agrees with and another rejects stays, with no reviewer, until the rater who
+    rejected it changes their verdict; one that only drew rejections is left out.
     """
     verdicts = latest_verdicts(reviews)
     out = io.StringIO()
@@ -91,35 +92,45 @@ def read(path: Path) -> tuple[dict, list[str], list[dict[str, str]]]:
     return meta, list(reader.fieldnames or []), rows
 
 
-def check(root: Path = Path()) -> list[str]:
-    """What breaks the review log's rules, and whether the published file is out of date."""
+def read_log(root: Path) -> tuple[dict, list[dict[str, str]], list[dict[str, str]], list[str]]:
+    """The log's metadata, proposals and reviews, and what breaks its rules."""
     try:
         meta, pcols, predictions = read(root / PREDICTIONS)
         _, rcols, reviews = read(root / REVIEWS)
     except FileNotFoundError as e:
-        return [f"{e.filename}: missing"]
+        return {}, [], [], [f"{e.filename}: missing"]
     errors = [f"{PREDICTIONS.name}: no {c} column" for c in PREDICTION_COLUMNS if c not in pcols]
     errors += [f"{REVIEWS.name}: no {c} column" for c in REVIEW_COLUMNS if c not in rcols]
+    if not errors:
+        errors = check_predictions(predictions) + check_reviews(reviews, {key(r) for r in predictions})
+    return meta, predictions, reviews, errors
+
+
+def check(root: Path = Path()) -> list[str]:
+    """What breaks the review log's rules, and whether the published file is out of date."""
+    meta, predictions, reviews, errors = read_log(root)
     if errors:
         return errors
-    errors = check_predictions(predictions) + check_reviews(reviews, {key(r) for r in predictions})
-    if errors:
-        return errors
-    built = build(meta, predictions, reviews)
     published = root / PUBLISHED
-    if not published.exists() or published.read_text(encoding="utf-8") != built:
-        errors.append(f"{PUBLISHED} is out of date: run `just curate`")
-    return errors
+    if not published.exists() or published.read_text(encoding="utf-8") != build(meta, predictions, reviews):
+        return [f"{PUBLISHED} is out of date: run `just curate`"]
+    return []
 
 
 def check_predictions(predictions: list[dict[str, str]]) -> list[str]:
-    """A proposal appears once and carries a machine justification."""
-    errors, proposed = [], set()
+    """A tag has one proposal, and it carries a machine justification.
+
+    One per tag, because the published file may hold a tag once (`scheme.check_tag_mappings`).
+    """
+    errors, proposed, tags = [], set(), set()
     for row in predictions:
         where = f"{PREDICTIONS.name}: {row['subject_label']!r} -> {row['object_id']}"
         if key(row) in proposed:
             errors.append(f"{where} is proposed twice")
+        elif row["subject_id"] in tags:
+            errors.append(f"{where}: the tag already has a proposal")
         proposed.add(key(row))
+        tags.add(row["subject_id"])
         if row["mapping_justification"] not in MACHINE:
             errors.append(f"{where}: {row['mapping_justification']!r} is not a machine justification")
     return errors
@@ -136,24 +147,38 @@ def check_reviews(reviews: list[dict[str, str]], proposed: set[tuple[str, str, s
             errors.append(f"{where}: reviewer_id {row['reviewer_id']!r} is not an ORCID CURIE")
         if row["reviewer_agreement"] not in ("1", "-1", "0"):
             errors.append(f"{where}: reviewer_agreement {row['reviewer_agreement']!r} is not 1, -1 or 0")
-        if not DATE.fullmatch(row["review_date"]):
+        if not is_date(row["review_date"]):
             errors.append(f"{where}: review_date {row['review_date']!r} is not YYYY-MM-DD")
         if row["review_seconds"] and not re.fullmatch(r"\d+(\.\d+)?", row["review_seconds"]):
             errors.append(f"{where}: review_seconds {row['review_seconds']!r} is not a number")
     return errors
 
 
-def write_published() -> int:
-    """Rewrite the published file from the log."""
-    meta, _, predictions = read(PREDICTIONS)
-    _, _, reviews = read(REVIEWS)
-    PUBLISHED.write_text(build(meta, predictions, reviews), encoding="utf-8")
+def is_date(text: str) -> bool:
+    """A real calendar date written YYYY-MM-DD."""
+    try:
+        dt.date.fromisoformat(text)
+    except ValueError:
+        return False
+    return bool(DATE.fullmatch(text))
+
+
+def write_published(root: Path = Path()) -> int:
+    """Rewrite the published file from the log; leave it alone and print why if the log breaks a rule."""
+    meta, predictions, reviews, errors = read_log(root)
+    if errors:
+        return fail(errors)
+    (root / PUBLISHED).write_text(build(meta, predictions, reviews), encoding="utf-8")
     return 0
 
 
-def report() -> int:
+def report(root: Path = Path()) -> int:
     """Print what breaks a rule; 1 if anything does."""
-    errors = check()
+    return fail(check(root))
+
+
+def fail(errors: list[str]) -> int:
+    """Print each error; 1 if there are any."""
     sys.stderr.writelines(f"error: {e}\n" for e in errors)
     return 1 if errors else 0
 
@@ -163,7 +188,8 @@ COMMANDS = {"build": write_published, "check": report}
 
 def main(argv: list[str] | None = None) -> int:
     """`build` rewrites the published file from the log; `check` reports what breaks a rule."""
-    command = (argv if argv is not None else sys.argv[1:] or ["check"])[0]
+    argv = sys.argv[1:] if argv is None else argv
+    command = argv[0] if argv else "check"
     if command in COMMANDS:
         return COMMANDS[command]()
     sys.stderr.write(f"error: unknown command {command!r}; use build or check\n")

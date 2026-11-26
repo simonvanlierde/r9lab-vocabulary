@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 ROOT = Path(__file__).resolve().parent.parent
 HEAD = "#curie_map:\n#  r9lab-tag: https://w3id.org/r9lab/vocabulary/tags/\n"
-A, B = "orcid:0000-0002-1825-0097", "orcid:0000-0001-5109-3700"
+A, B, X = "orcid:0000-0002-1825-0097", "orcid:0000-0001-5109-3700", "orcid:0000-0002-1694-233X"
 
 
 def tsv(columns: tuple[str, ...], rows: list[dict[str, str]]) -> str:
@@ -48,14 +48,20 @@ def test_the_review_log_breaks_no_rule_and_the_published_file_is_current():
 
 
 def test_build_publishes_what_no_rater_rejected_with_the_raters_who_agreed():
-    predictions = [proposal(t, "m:1") for t in ("agreed", "rejected", "split", "unsure", "untouched", "changed")]
+    tags = ("agreed", "rejected", "split", "outvoted", "unsure", "mixed", "untouched", "changed")
+    predictions = [proposal(t, "m:1") for t in tags]
     reviews = [
         review("agreed", "m:1", B, "1"),
         review("agreed", "m:1", A, "1"),
         review("rejected", "m:1", A, "-1"),
         review("split", "m:1", A, "1"),
         review("split", "m:1", B, "-1"),
+        review("outvoted", "m:1", A, "1"),
+        review("outvoted", "m:1", B, "-1"),
+        review("outvoted", "m:1", X, "1"),  # one rejection holds until its rater changes it
         review("unsure", "m:1", A, "0"),
+        review("mixed", "m:1", A, "1"),
+        review("mixed", "m:1", B, "0"),  # unsure is not a rejection
         review("changed", "m:1", A, "-1"),
         review("changed", "m:1", A, "1"),  # the rater's later row wins
     ]
@@ -63,7 +69,9 @@ def test_build_publishes_what_no_rater_rejected_with_the_raters_who_agreed():
     assert published_rows(built) == [
         ("agreed", f"{B}|{A}"),  # sorted, so the order does not depend on who reviewed first
         ("split", ""),
+        ("outvoted", ""),
         ("unsure", ""),
+        ("mixed", A),
         ("untouched", ""),
         ("changed", A),
     ]
@@ -73,21 +81,46 @@ def test_check_catches_each_broken_rule(tmp_path: Path):
     bad = proposal("hand", "m:1") | {"mapping_justification": "semapv:ManualMappingCuration"}
     write_log(
         tmp_path,
-        [proposal("twice", "m:1"), proposal("twice", "m:1"), bad],
+        [proposal("twice", "m:1"), proposal("twice", "m:1"), proposal("twice", "m:2"), bad],
         [
             review("ghost", "m:9", A, "1"),
             review("twice", "m:1", "simon", "yes", review_date="26 Nov", review_seconds="soon"),
+            review("twice", "m:1", f"{A}x", "1", review_date="2026-13-45"),
+            review("twice", "m:1", A, "1", review_date="2026-11-26x"),
         ],
     )
     assert curate.check(tmp_path) == [
         "predictions.sssom.tsv: 'twice' -> m:1 is proposed twice",
+        "predictions.sssom.tsv: 'twice' -> m:2: the tag already has a proposal",
         "predictions.sssom.tsv: 'hand' -> m:1: 'semapv:ManualMappingCuration' is not a machine justification",
         "reviews.sssom.tsv row 1: r9lab-tag:ghost -> m:9 is not a proposal",
         "reviews.sssom.tsv row 2: reviewer_id 'simon' is not an ORCID CURIE",
         "reviews.sssom.tsv row 2: reviewer_agreement 'yes' is not 1, -1 or 0",
         "reviews.sssom.tsv row 2: review_date '26 Nov' is not YYYY-MM-DD",
         "reviews.sssom.tsv row 2: review_seconds 'soon' is not a number",
+        f"reviews.sssom.tsv row 3: reviewer_id '{A}x' is not an ORCID CURIE",
+        "reviews.sssom.tsv row 3: review_date '2026-13-45' is not YYYY-MM-DD",
+        "reviews.sssom.tsv row 4: review_date '2026-11-26x' is not YYYY-MM-DD",
     ]
+
+
+def test_check_accepts_every_valid_verdict(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    reviews = [review("steel", "m:1", A, "1"), review("steel", "m:1", B, "-1"), review("steel", "m:1", X, "0")]
+    write_log(tmp_path, [proposal("steel", "m:1")], reviews)
+    monkeypatch.chdir(tmp_path)
+    assert curate.main(["build"]) == 0
+    assert curate.check(tmp_path) == []
+
+
+def test_build_refuses_a_broken_log_and_leaves_the_published_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    write_log(tmp_path, [proposal("steel", "m:1")], [review("steel", "m:1", A, "yes")])
+    (tmp_path / curate.PUBLISHED).write_text("before\n")
+    monkeypatch.chdir(tmp_path)
+    assert curate.main(["build"]) == 1
+    assert (tmp_path / curate.PUBLISHED).read_text() == "before\n"
+    assert "error: reviews.sssom.tsv row 1: reviewer_agreement 'yes'" in capsys.readouterr().err
 
 
 def test_check_fails_when_the_published_file_is_stale_and_build_fixes_it(
@@ -100,12 +133,17 @@ def test_check_fails_when_the_published_file_is_stale_and_build_fixes_it(
     assert curate.main(["build"]) == 0
     assert curate.main(["check"]) == 0
     assert published_rows((tmp_path / curate.PUBLISHED).read_text()) == [("steel", A)]
+    with (tmp_path / curate.PUBLISHED).open("a") as f:
+        f.write("r9lab-tag:copper\tcopper\n")  # a hand edit
+    assert curate.main([]) == 1  # no command means check
 
 
 def test_check_names_a_missing_column_and_a_missing_file(tmp_path: Path):
     write_log(tmp_path, [], [])
     (tmp_path / curate.REVIEWS).write_text(HEAD + "subject_id\n")
     assert curate.check(tmp_path)[0] == "reviews.sssom.tsv: no predicate_id column"
+    (tmp_path / curate.PREDICTIONS).write_text(HEAD + "subject_id\n")
+    assert curate.check(tmp_path)[0] == "predictions.sssom.tsv: no subject_label column"
     (tmp_path / curate.PREDICTIONS).unlink()
     assert curate.check(tmp_path) == [f"{tmp_path / curate.PREDICTIONS}: missing"]
 
