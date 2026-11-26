@@ -305,29 +305,49 @@ concepts:
       bafu: ['^glass fibre, at plant']
   m0046:
     label: ceramic
-    definition: Inorganic non-metallic crystalline solid formed by heat.
+    definition: Inorganic non-metallic crystalline solid formed by heat, Ashby's ceramic family.
+    source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
+    example: [a porcelain insulator, an alumina circuit substrate, a ferrite core, stoneware]
+    note: 'Not glass: glass is amorphous. Wikidata''s ceramic does not require a crystalline structure; here glass is left out.'
     mappings: {exact: ['pmdco:PMD_0000546', 'wd:Q45621']}
   m0047:
     label: technical ceramic
-    definition: Engineering ceramics such as alumina substrates and insulators.
+    definition: Ceramic engineered for high-performance uses, such as alumina, zirconia or silicon carbide in substrates, insulators and heating elements.
+    source: https://w3id.org/pmd/co/PMD_0050054
+    example: [an alumina substrate, a ceramic fuse body, a zirconia oxygen sensor, a silicon carbide heating element]
+    note: 'Not ferrite: magnetic iron oxide ceramics have their own class. Clay ceramics such as stoneware and tableware stay at ceramic.'
     broader: [m0046]
     mappings: {exact: ['pmdco:PMD_0050054'], broad: ['cpc:37291']}
   m0048:
     label: ferrite
-    definition: Ceramic iron oxide compound, as in ferrite cores and magnets.
+    definition: Ceramic of iron oxide combined with other metal oxides, often magnetic, as in ferrite cores and magnets.
+    source: https://www.wikidata.org/wiki/Q114047906
+    example: [a ferrite toroid core, a ferrite bead on a cable, a ferrite loudspeaker magnet, a transformer core of ferrite]
+    note: 'Not ferrous metal: ferrite is an oxide, not an alloy, and the ferrite phase of steel is steel. Not technical ceramic, though ferrites are engineered ceramics too.'
     broader: [m0046]
     mappings: {exact: ['wd:Q114047906']}
     names:
       bafu: ['^ferrite']
   m0049:
     label: hybrid material
-    definition: Ashby's hybrid family; composites, foams and natural materials.
+    definition: Combination of two or more materials, or of a material and space, with properties neither has alone, Ashby's hybrid family.
+    source: Ashby, Materials Selection in Mechanical Design, 5th ed., 2017, sec. 2.2
+    example: [FR-4, a carbon-fibre panel, plywood, a foam gasket]
+    note: Covers composites, foams, natural materials and textiles. A part of separate materials that can be taken apart is recorded by each material, not as a hybrid.
   m0050:
     label: composite
+    definition: Two or more unlike materials bonded together, usually fibres or particles in a matrix, that stay distinct in the finished part.
+    source: https://www.wikidata.org/wiki/Q181790
+    example: [glass-fibre reinforced polymer, carbon-fibre reinforced polymer, FR-2 paper-phenolic board, a mica-filled insulator]
+    note: 'Not textile: fibres without a matrix are textile. Paper or foil laminated with plastic goes by its main material.'
     broader: [m0049]
     mappings: {exact: ['pmdco:PMD_0000577', 'wd:Q181790']}
   m0051:
     label: glass-fibre reinforced polymer
+    definition: Polymer reinforced with glass fibre, as in fibreglass sheet and glass-fibre resin mouldings.
+    source: https://www.wikidata.org/wiki/Q7224880
+    example: [a fibreglass enclosure, a GRP panel, a glass-fibre epoxy sheet, FR-4]
+    note: 'GFRP, GRP, fibreglass. Not glass fibre: bare fibre without resin is glass fibre. Short-fibre glass-filled moulding grades, such as PA66-GF30, go by their polymer; this concept is for laminates and continuous-fibre or resin parts.'
     broader: [m0050]
     mappings: {exact: ['pmdco:PMD_0090008', 'wd:Q7224880']}
     names:
@@ -335,16 +355,27 @@ concepts:
   m0052:
     label: FR-4 laminate
     definition: Flame-retardant glass-fibre epoxy laminate, the usual circuit board substrate.
+    source: https://www.wikidata.org/wiki/Q2466079
+    example: [a plain FR-4 sheet, an FR-4 insulating spacer, a copper-clad FR-4 offcut]
+    note: 'Not printed circuit board: the board with its components is a component; this is the laminate. Other board laminates such as FR-2 paper-phenolic are composite.'
     broader: [m0051]
     mappings: {exact: ['wd:Q2466079']}
   m0053:
     label: foam
+    definition: Solid with gas-filled cells throughout, as in packaging, padding and insulation.
+    source: https://www.wikidata.org/wiki/Q215414
+    example: [a polyethylene foam sheet, an acoustic foam pad, a foam gasket, aluminium foam]
+    note: 'Not polyurethane, polystyrene or polyethylene: a foam whose polymer is known goes by that polymer, as PU foam and EPS do. Wikidata''s foam also covers liquid foams; here only solid foams.'
     broader: [m0049]
-    mappings: {exact: ['pmdco:PMD_0020126', 'wd:Q215414']}
+    mappings: {exact: ['pmdco:PMD_0020126'], close: ['wd:Q215414']}
   m0054:
     label: natural material
+    definition: Material from plants or animals used with its natural structure kept, such as wood, paper, leather and cork.
+    source: https://www.wikidata.org/wiki/Q2451477
+    example: [wood, cardboard, leather, cork]
+    note: 'Not polymer: biobased plastics such as PLA are polymers. Wikidata''s natural material leaves out processed matter; here processed forms such as paper, board and tanned leather are included.'
     broader: [m0049]
-    mappings: {exact: ['wd:Q2451477']}
+    mappings: {close: ['wd:Q2451477']}
   m0055:
     label: wood
     note: 'Not paper and board, though both are wood fibre: a felted sheet such as cardboard is paper and board, while fibreboard and particle board are wood. Cement-bonded particle board is a wood-cement hybrid, not wood.'
@@ -375,5 +406,9 @@ concepts:
     mappings: {exact: ['wd:Q28823'], broad: ['cpc:26']}
   m0058:
     label: leather
+    definition: Animal hide made durable and flexible by tanning.
+    source: https://www.wikidata.org/wiki/Q286
+    example: [a leather watch strap, a leather phone case, leather upholstery, a leather carrying handle]
+    note: 'Not polymer: artificial leather of PU or PVC goes by its polymer. Not textile: leather is hide, not fibre.'
     broader: [m0054]
     mappings: {exact: ['wd:Q286'], broad: ['cpc:29']}
