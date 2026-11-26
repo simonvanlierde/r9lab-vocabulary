@@ -35,7 +35,7 @@ redistribute = true
 id = "unu-keys-v2"
 name = "E-waste Statistics Guidelines, third edition (UNU-KEYs v2 and CPC 2.1 concordance)"
 status = "unimplemented"
-reason = "Tables are in a PDF under CC BY-NC-SA 4.0; codes are checked by hand until a reader exists. The scheme points to codes and copies no names."
+reason = "Tables are in a PDF under CC BY-NC-SA 4.0. The v1 and v2 code lists (Tables 19 and 2) are typed into FIXED_CODES in scheme.py, read from the PDF with SHA-256 605617fd390e202e74900b740e9a79d58d7ffb5d18a6fab4c75716df16c43570; the scheme points to codes and copies no names."
 
 # BAFU releases, one source each, read for activity names only: `just rdf` fails when a
 # `bafu` pattern matches no live activity in a release it applies to. Add the next
