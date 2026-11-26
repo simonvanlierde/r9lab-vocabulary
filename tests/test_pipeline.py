@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import json
 import sqlite3
 import tarfile
 import zipfile
@@ -191,23 +192,28 @@ def test_the_bafu_reader_takes_an_ecospold1_zip():
     ]
 
 
-def test_the_bafu_reader_takes_a_brightway_project_and_skips_biosphere_flows(tmp_path: Path):
+def brightway_archive(tmp_path: Path, name: str | bytes) -> Path:
     db = tmp_path / "databases.db"
     con = sqlite3.connect(db)
     con.execute("CREATE TABLE activitydataset (code TEXT, database TEXT, location TEXT, name TEXT, type TEXT)")
     con.executemany(
         "INSERT INTO activitydataset VALUES (?, ?, ?, ?, ?)",
         [
-            ("p1", "BAFU-2025-v2", "RER", "Brass, at plant", "processwithreferenceproduct"),
+            ("p1", "BAFU-2025-v2", "RER", name, "processwithreferenceproduct"),
             ("e1", "bio", None, "CO2", "emission"),
         ],
     )
     con.commit()
     con.close()
-    buf = io.BytesIO()
-    with tarfile.open(fileobj=buf, mode="w:gz") as t:
+    archive = tmp_path / "source.tar.gz"
+    with tarfile.open(archive, mode="w:gz") as t:
         t.add(db, arcname="BAFU-2025-v2.abc/lci/databases.db")
-    _, rows = pipeline.parse({"id": "bafu-2025-v2"}, buf.getvalue())
+    return archive
+
+
+def test_the_bafu_reader_takes_a_brightway_project_and_skips_biosphere_flows(tmp_path: Path):
+    archive = brightway_archive(tmp_path, "Brass, at plant")
+    _, rows = pipeline.parse({"id": "bafu-2025-v2"}, archive.read_bytes())
     assert rows == [{"code": "p1", "name": "Brass, at plant", "location": "RER"}]
 
 
@@ -298,14 +304,15 @@ def test_build_reuses_bafu_rows(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
     raw = tmp_path / "source.zip"
     with zipfile.ZipFile(raw, "w") as archive:
         archive.writestr("process_sample.xml", '<dataset><referenceFunction name="Sample"/></dataset>')
-    pipeline.sourceledger.record(source, raw)
+    pipeline.sourceledger.record(source, raw, retrieved_at="2020-01-01T12:00:00Z")
 
     cache = tmp_path / "data/raw/.bafu-cache/bafu-2030-v1"
     assert pipeline.main(["build", "--dry-run"]) == 0
     assert not cache.exists()
     assert pipeline.main(["build"]) == 0
     assert cache.is_file()
-    output = (tmp_path / "data/processed/bafu-2030-v1.csv").read_bytes()
+    output_path = tmp_path / "data/processed/bafu-2030-v1.csv"
+    output = output_path.read_bytes()
 
     reader = pipeline.NAME_LISTS["bafu"]
 
@@ -314,11 +321,37 @@ def test_build_reuses_bafu_rows(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
 
     monkeypatch.setitem(pipeline.NAME_LISTS, "bafu", pipeline.NameList(unexpected_read, reader.live))
     assert pipeline.main(["build"]) == 0
-    assert (tmp_path / "data/processed/bafu-2030-v1.csv").read_bytes() == output
+    assert output_path.read_bytes() == output
+
+    retrieved_at = "2020-01-02T12:00:00Z"
+    pipeline.sourceledger.record(source, raw, retrieved_at=retrieved_at)
+    assert pipeline.main(["build"]) == 0
+    (row,) = pipeline.sourceledger.read_output(output_path)
+    assert row["retrieved_at"] == retrieved_at
+    package = json.loads(output_path.with_name("datapackage.json").read_text(encoding="utf-8"))
+    assert package["resources"][0]["sourceledger"]["retrieved_at"] == retrieved_at
+    refreshed_output = output_path.read_bytes()
 
     (tmp_path / "data/raw/bafu-2030-v1.zip").write_bytes(b"changed behind the fetch record")
     assert pipeline.main(["build"]) == 3
-    assert (tmp_path / "data/processed/bafu-2030-v1.csv").read_bytes() == output
+    assert output_path.read_bytes() == refreshed_output
+
+
+def test_build_preserves_brightway_blob_cells_without_caching(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.chdir(tmp_path)
+    manifest = tmp_path / "sources.toml"
+    manifest.write_text(
+        'output_format = "parquet"\n[[source]]\nid = "bafu-2030-v1"\n'
+        'url = "https://example.org/bafu.tar.gz"\nstatus = "implemented"\n',
+        encoding="utf-8",
+    )
+    (source,) = pipeline.sourceledger.load_manifest(manifest)
+    pipeline.sourceledger.record(source, brightway_archive(tmp_path, b"Sample"))
+
+    assert pipeline.main(["build"]) == 0
+    (row,) = pipeline.sourceledger.read_output(tmp_path / "data/processed/bafu-2030-v1.parquet")
+    assert row["name"] == "b'Sample'"
+    assert not (tmp_path / "data/raw/.bafu-cache/bafu-2030-v1").exists()
 
 
 def test_bafu_cache_misses_after_input_changes_or_corruption(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

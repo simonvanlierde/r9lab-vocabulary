@@ -98,6 +98,9 @@ def _write(path: Path, key: bytes, rows: list[dict[str, str]]) -> None:
             digest = hashlib.sha256(b"[")
             file.write(b"[")
             for index, row in enumerate(rows):
+                # SQLite can return BLOBs in text columns. SourceLedger formats those cells.
+                if any(not isinstance(cell, str) for cell in row.values()):
+                    return
                 line = (b"," if index else b"") + json.dumps(row, ensure_ascii=True).encode()
                 if file.tell() + len(line) + 1 > _MAX_BYTES:
                     return
