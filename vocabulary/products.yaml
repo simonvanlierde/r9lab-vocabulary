@@ -86,10 +86,11 @@ concepts:
     mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0015:
     label: mobile phone
-    definition: Portable telephone that makes calls over a cellular radio network, smartphone or basic phone.
+    definition: Portable telephone that makes calls over a cellular radio network, smartphones and basic phones included.
     source: https://www.wikidata.org/wiki/Q17517
     example: [a smartphone, a feature phone, a flip phone, a rugged phone]
-    note: 'All mobile phones in the corpus so far are smartphones. Not desk phone: UNU-KEY puts mobile phones in 0306 and fixed telephones in 0305. Not tablet, even one with a SIM slot.'
+    note: 'Not desk phone: UNU-KEY puts mobile phones in 0306 and fixed telephones in 0305. Not tablet, even one with a SIM slot.'
+    editorial_note: All mobile phones in the corpus so far are smartphones.
     broader: [p0002]
     mappings: {exact: ['wd:Q17517'], close: ['r9lab-cpv:3225'], broad: ['cpc:47222', 'unu1:0306', 'unu2:0306', 'weee6:6'], narrow: ['wd:Q22645']}
   p0016:
@@ -104,7 +105,7 @@ concepts:
     definition: Network device that connects computer networks and forwards data between them, home gateways included.
     source: https://www.wikidata.org/wiki/Q5318
     example: [a Wi-Fi router, a DSL home gateway, a cable modem router, a mesh Wi-Fi node]
-    note: 'Includes home gateways. Not desk phone: a gateway with phone ports is still a router. UNU-KEY files routers under 0301 with small IT equipment, not with telephones.'
+    note: 'Not desk phone: a gateway with phone ports is still a router. UNU-KEY files routers under 0301 with computer mice and keyboards, not with telephones.'
     broader: [p0002]
     mappings: {exact: ['wd:Q5318'], broad: ['cpc:47223', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:324131']}
   p0018:
@@ -117,7 +118,7 @@ concepts:
     mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0402', 'unu2:0402', 'weee6:5'], close: ['r9lab-cpv:381121']}
   p0019:
     label: headphones
-    definition: Pair of small loudspeakers worn on or in the ears, wired or wireless, headsets with a microphone included.
+    definition: Pair of small loudspeakers worn on or in the ears, including wireless earbuds and headsets with a microphone.
     source: https://www.wikidata.org/wiki/Q186819
     example: [over-ear headphones, wireless earbuds with their charging case, a wired in-ear headset, a gaming headset]
     note: Not speaker, which plays into the room (UNU-KEY 0405, against 0401 here). Not loudspeaker driver, which is a component taken out of either.
@@ -132,7 +133,7 @@ concepts:
     mappings: {broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
   p0021:
     label: radio
-    definition: Receiver for sound broadcasts, mains or battery powered, as a product of its own.
+    definition: Stand-alone receiver for sound broadcasts, mains or battery powered.
     example: [a portable FM radio, a DAB radio, a clock radio, a kitchen radio]
     note: 'Includes clock radios. Not speaker: a radio tunes broadcasts itself, a speaker only plays what it is sent. UNU-KEY v1 files mains and clock radios under 0402, v2 under 0403.'
     broader: [p0003]
