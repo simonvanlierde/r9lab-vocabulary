@@ -120,6 +120,16 @@ def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Scheme
             "must be a non-empty pattern",
         ),
         ({"t01": {"label": "a", "mappings": {"exact": "wd:Q1"}}}, "mappings must map each relation to a list"),
+        ({"t01": {"label": "a", "notation": 1}, "t02": {"label": "b", "notation": "1"}}, "notation '1' is also t01's"),
+        ({"t01": {"label": "a", "deprecated": True, "replaced_by": ["t01"]}}, "replaced_by t01 is itself"),
+        (
+            {
+                "t01": {"label": "a", "deprecated": True, "replaced_by": ["t02"]},
+                "t02": {"label": "b", "deprecated": True},
+            },
+            "replaced_by t02 is deprecated",
+        ),
+        ({"t01": None}, "t01: no label"),
     ],
 )
 def test_validate_catches(concepts: dict, message: str):
