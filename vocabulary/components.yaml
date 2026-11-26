@@ -1,6 +1,5 @@
 # Component classes: parts whose footprint is set by what they are rather than by one
-# material (ruling of 5 November 2026: battery, PCB, cable and magnet move here from
-# the material axis). Mappings and `names` patterns as in materials.yaml.
+# material. Battery, PCB, cable and magnet moved here from the material axis. Mappings and `names` patterns as in materials.yaml.
 scheme:
   slug: components
   id_letter: c

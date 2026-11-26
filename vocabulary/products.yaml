@@ -1,8 +1,7 @@
 # Product types, first cut: the 27 types proposed for the 46 R9lab lab products in the
 # 5 November 2026 data check, grouped under six families. Not yet adjudicated, and the
 # workshop products and outside uploads are not counted yet. If the corpus needs fewer
-# than about 40 classes, a UNU-KEY label plus direct linking replaces this facet
-# (decision of 15 November 2026, point 4).
+# than about 40 classes, a UNU-KEY label plus direct linking replaces this facet.
 #
 # cpc: CPC 2.1 subclass, broad unless the subclass is the type itself. unu1: UNU-KEY v1
 # code from the same data check, not yet re-checked against the 2018 guidelines table.
