@@ -127,20 +127,32 @@ concepts:
       bafu: ['^brass']
   m0012:
     label: zinc
+    definition: Zinc and alloys based on zinc, as in die-cast housings and fittings.
+    source: https://www.wikidata.org/wiki/Q758
+    example: [a zinc-alloy die-cast housing, a zinc die-cast handle, zinc sheet, a zinc anode]
+    note: 'Not carbon and low-alloy steel: galvanised steel goes by its steel. Not brass: copper-zinc alloy is a copper alloy. Wikidata''s zinc is the element only; here zinc-based alloys are included.'
     broader: [m0006]
-    mappings: {exact: ['wd:Q758'], close: ['cpc:41442']}
+    mappings: {close: ['cpc:41442', 'wd:Q758']}
     names:
       bafu: ['^zinc, primary']
   m0013:
     label: tin
+    definition: Tin and alloys based on tin, other than solder.
+    source: https://www.wikidata.org/wiki/Q1096
+    example: [pewter, a tin ingot, tin plating listed on its own in a material declaration]
+    note: 'Not solder: a tin-based alloy that joins parts is solder. Tinplate and other tin-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s tin is the element only; here tin-based alloys are included.'
     broader: [m0006]
     mappings: {exact: ['wd:Q1096'], close: ['cpc:41443']}
     names:
       bafu: ['^tin, ']
   m0014:
     label: nickel
+    definition: Nickel and alloys based on nickel, as in battery connector strip, plating and heating wire.
+    source: https://www.wikidata.org/wiki/Q744
+    example: [nickel strip from a battery pack, nichrome heating wire, nickel plating listed on its own, a nickel-based superalloy part]
+    note: 'Not stainless steel: steel that contains nickel is still ferrous. Nickel-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s nickel is the element only; here nickel-based alloys are included.'
     broader: [m0006]
-    mappings: {exact: ['wd:Q744'], broad: ['cpc:4142']}
+    mappings: {close: ['wd:Q744'], broad: ['cpc:4142']}
     names:
       bafu: ['^nickel, 99\.5%']
   m0015:
@@ -155,22 +167,38 @@ concepts:
       bafu: ['^solder, (bar|paste)']
   m0016:
     label: precious metal
+    definition: Rare metals of high value that resist corrosion, such as gold, silver and the platinum group, and their alloys.
+    source: https://www.wikidata.org/wiki/Q271449
+    example: [platinum in a temperature sensor, rhodium plating, ruthenium in a chip resistor, a mixed precious-metal concentrate]
+    note: 'Not gold, silver or palladium: each has its own class. Platinum, rhodium and ruthenium stay here. Plating goes by its base metal unless the record lists it on its own. Wikidata''s item counts only the elements; here their alloys are included.'
     broader: [m0006]
     mappings: {exact: ['pmdco:PMD_0010014', 'wd:Q271449'], close: ['cpc:413']}
   m0017:
     label: gold
+    definition: Gold and alloys based on gold, as in bonding wire, contact plating and jewellery.
+    source: https://www.wikidata.org/wiki/Q897
+    example: [gold bonding wire, gold-plated connector pins, gold fingers on a circuit board edge, an 18-carat gold watch case]
+    note: 'Not brass: a gold-coloured part is often brass. Gold-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s gold is the element only; here gold alloys are included.'
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010015', 'wd:Q897'], close: ['cpc:4132']}
     names:
       bafu: ['^gold\b']
   m0018:
     label: silver
+    definition: Silver and alloys based on silver, as in electrical contacts, conductive paste and plating.
+    source: https://www.wikidata.org/wiki/Q1090
+    example: [a silver relay contact, silver paste on a solar cell, silver-plated wire, sterling silver]
+    note: 'Not solder: tin-silver solder is solder. Silver-plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s silver is the element only; here silver alloys are included.'
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010016', 'wd:Q1090'], close: ['cpc:4131']}
     names:
       bafu: ['^silver\b']
   m0019:
     label: palladium
+    definition: Palladium and alloys based on palladium, as in contact plating, capacitor electrodes and catalysts.
+    source: https://www.wikidata.org/wiki/Q1089
+    example: [palladium-nickel plating on a connector contact, palladium in ceramic capacitor electrodes, palladium in a catalytic converter coating]
+    note: 'Not silver: a silver-palladium alloy that is mostly silver is silver. Plated parts go by their base metal unless the record lists the plating by itself. Wikidata''s palladium is the element only; here palladium alloys are included.'
     broader: [m0016]
     mappings: {exact: ['pmdco:PMD_0010018', 'wd:Q1089']}
     names:
@@ -185,17 +213,27 @@ concepts:
   m0021:
     label: thermoplastic
     definition: Polymer that softens on heating and can be remelted.
+    source: https://www.wikidata.org/wiki/Q380677
+    example: [ABS, polypropylene, polycarbonate, a nylon gear]
+    note: 'Not thermoset: a resin that has cured cannot be remelted. Not thermoplastic elastomer: rubbery grades that recover their shape are elastomers. Not glass-fibre reinforced polymer: short-fibre glass-filled grades such as PA66-GF30 go by their polymer.'
     broader: [m0020]
     mappings: {exact: ['pmdco:PMD_0050004', 'wd:Q380677']}
   m0022:
     label: polyethylene
-    note: Includes HDPE, LDPE and LLDPE.
+    definition: Thermoplastic made from ethylene, ranging from soft film to rigid moulded parts.
+    source: https://www.wikidata.org/wiki/Q143429
+    example: [an HDPE container, LDPE packaging film, PE cable sheath, a PE foam insert]
+    note: 'Not polypropylene: PP is the other common polyolefin and is stiffer. Includes HDPE, LDPE and LLDPE. PE foam goes here when the record names the polymer, and to foam when it does not.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050005', 'wd:Q143429'], close: ['cpc:34710']}
     names:
       bafu: ['^polyethylene, (hdpe|ldpe|lldpe)']
   m0023:
     label: polypropylene
+    definition: Thermoplastic made from propylene, light and tough, used for moulded housings, hinges and containers.
+    source: https://www.wikidata.org/wiki/Q146174
+    example: [a PP washing machine tub, a talc-filled PP housing, a PP living hinge, a PP battery case]
+    note: 'Not polyethylene: PE is the other common polyolefin and is softer. Filled and copolymer grades of PP are included.'
     broader: [m0021]
     mappings: {exact: ['pmdco:PMD_0050009', 'wd:Q146174'], broad: ['cpc:34790']}
     names:
