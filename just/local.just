@@ -45,5 +45,10 @@ test-full: pipeline rdf sssom-validate
     PIPELINE_OUTPUT_REQUIRED=1 uv run pytest
 
 # Check dist/r9lab-vocabulary.sssom.tsv against the SSSOM schema with sssom-py, run by uvx so it stays out of the lock. Needs `just rdf` first.
+# NOTE: .github/workflows/python.yml pins the same sssom version; change both together.
 sssom-validate:
     uvx --exclude-newer "1 week" --from sssom==0.4.22 sssom validate dist/r9lab-vocabulary.sssom.tsv
+
+# Check the tag-mapping review log and warn about each verdict on a withdrawn proposal. `just check` runs this last.
+local-check:
+    uv run --locked python -m r9lab_vocabulary.curate check
