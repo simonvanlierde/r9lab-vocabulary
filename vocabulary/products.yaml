@@ -4,16 +4,22 @@
 # than about 40 classes, a UNU-KEY label plus direct linking replaces this facet
 # (decision of 15 November 2026, point 4).
 #
-# cpc: CPC 2.1 subclass, broad unless the subclass is the type itself. unu1: UNU-KEY v1
-# code from the same data check, not yet re-checked against the 2018 guidelines table.
+# cpc: CPC 2.1 subclass, broad unless the subclass is the type itself. unu1 and unu2:
+# UNU-KEY v1 and v2 codes, checked against the key descriptions and the HS and CPC tables
+# of the E-waste Statistics Guidelines (2nd ed. 2018, 3rd ed. 2026). v2 follows the v1 code
+# by Annex 2 of the 3rd edition, except where its HS table moved the product.
 # r9lab-cpv: the CPV code R9lab stores for the type today (truncated as in the app).
+# weee6: category 1-6 of Annex III to Directive 2012/19/EU (WEEE), derived from the
+# unu1 code by the UNU-KEY to EU-6 table of the Global E-waste Monitor 2017 annexes, which
+# Table 2 of the 2026 guidelines confirms for every code used here.
+# Families get none: they cut across categories.
 scheme:
   slug: products
   id_letter: p
   title: R9lab product types
   description: >
     Product types for disassembled consumer products, with crosswalks to CPC 2.1, UNU-KEY v1
-    codes, the CPV codes R9lab uses and Wikidata.
+    and v2 codes, the WEEE Directive categories, the CPV codes R9lab uses and Wikidata.
 concepts:
   p0001:
     label: computing equipment
@@ -36,116 +42,118 @@ concepts:
   p0007:
     label: laptop
     broader: [p0001]
-    mappings: {exact: ['wd:Q3962'], broad: ['cpc:45220', 'unu1:0303'], close: ['r9lab-cpv:302131']}
+    mappings: {exact: ['wd:Q3962'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['r9lab-cpv:302131']}
   p0008:
     label: tablet
     broader: [p0001]
-    mappings: {exact: ['wd:Q155972'], broad: ['cpc:45220', 'unu1:0303'], close: ['r9lab-cpv:302132']}
+    mappings: {exact: ['wd:Q155972'], broad: ['cpc:45220', 'unu1:0303', 'unu2:0303', 'weee6:2'], close: ['r9lab-cpv:302132']}
   p0009:
     label: docking station
     broader: [p0001]
-    mappings: {exact: ['wd:Q1233773'], broad: ['cpc:45290', 'unu1:0301']}
+    mappings: {exact: ['wd:Q1233773'], broad: ['cpc:45290', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0010:
     label: graphics card
     broader: [p0001]
     note: A PC component; whether it is stand-alone EEE is debatable.
-    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0302'], close: ['r9lab-cpv:3023713']}
+    mappings: {exact: ['wd:Q4308'], broad: ['cpc:45290', 'unu1:0302', 'unu2:0302', 'weee6:6'], close: ['r9lab-cpv:3023713']}
   p0011:
     label: computer power supply
     broader: [p0001]
-    mappings: {exact: ['wd:Q3972'], broad: ['cpc:46122', 'unu1:0301']}
+    mappings: {exact: ['wd:Q3972'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0012:
     label: computer mouse
     broader: [p0001]
-    mappings: {exact: ['wd:Q7987'], broad: ['cpc:45261', 'unu1:0301'], close: ['r9lab-cpv:3023741']}
+    mappings: {exact: ['wd:Q7987'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023741']}
   p0013:
     label: computer keyboard
     broader: [p0001]
-    mappings: {exact: ['wd:Q250'], broad: ['cpc:45261', 'unu1:0301'], close: ['r9lab-cpv:3023746']}
+    mappings: {exact: ['wd:Q250'], broad: ['cpc:45261', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:3023746']}
   p0014:
     label: laptop charger
     definition: External power adapter for a laptop.
     broader: [p0001]
-    mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0301']}
+    mappings: {close: ['wd:Q887369', 'r9lab-cpv:31158'], broad: ['cpc:46122', 'unu1:0301', 'unu2:0301', 'weee6:6']}
   p0015:
     label: mobile phone
     broader: [p0002]
     note: All mobile phones in the corpus so far are smartphones.
-    mappings: {narrow: ['wd:Q22645'], broad: ['cpc:47222', 'unu1:0306'], close: ['r9lab-cpv:3225']}
+    mappings: {narrow: ['wd:Q22645'], broad: ['cpc:47222', 'unu1:0306', 'unu2:0306', 'weee6:6'], close: ['r9lab-cpv:3225']}
   p0016:
     label: desk phone
     definition: Wired desk telephone, including IP phones.
     broader: [p0002]
-    mappings: {close: ['wd:Q943687'], broad: ['cpc:47223', 'unu1:0305'], related: ['r9lab-cpv:325521']}
+    mappings: {close: ['wd:Q943687'], broad: ['cpc:47223', 'unu1:0305', 'unu2:0305', 'weee6:6'], related: ['r9lab-cpv:325521']}
   p0017:
     label: router
     note: Includes home gateways.
     broader: [p0002]
-    mappings: {exact: ['wd:Q5318'], broad: ['cpc:47223', 'unu1:0301'], close: ['r9lab-cpv:324131']}
+    mappings: {exact: ['wd:Q5318'], broad: ['cpc:47223', 'unu1:0301', 'unu2:0301', 'weee6:6'], close: ['r9lab-cpv:324131']}
   p0018:
     label: GPS navigation device
     broader: [p0002]
-    mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0305'], close: ['r9lab-cpv:381121']}
+    mappings: {exact: ['wd:Q1486497'], broad: ['cpc:48220', 'unu1:0402', 'unu2:0402', 'weee6:5'], close: ['r9lab-cpv:381121']}
   p0019:
     label: headphones
     broader: [p0003]
-    mappings: {exact: ['wd:Q186819'], broad: ['cpc:47330', 'unu1:0401'], close: ['r9lab-cpv:323421']}
+    mappings: {exact: ['wd:Q186819'], broad: ['cpc:47330', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['r9lab-cpv:323421']}
   p0020:
     label: speaker
     definition: Stand-alone loudspeaker product, wired or Bluetooth.
     broader: [p0003]
-    mappings: {broad: ['cpc:47330', 'unu1:0405'], close: ['r9lab-cpv:32342']}
+    mappings: {broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
   p0021:
     label: radio
     note: Includes clock radios.
     broader: [p0003]
-    mappings: {broad: ['cpc:47311', 'unu1:0201'], close: ['r9lab-cpv:323442']}
+    # Mains and clock radios (HS 852713, 852791, 852792) are 0402 in the 2018 HS table and
+    # 0403 in the 2026 one, though Annex 2 maps v1 0402 to v2 0402.
+    mappings: {broad: ['cpc:47311', 'unu1:0402', 'unu2:0403', 'weee6:5'], close: ['r9lab-cpv:323442']}
   p0022:
     label: remote control
     broader: [p0003]
-    mappings: {exact: ['wd:Q185091'], broad: ['cpc:48220', 'unu1:0401'], close: ['r9lab-cpv:3882']}
+    mappings: {exact: ['wd:Q185091'], broad: ['cpc:48220', 'unu1:0401', 'unu2:0401', 'weee6:5'], close: ['r9lab-cpv:3882']}
   p0023:
     label: LED lamp
     broader: [p0004]
-    mappings: {exact: ['wd:Q1553201'], broad: ['cpc:46510', 'unu1:0505'], close: ['r9lab-cpv:31531']}
+    mappings: {exact: ['wd:Q1553201'], broad: ['cpc:46510', 'unu1:0505', 'unu2:0505', 'weee6:3'], close: ['r9lab-cpv:31531']}
   p0024:
     label: luminaire
     broader: [p0004]
-    mappings: {exact: ['wd:Q815738'], broad: ['cpc:4653', 'unu1:0506'], related: ['r9lab-cpv:31521']}
+    mappings: {exact: ['wd:Q815738'], broad: ['cpc:4653', 'unu1:0506', 'unu2:0506', 'weee6:5'], related: ['r9lab-cpv:31521']}
   p0025:
     label: electric kettle
     broader: [p0005]
-    mappings: {exact: ['wd:Q1364042'], broad: ['cpc:4481', 'unu1:0203']}
+    mappings: {exact: ['wd:Q1364042'], broad: ['cpc:4481', 'unu1:0203', 'unu2:0203', 'weee6:5']}
   p0026:
     label: toaster
     broader: [p0005]
-    mappings: {exact: ['wd:Q14890'], broad: ['cpc:44816', 'unu1:0202'], close: ['r9lab-cpv:3971133']}
+    mappings: {exact: ['wd:Q14890'], broad: ['cpc:44816', 'unu1:0202', 'unu2:0202', 'weee6:5'], close: ['r9lab-cpv:3971133']}
   p0027:
     label: coffee grinder
     broader: [p0005]
-    mappings: {exact: ['wd:Q1139048'], broad: ['cpc:44816', 'unu1:0202']}
+    mappings: {exact: ['wd:Q1139048'], broad: ['cpc:44816', 'unu1:0202', 'unu2:0202', 'weee6:5']}
   p0028:
     label: clothes iron
     broader: [p0005]
-    mappings: {exact: ['wd:Q483634'], broad: ['cpc:44816', 'unu1:0201'], close: ['r9lab-cpv:3971351']}
+    mappings: {exact: ['wd:Q483634'], broad: ['cpc:44816', 'unu1:0201', 'unu2:0201', 'weee6:5'], close: ['r9lab-cpv:3971351']}
   p0029:
     label: electric fan
     broader: [p0005]
-    mappings: {exact: ['wd:Q25841836'], close: ['cpc:44815', 'r9lab-cpv:397171'], broad: ['unu1:0201']}
+    mappings: {exact: ['wd:Q25841836'], close: ['cpc:44815', 'r9lab-cpv:397171'], broad: ['unu1:0201', 'unu2:0201', 'weee6:5']}
   p0030:
     label: power strip
     broader: [p0005]
     note: Whether a passive power strip is EEE in scope varies by member state.
-    mappings: {exact: ['wd:Q1754646'], broad: ['cpc:46212', 'unu1:0201']}
+    mappings: {exact: ['wd:Q1754646'], broad: ['cpc:46212', 'unu1:0201', 'unu2:0201', 'weee6:5']}
   p0031:
     label: electric shaver
     broader: [p0006]
-    mappings: {exact: ['wd:Q17457835'], broad: ['cpc:44816', 'unu1:0205'], close: ['r9lab-cpv:337212']}
+    mappings: {exact: ['wd:Q17457835'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['r9lab-cpv:337212']}
   p0032:
     label: hair dryer
     broader: [p0006]
-    mappings: {exact: ['wd:Q15004'], broad: ['cpc:44816', 'unu1:0205'], close: ['r9lab-cpv:3971221']}
+    mappings: {exact: ['wd:Q15004'], broad: ['cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5'], close: ['r9lab-cpv:3971221']}
   p0033:
     label: electric foot file
     broader: [p0006]
-    mappings: {broad: ['wd:Q116221616', 'cpc:44816', 'unu1:0205']}
+    mappings: {broad: ['wd:Q116221616', 'cpc:44816', 'unu1:0205', 'unu2:0205', 'weee6:5']}
