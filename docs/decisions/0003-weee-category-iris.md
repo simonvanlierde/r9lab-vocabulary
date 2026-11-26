@@ -40,5 +40,5 @@ cannot be built by prefix concatenation, and they were not checked to resolve.
 
 ### Confirmation
 
-The `weee6` tests in `tests/test_scheme.py` check the IRI a link builds and the codes
-`validate` refuses.
+The `weee6` tests check the IRI a link builds (`tests/test_export.py`) and the codes
+`validate` refuses (`tests/test_checks.py`).
