@@ -8,6 +8,11 @@ the repository never redistributes source data. `just pipeline` rebuilds them fr
 `sources.toml`. Never edit a raw file in place: `just build` and `just validate` both
 reject one whose checksum no longer matches its fetch record.
 
+On a repeat build, `raw/.bafu-cache/` can supply BAFU names for the same
+archive and reader. SourceLedger checks the raw archive and stamps the
+source's current fetch record on every build. To parse the archives again, delete this gitignored
+folder. Dataset releases exclude it.
+
 `fetches.jsonl` is committed. `just fetch` appends a source's fetch record to it each
 time the source serves bytes it hasn't served before. The file is the history of every
 version the pipeline has seen. Commit it after a fetch that changes it.

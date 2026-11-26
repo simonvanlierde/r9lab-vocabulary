@@ -8,13 +8,13 @@ import tarfile
 import zipfile
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Never
 
 import pytest
 import rdflib
 from rdflib import DCTERMS
 
-from r9lab_vocabulary import pipeline, scheme
+from r9lab_vocabulary import _bafu_cache, pipeline, scheme
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -286,3 +286,90 @@ def test_names_rejects_an_unknown_source(capsys: pytest.CaptureFixture[str], stu
     stub_sources(THREE_NAMES, concepts=BRASS)
     assert pipeline.main(["names", "--source", "bafu-2031-v1"]) == 2
     assert "known: bafu-2025-v2, bafu-2026-v1" in capsys.readouterr().err
+
+
+def test_build_reuses_bafu_rows(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.chdir(tmp_path)
+    source = {"id": "bafu-2030-v1", "url": "https://example.org/bafu.zip", "status": "implemented"}
+    (tmp_path / "sources.toml").write_text(
+        '[[source]]\nid = "bafu-2030-v1"\nurl = "https://example.org/bafu.zip"\nstatus = "implemented"\n',
+        encoding="utf-8",
+    )
+    raw = tmp_path / "source.zip"
+    with zipfile.ZipFile(raw, "w") as archive:
+        archive.writestr("process_sample.xml", '<dataset><referenceFunction name="Sample"/></dataset>')
+    pipeline.sourceledger.record(source, raw)
+
+    cache = tmp_path / "data/raw/.bafu-cache/bafu-2030-v1"
+    assert pipeline.main(["build", "--dry-run"]) == 0
+    assert not cache.exists()
+    assert pipeline.main(["build"]) == 0
+    assert cache.is_file()
+    output = (tmp_path / "data/processed/bafu-2030-v1.csv").read_bytes()
+
+    reader = pipeline.NAME_LISTS["bafu"]
+
+    def unexpected_read(_payload: bytes) -> Never:
+        pytest.fail("an unchanged BAFU source was parsed again")
+
+    monkeypatch.setitem(pipeline.NAME_LISTS, "bafu", pipeline.NameList(unexpected_read, reader.live))
+    assert pipeline.main(["build"]) == 0
+    assert (tmp_path / "data/processed/bafu-2030-v1.csv").read_bytes() == output
+
+    (tmp_path / "data/raw/bafu-2030-v1.zip").write_bytes(b"changed behind the fetch record")
+    assert pipeline.main(["build"]) == 3
+    assert (tmp_path / "data/processed/bafu-2030-v1.csv").read_bytes() == output
+
+
+def test_bafu_cache_misses_after_input_changes_or_corruption(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(_bafu_cache, "DIRECTORY", tmp_path / "cache")
+    reader_file = tmp_path / "reader.py"
+    reader_file.write_text("# first revision", encoding="utf-8")
+    calls = 0
+
+    def reader(payload: bytes) -> list[dict[str, str]]:
+        nonlocal calls
+        calls += 1
+        return [{"code": payload.decode(), "name": "Café", "location": ""}]
+
+    def read(payload: bytes) -> list[dict[str, str]]:
+        return _bafu_cache.read_names(
+            "bafu-2030-v1",
+            payload,
+            columns=pipeline.NAME_COLUMNS,
+            reader=reader,
+            version=_bafu_cache.reader_version(reader_file),
+        )
+
+    original = read(b"example")
+    assert read(b"example") == original
+    assert calls == 1
+    assert read(b"changed")[0]["code"] == "changed"
+    assert calls == 2
+    reader_file.write_text("# second revision", encoding="utf-8")
+    assert read(b"changed")[0]["code"] == "changed"
+    assert calls == 3
+    entry = tmp_path / "cache/bafu-2030-v1"
+    entry.write_bytes(entry.read_bytes().replace(b'"changed"', b'"corrupt"'))
+    assert read(b"changed")[0]["code"] == "changed"
+    assert calls == 4
+    entry.write_text("incomplete", encoding="utf-8")
+    assert read(b"changed")[0]["code"] == "changed"
+    assert calls == 5
+
+
+def test_bafu_cache_failure_keeps_the_reader_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    cache = tmp_path / "cache"
+    cache.touch()
+    monkeypatch.setattr(_bafu_cache, "DIRECTORY", cache)
+    calls = 0
+
+    def reader(_payload: bytes) -> Never:
+        nonlocal calls
+        calls += 1
+        msg = "archive could not be read"
+        raise OSError(msg)
+
+    with pytest.raises(OSError, match="archive could not be read"):
+        _bafu_cache.read_names("bafu-2030-v1", b"example", columns=pipeline.NAME_COLUMNS, reader=reader, version="1")
+    assert calls == 1
