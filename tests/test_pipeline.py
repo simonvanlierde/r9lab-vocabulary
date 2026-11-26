@@ -119,8 +119,58 @@ def test_rdf_before_the_sources_are_built_is_an_error_not_a_traceback(
 ):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "vocabulary").mkdir()
+    (tmp_path / "vocabulary" / "t.yaml").write_text("scheme: {slug: t, title: t}\n")
     assert pipeline.main(["rdf"]) == 3
     assert capsys.readouterr().err.startswith("error: data/processed/cpc21.parquet")
+
+
+@pytest.mark.parametrize(
+    ("text", "message"),
+    [
+        (None, "vocabulary: no *.yaml scheme files"),
+        ("", "t.yaml: needs a `scheme` mapping"),
+        ("- a\n", "t.yaml: needs a `scheme` mapping"),
+        ("scheme: t\n", "t.yaml: needs a `scheme` mapping"),
+        ("scheme: {title: t}\n", "t.yaml: needs a `scheme` mapping with a `slug`"),
+        ("scheme: {slug: t}\nconcepts: [t01]\n", "t.yaml: `concepts` must map"),
+        ("scheme: {slug: t\n", "while parsing a flow mapping"),
+    ],
+)
+def test_rdf_reports_a_malformed_vocabulary_instead_of_crashing(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str], text: str | None, message: str
+):
+    (tmp_path / "vocabulary").mkdir()
+    if text is not None:
+        (tmp_path / "vocabulary" / "t.yaml").write_text(text)
+    monkeypatch.chdir(tmp_path)
+    assert pipeline.main(["rdf"]) == 1
+    err = capsys.readouterr().err
+    assert err.startswith("error: ")
+    assert message in err
+
+
+def test_rdf_reports_a_missing_tag_mappings_file_as_a_rule_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    (tmp_path / "vocabulary").mkdir()
+    (tmp_path / "vocabulary" / "t.yaml").write_text(
+        "scheme: {slug: t, title: t, id_letter: t}\nconcepts:\n  t01: {label: a}\n"
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(pipeline, "known_codes", lambda: {"cpc": set(), "pmdco": set()})
+    monkeypatch.setattr(pipeline, "name_lists", lambda: {"bafu": {}})
+    assert pipeline.main(["rdf", "--out", str(tmp_path / "dist")]) == 1
+    assert capsys.readouterr().err == "error: mappings/r9lab-tags.sssom.tsv: missing\n"
+
+
+# Prefixes no source pins: Wikidata is checked live by `just wikidata`, and R9lab's CPV codes
+# are truncated as the app stores them, so no CPV list holds them.
+UNCHECKED = {"wd", "r9lab-cpv"}
+
+
+def test_every_outside_prefix_has_its_codes_checked_or_is_exempt():
+    routes = set(scheme.FIXED_CODES) | set(pipeline.SOURCE_CODES) | UNCHECKED
+    assert set(scheme.PREFIXES) == routes
 
 
 def test_rdf_fails_on_a_name_pattern_that_matches_nothing(

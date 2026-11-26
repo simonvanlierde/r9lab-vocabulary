@@ -137,6 +137,12 @@ def test_check_tag_mappings_needs_its_columns(schemes: Schemes, tmp_path: Path):
     ]
 
 
+def test_check_tag_mappings_reports_a_short_row(schemes: Schemes, tmp_path: Path):
+    path = tmp_path / "t.sssom.tsv"
+    path.write_text("\t".join(scheme.TAG_COLUMNS) + "\nr9lab-tag:steel\tsteel\n")
+    assert "t.sssom.tsv: 'steel': justification '' is not a semapv term" in scheme.check_tag_mappings(schemes, path)
+
+
 def test_check_codes_names_a_code_missing_from_the_pinned_source(schemes: Schemes):
     errors = scheme.check_codes(schemes, {"cpc": {"411"}})
     assert "materials/m0002: cpc:411 is not in the pinned cpc source" not in errors
@@ -418,6 +424,12 @@ def pilot_fixture(materials: dict, pilot_mappings: dict) -> Schemes:
 def test_broad_and_related_pilot_mappings_give_no_pilot_key():
     schemes = pilot_fixture({"m01": {"label": "a"}}, {"broad": ["m:m01"], "related": ["m:m01"]})
     assert scheme.labels(schemes)[0]["concepts"][0]["pilot"] == []
+
+
+def test_a_pilot_class_with_a_null_notation_is_keyed_by_its_id():
+    schemes = pilot_fixture({"m01": {"label": "a"}}, {"exact": ["m:m01"]})
+    schemes["p"].concepts["p01"]["notation"] = None
+    assert scheme.labels(schemes)[0]["concepts"][0]["pilot"] == ["p01"]
 
 
 def test_pilot_keys_come_from_every_broader_parent():

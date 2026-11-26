@@ -155,16 +155,17 @@ def parse(source: Source, payload: bytes) -> tuple[list[str], list[dict[str, str
     return sourceledger.parse_source(source, payload)
 
 
+# Outside schemes whose codes `rdf` checks against a processed source: prefix -> (source id, code column).
+SOURCE_CODES = {"cpc": (CPC_SOURCE, "code"), "pmdco": (PMDCO_SOURCE, "id")}
+
+
 def known_codes() -> dict[str, set[str]]:
-    """The CPC codes and PMDco ids in the processed sources; error if they were not built."""
-    paths = {"cpc": PROCESSED / "cpc21.parquet", "pmdco": PROCESSED / "pmdco.parquet"}
+    """The codes of each `SOURCE_CODES` prefix in the processed sources; error if they were not built."""
+    paths = {prefix: PROCESSED / f"{source}.parquet" for prefix, (source, _) in SOURCE_CODES.items()}
     if missing := [str(p) for p in paths.values() if not p.exists()]:
         msg = f"{', '.join(missing)} missing; run `just pipeline` first"
         raise FileNotFoundError(msg)
-    return {
-        "cpc": {r["code"] for r in sourceledger.read_output(paths["cpc"])},
-        "pmdco": {r["id"] for r in sourceledger.read_output(paths["pmdco"])},
-    }
+    return {prefix: {r[SOURCE_CODES[prefix][1]] for r in sourceledger.read_output(p)} for prefix, p in paths.items()}
 
 
 def name_lists() -> dict[str, dict[str, list[str]]]:
@@ -233,11 +234,11 @@ def rdf(out: Path) -> int:
     try:
         known = known_codes()
         lists = name_lists()
-        errors = scheme.validate(schemes, _versions(lists)) + scheme.check_codes(schemes, known)
-        errors += scheme.check_tag_mappings(schemes, TAG_MAPPINGS)
     except FileNotFoundError as e:
         sys.stderr.write(f"error: {e}\n")
         return 3
+    errors = scheme.validate(schemes, _versions(lists)) + scheme.check_codes(schemes, known)
+    errors += scheme.check_tag_mappings(schemes, TAG_MAPPINGS)
     if errors:  # a broken pattern would not compile below
         sys.stderr.writelines(f"error: {e}\n" for e in errors)
         return 1
@@ -361,7 +362,7 @@ def diff(ref: str) -> int:
         t.extractall(tmp, filter="data")
         try:
             old = scheme.load(Path(tmp) / VOCABULARY)
-        except (yaml.YAMLError, ValueError, KeyError, TypeError) as e:
+        except (yaml.YAMLError, ValueError) as e:
             sys.stderr.write(f"error: cannot load {VOCABULARY}/ at {ref}: {e}\n")
             return 2
     lines, ok = scheme.diff(old, scheme.load(VOCABULARY))
@@ -374,22 +375,28 @@ def diff(ref: str) -> int:
 def main(argv: list[str] | None = None) -> int:
     """Run one stage: `fetch|build|validate` (sourceledger), `rdf [--out DIR]`, `names`, `wikidata` or `diff REF`."""
     args = sys.argv[1:] if argv is None else argv
-    if args[:1] == ["rdf"]:
-        p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
-        p.add_argument("--out", type=Path, default=DIST, help="output directory (default: dist)")
-        return rdf(p.parse_args(args[1:]).out)
-    if args[:1] == ["wikidata"]:
-        return wikidata()
-    if args[:1] == ["diff"]:
-        p = argparse.ArgumentParser(prog="r9lab-vocabulary diff", description=diff.__doc__)
-        p.add_argument("ref", help="the git tag (or other ref) to compare against, such as v0.1.0")
-        return diff(p.parse_args(args[1:]).ref)
-    if args[:1] == ["names"]:
-        p = argparse.ArgumentParser(prog="r9lab-vocabulary names", description=names.__doc__)
-        p.add_argument("--source", help="one name-list source, such as bafu-2026-v1 (default: all)")
-        p.add_argument("--summary", action="store_true", help="one line per pattern and source, with its match count")
-        a = p.parse_args(args[1:])
-        return names(a.source, summary=a.summary)
+    try:
+        if args[:1] == ["rdf"]:
+            p = argparse.ArgumentParser(prog="r9lab-vocabulary rdf", description=rdf.__doc__)
+            p.add_argument("--out", type=Path, default=DIST, help="output directory (default: dist)")
+            return rdf(p.parse_args(args[1:]).out)
+        if args[:1] == ["wikidata"]:
+            return wikidata()
+        if args[:1] == ["diff"]:
+            p = argparse.ArgumentParser(prog="r9lab-vocabulary diff", description=diff.__doc__)
+            p.add_argument("ref", help="the git tag (or other ref) to compare against, such as v0.1.0")
+            return diff(p.parse_args(args[1:]).ref)
+        if args[:1] == ["names"]:
+            p = argparse.ArgumentParser(prog="r9lab-vocabulary names", description=names.__doc__)
+            p.add_argument("--source", help="one name-list source, such as bafu-2026-v1 (default: all)")
+            p.add_argument(
+                "--summary", action="store_true", help="one line per pattern and source, with its match count"
+            )
+            a = p.parse_args(args[1:])
+            return names(a.source, summary=a.summary)
+    except (ValueError, yaml.YAMLError) as e:  # a malformed or missing vocabulary/*.yaml
+        sys.stderr.write(f"error: {e}\n")
+        return 1
     return sourceledger.main(args, parse=parse, prog="r9lab-vocabulary", user_agent="r9lab-vocabulary")
 
 

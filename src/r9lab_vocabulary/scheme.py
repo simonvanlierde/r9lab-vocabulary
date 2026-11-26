@@ -136,15 +136,31 @@ class _UniqueKeyLoader(yaml.SafeLoader):
 
 
 def load(directory: Path) -> dict[str, Scheme]:
-    """Every `*.yaml` scheme in `directory`, keyed by slug. A repeated key in a file is an error."""
+    """Every `*.yaml` scheme in `directory`, keyed by slug.
+
+    ValueError when there is none, or a file is not a `scheme` mapping with a `slug` and a
+    `concepts` mapping; a repeated key in a file is a YAML error.
+    """
     schemes = {}
-    for path in sorted(directory.glob("*.yaml")):
+    paths = sorted(directory.glob("*.yaml"))
+    if not paths:
+        msg = f"{directory}: no *.yaml scheme files"
+        raise ValueError(msg)
+    for path in paths:
         doc = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)  # noqa: S506
-        slug = doc["scheme"]["slug"]
+        meta = doc.get("scheme") if isinstance(doc, dict) else None
+        if not isinstance(meta, dict) or not isinstance(meta.get("slug"), str):
+            msg = f"{path.name}: needs a `scheme` mapping with a `slug`"
+            raise ValueError(msg)  # noqa: TRY004 - bad input, not a caller's bug
+        concepts = doc.get("concepts") or {}
+        if not isinstance(concepts, dict):
+            msg = f"{path.name}: `concepts` must map each id to a concept"
+            raise ValueError(msg)  # noqa: TRY004 - bad input, not a caller's bug
+        slug = meta["slug"]
         if slug in schemes or slug in PREFIXES:
             msg = f"{path.name}: scheme slug {slug!r} is already taken"
             raise ValueError(msg)
-        schemes[slug] = Scheme(slug, doc["scheme"], doc.get("concepts") or {})
+        schemes[slug] = Scheme(slug, meta, concepts)
     return schemes
 
 
@@ -377,26 +393,26 @@ def diff(old: dict[str, Scheme], new: dict[str, Scheme]) -> tuple[list[str], boo
         a, b = before.get(key), after.get(key)
         if b is None:
             sections["Removed"].append(
-                f"- `{key}` {a and a.get('label')}: deprecate it with `replaced_by` instead of deleting it"
+                f"- `{key}` {before[key].get('label')}: deprecate it with `replaced_by` instead of deleting it"
             )
             continue
         if a is None:
-            sections["Added"].append(f"- `{key}` {b['label']}")
+            sections["Added"].append(f"- `{key}` {b.get('label')}")
             continue
         if b.get("deprecated") and not a.get("deprecated"):
             slug = key.partition("/")[0]
             by = ", ".join(f"`{slug}/{ref}`" for ref in b.get("replaced_by") or [])
             how = f"replaced by {by}" if by else "with no `replaced_by`"
-            sections["Deprecated"].append(f"- `{key}` {b['label']}, {how}")
+            sections["Deprecated"].append(f"- `{key}` {b.get('label')}, {how}")
         if a.get("deprecated") and not b.get("deprecated"):
-            sections["Deprecated"].append(f"- `{key}` {b['label']}: no longer deprecated")
+            sections["Deprecated"].append(f"- `{key}` {b.get('label')}: no longer deprecated")
         maps_a, maps_b = ({f"{rel} {prefix}:{local}" for rel, prefix, local in mappings(c)} for c in (a, b))
         if maps_a != maps_b:
             changes = [f"added {m}" for m in sorted(maps_b - maps_a)]
             changes += [f"dropped {m}" for m in sorted(maps_a - maps_b)]
-            sections["Mappings"].append(f"- `{key}` {b['label']}: {'; '.join(changes)}")
+            sections["Mappings"].append(f"- `{key}` {b.get('label')}: {'; '.join(changes)}")
         if a.get("label") != b.get("label"):
-            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b['label']}")
+            sections["Labels"].append(f"- `{key}`: {a.get('label')} -> {b.get('label')}")
     lines = []
     for title, items in sections.items():
         if items:
@@ -430,12 +446,15 @@ def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is a SKOS match
     property (`skos:exactMatch`, as `write_sssom` writes it), its justification a semapv
     term, and its object a live concept here, under its current label, or
-    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`.
+    `sssom:NoTermFound`. Every CURIE's prefix is in the file's `curie_map`. A missing file is one error.
     """
-    lines = path.read_text(encoding="utf-8").splitlines()
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return [f"{path}: missing"]
     meta = yaml.safe_load("\n".join(line[1:] for line in lines if line.startswith("#"))) or {}
     prefixes = set(meta.get("curie_map") or {})
-    reader = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t")
+    reader = csv.DictReader((line for line in lines if not line.startswith("#")), delimiter="\t", restval="")
     if missing := [c for c in TAG_COLUMNS if c not in (reader.fieldnames or [])]:
         return [f"{path.name}: no {', '.join(missing)} column"]
     predicates = {f"skos:{p.fragment}" for p in RELATIONS.values()}
@@ -693,7 +712,7 @@ def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[s
         for cid, c in s.concepts.items():
             if c.get("deprecated"):
                 continue
-            key = str(c.get("notation", cid))
+            key = str(cid if c.get("notation") is None else c["notation"])
             inherited.setdefault((slug, cid), set()).add(key)
             for relation, prefix, local in mappings(c):
                 target = {"exact": inherited, "narrow": inherited, "close": own}.get(relation)

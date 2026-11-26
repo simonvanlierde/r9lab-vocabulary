@@ -98,3 +98,9 @@ def test_just_diff_of_an_unloadable_ref_is_an_error_not_a_traceback(
     monkeypatch.chdir(tmp_path)
     assert pipeline.main(["diff", "v1.0.0"]) == 2
     assert "error: cannot load vocabulary/ at v1.0.0: " in capsys.readouterr().err
+
+
+def test_the_diff_of_an_added_concept_with_no_fields_is_a_report_not_a_crash():
+    old = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a"}})}
+    new = {"t": scheme.Scheme("t", {}, {"t01": {"label": "a"}, "t02": {}})}
+    assert scheme.diff(old, new) == (["### Added", "", "- `t/t02` None", ""], True)

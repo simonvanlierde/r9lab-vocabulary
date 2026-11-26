@@ -38,5 +38,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - `just check` now rejects a notation written as `1` and as `"1"`, a `replaced_by` that points at the concept itself or at a deprecated concept, and a concept with an empty body (reported as "no label" instead of crashing).
+- `just rdf`, `just names`, `just wikidata` and `just diff` print an `error:` line and exit 1, instead of a traceback or a silent pass, for a folder with no `vocabulary/*.yaml`, a file that is not valid YAML or has no `scheme` slug or `concepts` mapping, a missing `mappings/r9lab-tags.sssom.tsv` or a short row in it. A pilot class with `notation: null` is keyed by its id in `labels.json`, not "None".
 
 [Unreleased]: https://github.com/simonvanlierde/r9lab-vocabulary/commits/HEAD
