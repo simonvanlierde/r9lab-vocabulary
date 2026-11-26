@@ -197,7 +197,7 @@ concepts:
     note: 'Not headphones, which are worn on the ears. Not loudspeaker driver: a driver taken out of a product is a component. Not radio, which tunes broadcasts itself.'
     editorial_note: UNU-KEY puts speakers in 0405 and headphones in 0401.
     broader: [p0003]
-    mappings: {broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
+    mappings: {exact: ['wd:Q390573'], broad: ['cpc:47330', 'unu1:0405', 'unu2:0405', 'weee6:5'], close: ['r9lab-cpv:32342']}
   p0021:
     label: radio
     definition: Stand-alone receiver for sound broadcasts, mains or battery powered.
