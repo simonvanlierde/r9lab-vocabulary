@@ -62,7 +62,7 @@ concepts:
     definition: Iron-carbon alloy with more than about 2 % carbon, shaped by casting.
     source: https://www.wikidata.org/wiki/Q483269
     example: [grey cast iron, ductile iron, a cast pump housing, a cast-iron motor frame]
-    note: Not carbon and low-alloy steel, which has less carbon and is rolled or forged, not cast.
+    note: 'Not carbon and low-alloy steel: steel has under about 2 % carbon, even when it is cast.'
     broader: [m0002]
     mappings: {exact: ['pmdco:PMD_0010002', 'wd:Q483269']}
     names:
@@ -100,7 +100,7 @@ concepts:
     definition: Unalloyed copper, as in wire, foil, bus bars and windings.
     source: https://www.wikidata.org/wiki/Q753
     example: [copper wire, copper foil, a bus bar, enamelled winding wire]
-    note: 'Not copper alloy: brass and bronze are alloys. Not cable: insulated wire is a cable, but enamelled winding wire wound into a coil is copper.'
+    note: 'Not copper alloy: brass and bronze are alloys. Not cable: insulated wire is a cable, but enamelled winding wire in a coil, motor or transformer is copper.'
     broader: [m0006]
     mappings: {exact: ['wd:Q753'], broad: ['cpc:41413']}
     names:
