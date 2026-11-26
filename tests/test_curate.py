@@ -2,22 +2,19 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from importlib.metadata import version
 from typing import TYPE_CHECKING
 
-from r9lab_vocabulary import curate
+from conftest import HEAD, ROOT, tsv
+
+from r9lab_vocabulary import checks, curate
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     import pytest
 
-ROOT = Path(__file__).resolve().parent.parent
-HEAD = "#curie_map:\n#  r9lab-tag: https://w3id.org/r9lab/vocabulary/tags/\n"
 A, B, X = "orcid:0000-0002-1825-0097", "orcid:0000-0001-5109-3700", "orcid:0000-0002-1694-233X"
-
-
-def tsv(columns: tuple[str, ...], rows: list[dict[str, str]]) -> str:
-    lines = ["\t".join(columns), *("\t".join(r.get(c, "") for c in columns) for r in rows)]
-    return HEAD + "\n".join(lines) + "\n"
 
 
 def proposal(tag: str, obj: str) -> dict[str, str]:
@@ -51,8 +48,8 @@ def test_build_publishes_what_no_rater_rejected_with_the_raters_who_agreed():
     tags = ("agreed", "rejected", "split", "outvoted", "unsure", "mixed", "untouched", "changed")
     predictions = [proposal(t, "m:1") for t in tags]
     reviews = [
-        review("agreed", "m:1", B, "1"),
         review("agreed", "m:1", A, "1"),
+        review("agreed", "m:1", B, "1"),
         review("rejected", "m:1", A, "-1"),
         review("split", "m:1", A, "1"),
         review("split", "m:1", B, "-1"),
@@ -86,6 +83,7 @@ def test_check_catches_each_broken_rule(tmp_path: Path):
             review("twice", "m:1", "simon", "yes", review_date="26 Nov", review_seconds="soon"),
             review("twice", "m:1", f"{A}x", "1", review_date="2026-13-45"),
             review("twice", "m:1", A, "1", review_date="2026-11-26x"),
+            review("twice", "m:1", A, "1", review_date="20261126"),  # ISO 8601 basic form, which fromisoformat takes
         ],
     )
     assert curate.check(tmp_path) == [
@@ -99,6 +97,7 @@ def test_check_catches_each_broken_rule(tmp_path: Path):
         f"reviews.sssom.tsv row 2: reviewer_id '{A}x' is not an ORCID CURIE",
         "reviews.sssom.tsv row 2: review_date '2026-13-45' is not YYYY-MM-DD",
         "reviews.sssom.tsv row 3: review_date '2026-11-26x' is not YYYY-MM-DD",
+        "reviews.sssom.tsv row 4: review_date '20261126' is not YYYY-MM-DD",
     ]
 
 
@@ -139,6 +138,18 @@ def test_build_refuses_a_broken_log_and_leaves_the_published_file(
     assert curate.main(["build"]) == 1
     assert (tmp_path / curate.PUBLISHED).read_text() == "before\n"
     assert "error: reviews.sssom.tsv row 1: reviewer_agreement 'yes'" in capsys.readouterr().err
+
+
+def test_the_published_header_names_the_set_and_its_version(tmp_path: Path):
+    (tmp_path / "t.sssom.tsv").write_text(curate.build({"curie_map": {"r9lab-tag": "t/"}}, [], []))
+    meta, _ = checks.read_sssom(tmp_path / "t.sssom.tsv")
+    assert meta == {
+        "curie_map": {"r9lab-tag": "t/"},
+        "mapping_set_id": "https://w3id.org/r9lab/vocabulary/r9lab-tags.sssom.tsv",
+        "mapping_set_title": "R9lab material and keyword tags to R9lab vocabulary concepts",
+        "mapping_set_version": version("r9lab-vocabulary"),
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+    }
 
 
 def test_check_fails_when_the_published_file_is_stale_and_build_fixes_it(

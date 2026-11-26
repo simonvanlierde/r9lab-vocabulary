@@ -8,6 +8,7 @@
 #  sssom: https://w3id.org/sssom/
 #mapping_set_id: https://w3id.org/r9lab/vocabulary/r9lab-tags.sssom.tsv
 #mapping_set_title: R9lab material and keyword tags to R9lab vocabulary concepts
+#mapping_set_version: 0.1.0
 #license: https://creativecommons.org/publicdomain/zero/1.0/
 subject_id	subject_label	predicate_id	object_id	object_label	reviewer_id	comment	mapping_justification
 r9lab-tag:battery%20pack	battery pack	skos:broadMatch	components:c0001	battery			semapv:AgentBasedMatching

@@ -15,11 +15,14 @@ import io
 import os
 import re
 import sys
+from importlib.metadata import version
 from pathlib import Path
+from typing import cast
 
 import yaml
 
 from r9lab_vocabulary.checks import read_sssom
+from r9lab_vocabulary.scheme import BASE, CC0
 
 PREDICTIONS = Path("mappings/r9lab-tags/predictions.sssom.tsv")
 REVIEWS = Path("mappings/r9lab-tags/reviews.sssom.tsv")
@@ -40,10 +43,12 @@ PUBLISHED_COLUMNS = (
     "subject_id", "subject_label", "predicate_id", "object_id", "object_label",
     "reviewer_id", "comment", "mapping_justification",
 )  # fmt: skip
+# The version is the package's, as in `export.write_sssom`, so a version bump needs `just curate`.
 PUBLISHED_META = {
-    "mapping_set_id": "https://w3id.org/r9lab/vocabulary/r9lab-tags.sssom.tsv",
+    "mapping_set_id": f"{BASE}r9lab-tags.sssom.tsv",
     "mapping_set_title": "R9lab material and keyword tags to R9lab vocabulary concepts",
-    "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "mapping_set_version": version("r9lab-vocabulary"),
+    "license": str(CC0),
 }
 ORCID = re.compile(r"orcid:\d{4}-\d{4}-\d{4}-\d{3}[\dX]")
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -51,7 +56,7 @@ DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
 def key(row: dict[str, str]) -> tuple[str, str, str]:
     """What a review row and a proposal share: subject, predicate and object."""
-    return row["subject_id"], row["predicate_id"], row["object_id"]
+    return cast("tuple[str, str, str]", tuple(row[c] for c in KEY))
 
 
 def latest_verdicts(reviews: list[dict[str, str]]) -> dict[tuple[str, str, str], dict[str, int]]:

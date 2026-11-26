@@ -44,6 +44,7 @@ TITLE = "R9lab reference vocabulary"
 BIBO = Namespace("http://purl.org/ontology/bibo/")
 # PyST accepts only draft, accepted and rejected; deprecation is owl:deprecated, so a deprecated concept stays accepted.
 ACCEPTED = URIRef("http://purl.org/ontology/bibo/status/accepted")
+LIST = "@list"  # the JSON-LD array whose order is its meaning
 
 
 @dataclass(frozen=True)
@@ -185,7 +186,8 @@ def write(schemes: dict[str, Scheme], about: About, out: Path, matches: list[Mat
     g = to_graph(schemes, about)
     ttl, jsonld, names = out / "r9lab-vocabulary.ttl", out / "r9lab-vocabulary.jsonld", out / "name-matches.csv"
     g.serialize(ttl, format="turtle")
-    g.serialize(jsonld, format="json-ld", auto_compact=True)
+    doc = _stable(json.loads(g.serialize(format="json-ld", auto_compact=True)))
+    jsonld.write_text(json.dumps(doc, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     with names.open("w", encoding="utf-8", newline="") as f:
         w = csv.writer(f, lineterminator="\n")
         w.writerow(["concept", "label", "source", "pattern", "matches"])
@@ -193,6 +195,15 @@ def write(schemes: dict[str, Scheme], about: About, out: Path, matches: list[Mat
             label = schemes[slug].concepts[cid]["label"]
             w.writerow([schemes[slug].iri + cid, label, f"{family}-{ver}", pattern, len(hits)])
     return [ttl, jsonld, names]
+
+
+def _stable(node: object) -> object:
+    """JSON-LD with every array but an `@list` sorted, so `@graph` by `@id`; rdflib writes them in hash order."""
+    if isinstance(node, dict):
+        return {k: [_stable(v) for v in value] if k == LIST else _stable(value) for k, value in node.items()}
+    if isinstance(node, list):
+        return sorted((_stable(v) for v in node), key=lambda v: json.dumps(v, sort_keys=True))
+    return node
 
 
 def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
@@ -214,6 +225,7 @@ def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
     meta = {
         "curie_map": curie_map,
         "mapping_set_id": f"{BASE}r9lab-vocabulary.sssom.tsv",
+        "mapping_set_title": f"{TITLE} mappings",
         "mapping_set_version": about.version,
         "license": str(CC0),
     }

@@ -20,6 +20,13 @@ ROOT = Path(__file__).resolve().parent.parent
 EVERYTHING = type("All", (set,), {"__contains__": lambda *_: True})()
 Schemes = dict[str, scheme.Scheme]
 VERSIONS = {"bafu": {"2025-v2", "2026-v1"}}
+# The metadata block a test SSSOM file starts with.
+HEAD = "#curie_map:\n#  r9lab-tag: https://w3id.org/r9lab/vocabulary/tags/\n"
+
+
+def tsv(columns: tuple[str, ...], rows: list[dict[str, str]]) -> str:
+    """An SSSOM file: `HEAD`, then `columns` and one line per row, a missing field empty."""
+    return HEAD + "\n".join(["\t".join(columns), *("\t".join(r.get(c, "") for c in columns) for r in rows)]) + "\n"
 
 
 @pytest.fixture(scope="module")
