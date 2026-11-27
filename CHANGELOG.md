@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Review drafts for the ORDS and CIRPASS-2 crosswalks, PyST tag publication and the vocabulary toolkit, with [UNU-KEY and BAFU source checks](docs/crosswalks/source-checks.md).
 - Four SKOS concept schemes: 59 material classes under Ashby's six families, 25 component classes, 33 product types, and the eleven coarse material classes of a pilot study as a collection. Concept ids are stable: a concept that goes away is deprecated with `replaced_by`, never deleted. Misspellings that records use are hidden labels (`skos:hiddenLabel`), found by search but never shown. See [What is in it](README.md#what-is-in-it).
 - Typed crosswalks from each concept to CPC 2.1, PMDco v3.1.2, Wikidata and EU CPV codes, and from each product type to its WEEE Directive category and its UNU-KEY v1 and v2 codes ([ADR 0007](docs/decisions/0007-outside-codes-without-iris.md)). Materials and components also carry patterns for BAFU activity names, checked against BAFU:2025 v2 and BAFU:2026 v1.
 - Every concept in use has a definition with its source, examples and a scope note; the README lists the [sorting rules](README.md#sort-a-part) the notes follow.

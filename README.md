@@ -211,6 +211,13 @@ A source whose id is `<family>-<version>` is one version of a name list, such as
 A new family, such as an ecoinvent release, also needs a reader in `NAME_LISTS` in
 `src/r9lab_vocabulary/pipeline.py`.
 
+## Proposals for review
+
+- [Open Repair Data Standard crosswalk](docs/crosswalks/ords.md)
+- [CIRPASS-2 Digital Product Passport crosswalk](docs/crosswalks/cirpass-2.md)
+- [UNU-KEY and BAFU source checks](docs/crosswalks/source-checks.md)
+- [PyST tag mappings](docs/decisions/0009-publish-tag-mappings-to-pyst.md) and [toolkit scope](docs/toolkit-scope.md)
+
 ## Development
 
 You need [uv](https://docs.astral.sh/uv/) and [just](https://just.systems).

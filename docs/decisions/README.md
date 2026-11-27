@@ -14,3 +14,4 @@ structure, and add a record when you make a choice that is expensive to undo.
 | [0006](0006-product-families-and-facets.md) Product families for navigation, facets as their own schemes later | accepted | 2026-11-26 |
 | [0007](0007-outside-codes-without-iris.md) Outside codes: the owner's IRIs, or typed literals | accepted | 2026-11-26 |
 | [0008](0008-tag-ids-carry-their-field.md) Tag ids carry the field the tag was typed in | accepted | 2026-11-26 |
+| [0009](0009-publish-tag-mappings-to-pyst.md) Publish reviewed tag mappings to PyST | proposed | 2026-11-27 |
