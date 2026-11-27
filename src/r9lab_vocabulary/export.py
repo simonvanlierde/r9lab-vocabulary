@@ -226,8 +226,9 @@ def write_sssom(schemes: dict[str, Scheme], about: About, out: Path) -> Path:
     """Write `r9lab-vocabulary.sssom.tsv` into `out`: one SSSOM row per `mappings` entry.
 
     Every row is a person's curation, so its justification is `semapv:ManualMappingCuration`
-    and the publisher, `about`'s first ORCID iD, is its author. Mappings from or to a deprecated concept are
-    left out: SSSOM has no field for a deprecated subject, and the SKOS graph keeps them.
+    and the publisher, `about`'s first ORCID iD, is its author: IndexError if `about` has none.
+    Mappings from or to a deprecated concept are left out: SSSOM has no field for a deprecated
+    subject, and the SKOS graph keeps them.
     The YAML records no date per mapping, so there is no `mapping_date` column.
     A UNU-KEY code has no IRI, so its row is an SSSOM literal mapping: no `object_id`, the code
     as `object_label`, `object_type` `rdfs literal`, and the key version's datatype as `object_source`.
