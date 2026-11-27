@@ -23,7 +23,7 @@ graph:
 | Scheme | Concepts | Top level |
 | --- | --- | --- |
 | [Material classes](vocabulary/materials.yaml) | 59 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
-| [Component classes](vocabulary/components.yaml) | 25 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
+| [Component classes](vocabulary/components.yaml) | 35 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
 | [Pilot classes](vocabulary/pilot-classes.yaml) | 11 | The eleven coarse material classes a pilot study sorts photographed parts into, kept as a `skos:Collection` |
 
