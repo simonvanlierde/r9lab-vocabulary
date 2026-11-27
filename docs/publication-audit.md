@@ -10,7 +10,7 @@ schemes and 128 concepts. No export records were sent to a validator.
 | --- | --- | --- |
 | VocPub 5.4 | 144 violations, 121 warnings | 1 violation, 2 warnings |
 | Published SKOS integrity conditions | No inconsistencies found | No inconsistencies found |
-| HTML and Turtle requests to a concept IRI | Repository HTML for both | [ADR 0009](decisions/0009-resolve-vocabulary-iris.md) proposes the serving change |
+| HTML and Turtle requests to a concept IRI | Repository HTML for both | [ADR 0010](decisions/0010-resolve-vocabulary-iris.md) proposes the serving change |
 
 Run the [pinned VocPub validator][validator] with pySHACL 0.40.2 and advanced
 features enabled.
@@ -55,7 +55,7 @@ that trigger and the local shapes check S37 against the actual types.
 | 6. Machine-readable terms | The build emits SKOS Turtle and JSON-LD, with SSSOM for mappings. The release workflow builds these formats from the tracked sources. |
 | 7. Vocabulary metadata | The graph has licensing, creator, publisher, version, dates, language, and repository metadata. The audit adds defining relationships and provenance. |
 | 8. Registration and preservation | Confirm a public vocabulary catalogue entry and a versioned DOI deposit when publishing the first release. The w3id registration provides the identifier namespace. |
-| 9. Human and machine access | Both Accept requests reached repository HTML in the live check. Concept and version resolution is in [ADR 0009](decisions/0009-resolve-vocabulary-iris.md). |
+| 9. Human and machine access | Both Accept requests reached repository HTML in the live check. Concept and version resolution is in [ADR 0010](decisions/0010-resolve-vocabulary-iris.md). |
 | 10. Revision publication | The release workflow builds immutable assets, and `just diff` checks concept removal. Keeping superseded terms and versions resolvable needs the proposed public routing. |
 
 [Cox et al., Ten simple rules for making a vocabulary FAIR][fair]

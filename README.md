@@ -11,7 +11,7 @@ Wikidata and BAFU.
 
 Status: experimental. Concept ids are stable from v0.1.0 on; labels, mappings and the
 product types may still change. The `https://w3id.org/r9lab/vocabulary/` IRIs currently redirect to this repository.
-[ADR 0009](docs/decisions/0009-resolve-vocabulary-iris.md) proposes how they will resolve to individual resources.
+[ADR 0010](docs/decisions/0010-resolve-vocabulary-iris.md) proposes how they will resolve to individual resources.
 
 Questions and bugs: see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
