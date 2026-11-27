@@ -7,6 +7,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The SKOS export identifies the scheme that defines each concept and collection,
+  names its creators, and includes source citations in schema.org format.
+
 ### Added
 
 - Four SKOS concept schemes: 59 material classes under Ashby's six families, 25 component classes, 33 product types, and the eleven coarse material classes of a pilot study as a collection. Concept ids are stable: a concept that goes away is deprecated with `replaced_by`, never deleted. Misspellings that records use are hidden labels (`skos:hiddenLabel`), found by search but never shown. See [What is in it](README.md#what-is-in-it).

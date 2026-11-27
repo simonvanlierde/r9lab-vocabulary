@@ -26,7 +26,7 @@ version as a group, can send the whole prefix to that release's files. The versi
 path segment right after the base, where scheme slugs also sit. A version starts with a digit and
 `just rdf` refuses a slug that does not start with a lower-case letter, so the two never collide.
 
-That rule does not exist yet. The pending w3id rule sends everything under the base to the
+The version-specific rule is pending. The registered w3id rule sends everything under the base to the
 repository, so a version IRI resolves to the repository, not to its release. Adding the
 per-release rule is a follow-up once the first release is tagged.
 

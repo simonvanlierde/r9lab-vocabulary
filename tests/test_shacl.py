@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from conftest import ROOT
 from pyshacl import validate
-from rdflib import RDF, SH, SKOS, Graph
+from rdflib import DCTERMS, RDF, RDFS, SDO, SH, SKOS, Graph, URIRef
 
 from r9lab_vocabulary import export, pipeline, scheme
 
@@ -23,7 +23,12 @@ def own() -> Graph:
 
 @pytest.fixture(scope="module")
 def skohub() -> Graph:
-    return Graph().parse(SKOHUB)
+    graph = Graph().parse(SKOHUB)
+    # SKOS S4 constrains the object of inScheme. The subject can be a collection.
+    # https://www.w3.org/TR/skos-reference/#sec-inscheme
+    shape = URIRef("http://skohub.io/skohub-shaclDisjointConceptSchemeAndCollection")
+    graph.remove((shape, SH.targetSubjectsOf, SKOS.inScheme))
+    return graph
 
 
 @pytest.fixture(scope="module")
@@ -41,9 +46,9 @@ def _violations(data: Graph, shapes: Graph) -> set[str]:
 
 @pytest.mark.parametrize("root", [ROOT, ROOT / "tests" / "fixtures" / "golden"])
 def test_the_build_conforms(root: Path, own: Graph, skohub: Graph):
-    orcids, landing = pipeline.citation(root / "CITATION.cff")
+    authors, landing = pipeline.citation(root / "CITATION.cff")
     schemes = scheme.load(root / "vocabulary")
-    g = export.to_graph(schemes, export.About("1.0.0", orcids, landing, date(2026, 2, 1)))
+    g = export.to_graph(schemes, export.About("1.0.0", list(authors), landing, date(2026, 2, 1), authors))
     # skohub's S19/S20 rule wants every relatedMatch target typed in the graph. SKOS entails it
     # (relatedMatch is a sub-property of related, whose range is skos:Concept), and a target in an
     # outside scheme, such as a CPV code, is typed only in that scheme's own data. Add the entailed
@@ -76,3 +81,24 @@ def test_each_own_rule_catches_its_break(shapes: Graph):
         "A concept scheme has exactly one owl:versionInfo.",
     ):
         assert expected in messages, messages
+
+
+def test_the_build_describes_vocabulary_resources():
+    authors, landing = pipeline.citation(ROOT / "CITATION.cff")
+    g = export.to_graph(
+        scheme.load(ROOT / "vocabulary"), export.About("test", list(authors), landing, author_names=authors)
+    )
+    for s in g.subjects(RDF.type, SKOS.ConceptScheme):
+        assert g.value(s, SDO.codeRepository)
+        assert g.value(s, SKOS.historyNote)
+        for creator in g.objects(s, DCTERMS.creator):
+            assert (creator, RDF.type, SDO.Person) in g
+            assert g.value(creator, SDO.name)
+    for node, source in g.subject_objects(DCTERMS.source):
+        if isinstance(source, URIRef):
+            assert str(g.value(node, SDO.citation)) == str(source)
+    for kind in (SKOS.Concept, SKOS.Collection):
+        for node in g.subjects(RDF.type, kind):
+            parent = g.value(node, SKOS.inScheme)
+            assert (node, RDFS.isDefinedBy, parent) in g
+            assert g.value(node, SKOS.definition)

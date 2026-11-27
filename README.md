@@ -10,8 +10,8 @@ and disassembly records, as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, WEEE cat
 Wikidata and BAFU.
 
 Status: experimental. Concept ids are stable from v0.1.0 on; labels, mappings and the
-product types may still change. The `https://w3id.org/r9lab/vocabulary/` IRIs do not resolve
-yet: the redirect is waiting for review at w3id.org.
+product types may still change. The `https://w3id.org/r9lab/vocabulary/` IRIs currently redirect to this repository.
+[ADR 0009](docs/decisions/0009-resolve-vocabulary-iris.md) proposes how they will resolve to individual resources.
 
 Questions and bugs: see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
@@ -71,6 +71,7 @@ Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`
 version IRI such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`.
 [ADR 0004](docs/decisions/0004-versioned-iris-and-scheme-dates.md) lists the fields and where
 each comes from.
+The [publication audit](docs/publication-audit.md) records the SKOS, VocPub and FAIR checks.
 
 ## Usage
 
