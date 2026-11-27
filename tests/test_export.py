@@ -211,8 +211,17 @@ def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
     assert "t01" not in md_path.read_text(encoding="utf-8")
 
 
-# Concepts that span several pilot classes, so they carry no key of their own; `pilot_any` covers them.
-KEYLESS = {"materials:m0001", "materials:m0049", "components:c0018"}
+# Concepts that span several pilot classes, so they carry no fixed key.
+KEYLESS = {
+    "materials:m0001",
+    "materials:m0049",
+    "components:c0018",
+    "components:c0026",  # Depends on whether the part is a wound assembly, magnet or loose material.
+    "components:c0027",
+    "components:c0030",  # Depends on the blade material.
+    "components:c0031",  # Depends on whether the assembly is chiefly electronics, metal or plastic.
+    "components:c0032",  # Glass bulbs and other bulb designs may sort differently.
+}
 
 
 def test_every_material_and_component_has_a_pilot_key_or_is_known_to_span_several(schemes: Schemes):

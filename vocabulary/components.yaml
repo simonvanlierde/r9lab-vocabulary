@@ -52,7 +52,8 @@ concepts:
     source: https://www.wikidata.org/wiki/Q173350
     example: [an unpopulated FR-4 board, a flexible printed circuit without parts, a board with every part desoldered]
     note: 'Not populated printed circuit board: a board that still carries components is populated. Not FR-4 laminate, which is the board''s material.'
-    mappings: {exact: ['wd:Q173350'], close: ['cpc:47130']}
+    broader: [c0034]
+    mappings: {close: ['cpc:47130']}
     names:
       bafu: ['^printed wiring board, (surface mount|through-hole), .*surface']
   c0006:
@@ -62,6 +63,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q3951866
     example: [a motherboard, a phone logic board, a power-supply board, a hard-drive controller board]
     note: 'Not bare printed circuit board, which has no components. Not electronic component: a part still soldered on stays part of the board.'
+    broader: [c0034]
     related: [c0005]
     mappings: {exact: ['wd:Q3951866']}
     names:
@@ -243,3 +245,76 @@ concepts:
     editorial_note: Wikidata has no item for the module; wd:Q321098 is the laser diode inside it. No BAFU dataset.
     broader: [c0007]
     mappings: {related: ['wd:Q321098']}
+  c0026:
+    label: electric motor part
+    definition: A part designed to operate inside an electric motor, such as its rotor or stator.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a wound stator, an armature, a permanent-magnet rotor assembly]
+    note: Use electric motor for the complete machine. A loose magnet or unwound wire can be classified on its own.
+    related: [c0022]
+    mappings: {broad: ['cpc:46131']}
+  c0027:
+    label: electric motor stator
+    definition: The stationary assembly of a rotary electric motor that interacts magnetically with the rotor.
+    source: https://www.wikidata.org/wiki/Q190312
+    example: [a brushless fan motor stator, a wound induction motor stator]
+    note: The rotor turns. Use electric motor for a complete motor with both assemblies.
+    broader: [c0026]
+    mappings: {broad: ['wd:Q190312', 'cpc:46131']}
+  c0028:
+    label: camera module
+    definition: An image sensor and its lens assembled for installation inside a host device.
+    source: https://patents.google.com/patent/US7699547B2/en
+    example: [a phone rear camera module, a laptop webcam module]
+    note: An image sensor chip or a loose lens is only one part of the assembly.
+    mappings: {related: ['cpc:47401', 'cpc:45290']}
+  c0029:
+    label: flexible printed circuit
+    definition: A circuit whose conductive tracks are formed on an insulating substrate designed to bend.
+    source: https://www.wikidata.org/wiki/Q4137937
+    example: [a printed keyboard membrane, a flexible circuit with contacts for a phone display]
+    note: A plain shielding foil or a ribbon of parallel insulated wires has no printed circuit tracks.
+    broader: [c0034]
+    mappings: {exact: ['wd:Q4137937'], broad: ['cpc:47130']}
+  c0030:
+    label: fan blade assembly
+    definition: A fan's blades and their hub, which move air as they turn.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a moulded axial fan impeller, a centrifugal blower wheel]
+    note: A fan recorded with its motor and housing is a whole fan. A grille only guards the blades.
+    mappings: {broad: ['cpc:43253']}
+  c0031:
+    label: keyboard module
+    definition: An assembly of keys and their sensing mechanism installed in a computer to provide key input.
+    source: https://www.wikidata.org/wiki/Q250
+    example: [a laptop keyboard assembly, a membrane keyboard on a mounting plate]
+    note: A loose keycap or bare membrane is a part of the module. Use a product type for a standalone keyboard.
+    mappings: {broad: ['wd:Q250', 'cpc:45290']}
+  c0032:
+    label: electric light bulb
+    definition: A self-contained source of electric light with a bulb or tube envelope and electrical terminals.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a screw-base filament bulb, a glass indicator bulb, a replacement LED bulb]
+    note: A light fitting holds the bulb. A loose board-mounted LED or a plastic light guide has its own classification.
+    mappings: {related: ['cpc:46510']}
+  c0033:
+    label: microphone module
+    definition: A microphone and any attached mounting or interface hardware assembled for installation in a host device.
+    source: https://www.wikidata.org/wiki/Q46384
+    example: [a laptop microphone board, a phone microphone on a flex circuit]
+    note: A loudspeaker driver produces sound. A standalone microphone is a finished device.
+    mappings: {broad: ['wd:Q46384', 'cpc:47330']}
+  c0034:
+    label: printed circuit board
+    definition: A board with conductive tracks on an insulating substrate, with or without mounted components.
+    source: https://www.wikidata.org/wiki/Q173350
+    example: [an unidentified circuit board removed from a device, a recorded board whose population state is unknown]
+    note: Use the bare or populated class when the population state can be established.
+    mappings: {exact: ['wd:Q173350'], related: ['cpc:47130']}
+  c0035:
+    label: touchpad module
+    definition: A touch-sensitive pointing surface and its electronics assembled for installation in a host device.
+    source: https://www.wikidata.org/wiki/Q20137
+    example: [a laptop trackpad module, a removable clickpad assembly]
+    note: A touchscreen combines input with a display. A touchpad senses finger position without showing an image.
+    mappings: {broad: ['wd:Q20137', 'cpc:45290']}
