@@ -99,15 +99,15 @@ r9lab-tag:material/mdf	mdf	skos:broadMatch	materials:m0055	wood			semapv:AgentBa
 r9lab-tag:material/paper	paper	skos:broadMatch	materials:m0056	paper and board			semapv:AgentBasedMatching
 r9lab-tag:material/cloth	cloth	skos:closeMatch	materials:m0057	textile			semapv:AgentBasedMatching
 r9lab-tag:material/synthetic%20wool	synthetic wool	skos:broadMatch	materials:m0057	textile			semapv:AgentBasedMatching
-r9lab-tag:keyword/brushless%20motor%20stator	brushless motor stator	skos:exactMatch	sssom:NoTermFound			part of c0022	semapv:AgentBasedMatching
-r9lab-tag:keyword/camera%20module	camera module	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:keyword/brushless%20motor%20stator	brushless motor stator	skos:broadMatch	components:c0027	electric motor stator		Confirm the record is a stator when the name says motor	semapv:AgentBasedMatching
+r9lab-tag:keyword/camera%20module	camera module	skos:exactMatch	components:c0028	camera module			semapv:AgentBasedMatching
 r9lab-tag:material/carbon	carbon	skos:exactMatch	materials:m0059	carbon and graphite			semapv:AgentBasedMatching
-r9lab-tag:keyword/electrical%20motor%20part	electrical motor part	skos:exactMatch	sssom:NoTermFound			part of c0022	semapv:AgentBasedMatching
-r9lab-tag:keyword/electronic%20foil	electronic foil	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
-r9lab-tag:keyword/fan%20blades	fan blades	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
-r9lab-tag:keyword/keyboard%20module	keyboard module	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:keyword/electrical%20motor%20part	electrical motor part	skos:exactMatch	sssom:NoTermFound			Split complete motors, motor parts and haptic actuators before mapping	semapv:AgentBasedMatching
+r9lab-tag:keyword/electronic%20foil	electronic foil	skos:closeMatch	components:c0029	flexible printed circuit		Confirm that the foil has printed tracks	semapv:AgentBasedMatching
+r9lab-tag:keyword/fan%20blades	fan blades	skos:closeMatch	components:c0030	fan blade assembly		Confirm the record excludes the motor and housing	semapv:AgentBasedMatching
+r9lab-tag:keyword/keyboard%20module	keyboard module	skos:exactMatch	components:c0031	keyboard module			semapv:AgentBasedMatching
 r9lab-tag:keyword/laser%20module	laser module	skos:exactMatch	components:c0025	laser module			semapv:AgentBasedMatching
-r9lab-tag:keyword/lightbulb	lightbulb	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
-r9lab-tag:keyword/microphone%20module	microphone module	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
-r9lab-tag:keyword/pcb	pcb	skos:exactMatch	sssom:NoTermFound			bare (c0005) or populated (c0006)	semapv:AgentBasedMatching
-r9lab-tag:keyword/touchpad	touchpad	skos:exactMatch	sssom:NoTermFound				semapv:AgentBasedMatching
+r9lab-tag:keyword/lightbulb	lightbulb	skos:exactMatch	components:c0032	electric light bulb			semapv:AgentBasedMatching
+r9lab-tag:keyword/microphone%20module	microphone module	skos:exactMatch	components:c0033	microphone module			semapv:AgentBasedMatching
+r9lab-tag:keyword/pcb	pcb	skos:exactMatch	components:c0034	printed circuit board		Population unspecified	semapv:AgentBasedMatching
+r9lab-tag:keyword/touchpad	touchpad	skos:closeMatch	components:c0035	touchpad module		The export uses this tag for internal modules	semapv:AgentBasedMatching
