@@ -42,7 +42,7 @@ def call(base: str, method: str, path: str, body: object = None) -> object:
     headers = {"Content-Type": "application/json", "X-PyST-Auth-Token": TOKEN}
     req = urllib.request.Request(base + path, data, headers, method=method)  # noqa: S310 -- base is --url
     try:
-        with urllib.request.urlopen(req) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             return json.load(resp)
     except urllib.error.HTTPError as err:
         msg = f"{method} {path}: {err.code} {err.read().decode()[:2000]}"

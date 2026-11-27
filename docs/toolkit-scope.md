@@ -33,12 +33,17 @@ Keep the R9lab tag grammar, rater protocol, photo-study classes and BAFU pattern
 semantics in R9lab. Word-list tools such as sensebank can supply proposals. Each
 project decides how to review mappings and what counts as a source match.
 
-## First milestone
+## Second vocabulary trial
 
-Build the same SKOS and SSSOM from a pinned Git revision on two runs. Trace one
-raw tag through its field, reviewed mapping and published concept, and report
-one unresolved tag. Use the [CV × industrial ecology taxonomy](https://github.com/simonvanlierde/cv-ie-taxonomy)
-as the first candidate for a second trial. Export its existing cell IDs and labels
-as a small SKOS scheme while preserving its data licence. Keep evidence grades and
-scoring in the application. If the trial needs the same runtime checks, consider a
-library. If it shares only the layout and recipes, use a Copier template.
+The [CV × industrial ecology taxonomy input](https://github.com/simonvanlierde/cv-ie-taxonomy/blob/23923a87a9de534e09ce7183cd123f93f78dc646/src/data/taxonomy.json)
+produced 12 SKOS concepts and 78 triples. The trial used each existing cell
+deep link as its IRI, copied its task label with CC BY 4.0 attribution,
+and kept evidence grades and scores in the application. Two builds had identical
+bytes and the graph passed the same SkoHub SKOS shapes used here.
+
+The two projects share stable IDs, source pins and graph checks. They differ
+in ID syntax, licensing, data model and review workflow. R9lab's YAML validator
+expects its own ID format, and its exporter uses R9lab's IRIs and CC0. Start
+with a template for publishing checks and release metadata when another project
+needs that setup. Extract shared runtime code when a second project needs the
+same transformation or validation.

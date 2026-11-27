@@ -36,16 +36,18 @@ holds the predicate and reviewer attribution for each published mapping.
 2. Create a tag-string concept for each eligible normalized label and a field
    concept for each allowed field. Use separate schemes for the tag strings and
    the fields. Keep their lookup IDs distinct from the field-qualified subjects
-   in ADR 0008. A client uses the same trim, lowercase and percent-encoding rules
-   as the SSSOM subject ID.
+   in ADR 0008. Under the vocabulary base, use `pyst/strings/<sha256>`,
+   where the digest is over the UTF-8 tag after trimming and lowercasing.
+   Use `pyst/fields/<field>` for the field.
 3. Create one correspondence per target scheme. Set `xkos:compares` to the tag,
    field and target schemes. Set `owl:versionInfo` to the release version and
    `dcterms:references` to the tag SSSOM asset. Give each eligible row an
    association with the tag and field as the two `xkos:sourceConcept` values and
    the vocabulary concept as its single `xkos:targetConcept`. An eligible
    `r9lab-tag:material/pc` row gives the source pair `pc` and `material`, with
-   `materials:m0026` as the target. Derive the association ID from the canonical
-   SSSOM subject ID within its correspondence.
+   `materials:m0026` as the target. The correspondence is
+   `pyst/correspondences/<target scheme slug>`. Append a slash and the SHA-256
+   of the expanded SSSOM subject IRI to get the association ID.
 4. Load schemes, concepts and vocabulary relationships, then correspondences
    and associations. Send expanded JSON-LD. Add the association IDs to each
    correspondence with a separate `POST /api/v1/made_ofs/` call using
@@ -89,9 +91,25 @@ generic XKOS need PyST's convention to interpret the source pair.
 
 The [PyST round trip](../../tests/pyst/round_trip.py) checks the same synthetic
 tag in two fields with different targets, correspondence membership, and the
-SSSOM reference URL. Before publishing, compare each correspondence against
-the eligible SSSOM rows and verify the asset hash from the manifest. Include
-a broad match, an unreviewed row, a disputed row and a no-term row. Exercise a
-repeat load in a fresh database, a target change, a withdrawal and a failed
-staged load. Check that failed staging leaves the active endpoint and manifest
-intact, and that rollback restores both for the previous release.
+SSSOM reference URL.
+
+The [local staging prototype](../../tests/pyst/stage_tags.py) checks both asset
+digests and the release versions before it writes to PyST. Its input
+`release.json` has `version` (without `v`), `graph_sha256`, `tags_sha256`, and
+the versioned `tags_url`. Take the digests from the release files you intend
+to stage. Start a fresh disposable PyST at the endpoint supplied to `stage`.
+
+```sh
+uv run python tests/pyst/stage_tags.py stage r9lab-vocabulary.ttl r9lab-tags.sssom.tsv release.json staged.json --url http://127.0.0.1:8741
+uv run python tests/pyst/stage_tags.py activate staged.json active.json
+```
+
+The staged manifest appears only after the vocabulary, correspondence
+membership, and field-qualified lookups agree with the input. `activate`
+recomputes the fingerprint from the stored release metadata, endpoint URL
+and live graph before it replaces the local pointer. Keep both staged manifests and their servers running during a
+local rollback rehearsal. Pass the earlier staged manifest to `activate` to
+restore it. The prototype uses loopback and the disposable stack's token.
+
+Before publishing, agree on the host, switch and rollback procedure. Rehearse
+a failed load and a rollback through the real client-facing endpoint.

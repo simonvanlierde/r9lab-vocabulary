@@ -1,0 +1,63 @@
+@prefix eudpp: <https://w3id.org/eudpp#> .
+@prefix profile: <https://w3id.org/r9lab/vocabulary/terms#> .
+@prefix rp: <http://www.semanticweb.org/RePlanIT/> .
+@prefix schema: <https://schema.org/> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+profile:ICTComponentExchangeShape a sh:NodeShape ;
+    sh:targetClass rp:ICTDevice ;
+    sh:targetSubjectsOf rp:hasComponent ;
+    sh:class rp:ICTDevice ;
+    sh:property [
+        sh:path rp:hasComponent ;
+        sh:minCount 1 ;
+        sh:class rp:HardwareComponent ;
+        sh:node profile:HardwareComponentExchangeShape
+    ] .
+
+profile:HardwareComponentExchangeShape a sh:NodeShape ;
+    sh:targetSubjectsOf profile:materialDeclaration ;
+    sh:class rp:HardwareComponent ;
+    sh:property [
+        sh:path schema:additionalType ;
+        sh:qualifiedValueShape [
+            sh:nodeKind sh:IRI ;
+            sh:pattern "^https://w3id\\.org/r9lab/vocabulary/components/c[0-9]{4}$"
+        ] ;
+        sh:qualifiedMinCount 1 ;
+        sh:qualifiedMaxCount 1
+    ] ;
+    sh:property [
+        sh:path profile:materialDeclaration ;
+        sh:minCount 1 ;
+        sh:class eudpp:MaterialOfComposition
+    ] .
+
+profile:MaterialDeclarationExchangeShape a sh:NodeShape ;
+    sh:targetClass eudpp:MaterialOfComposition ;
+    sh:property [
+        sh:path eudpp:hasMaterialType ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class eudpp:MaterialType ;
+        sh:node profile:MaterialTypeExchangeShape
+    ] .
+
+profile:MaterialTypeExchangeShape a sh:NodeShape ;
+    sh:targetClass eudpp:MaterialType ;
+    sh:property [
+        sh:path eudpp:materialTypeScheme ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:anyURI ;
+        sh:pattern "^https://w3id\\.org/r9lab/vocabulary/[0-9]+\\.[0-9]+\\.[0-9]+/materials/$"
+    ] ;
+    sh:property [
+        sh:path eudpp:materialTypeValue ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^m[0-9]{4}$" ;
+        sh:message "The material code must have R9lab concept ID syntax."
+    ] .

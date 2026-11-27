@@ -11,63 +11,65 @@ Both Hub exports were checked on 2026-11-28. The checksums identify the reviewed
 bytes. The consortium's separately published [MAT 1.2.0](https://raw.githubusercontent.com/CIRPASS-2/ontologies-docs/82a73344db80a4481716b26e81f7eddbe5b5fbc7/CORE/mat/ontology.ttl)
 defines the same material type properties used below.
 
-## Materials in MAT
+## Review and check the table
 
-MAT models how a passport declares composition. Its `hasMaterialType` links a
-`MaterialOfComposition` to a sector-specific `MaterialType`. The checked MAT
-exports define neither individual material types nor subclasses of `MaterialType`.
-All [59 R9lab material concepts](../../vocabulary/materials.yaml) therefore have
-**no direct MAT term match**.
+The [v1 review table](cirpass-2-crosswalk-v1.tsv) records one disposition per
+R9lab concept in each applicable Hub module. MAT covers all 59 material
+concepts. Electronics covers the same materials and all 25 component concepts.
+A blank target with `no-match` records a reviewed gap. Add the applicable table
+rows when a release adds a material or component concept. `broad` and `close`
+describe the proposed scope from R9lab to Electronics. `contextual` needs
+item evidence, such as knowing whether a display module comes from a computer.
+Those links describe candidates for typing passport records. The target classes
+belong to OWL, and the R9lab terms remain SKOS concepts.
 
-The proposed profile places the R9lab **versioned materials scheme IRI** and the
-local concept ID on the passport's `MaterialType` node. Use the scheme version
-to select the release, then look up the ID in that release to recover the stable
-concept IRI. The example declares polycarbonate using the proposed 0.1.0 scheme
-version.
+From the repository root, run the checker against the current vocabulary and
+the checked-in index of 203 named OWL classes from Hub Electronics v1.
 
-```turtle
-@prefix eudpp: <https://w3id.org/eudpp#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
-[] a eudpp:MaterialOfComposition ;
-   eudpp:hasMaterialType [
-     a eudpp:MaterialType ;
-     eudpp:materialTypeScheme "https://w3id.org/r9lab/vocabulary/0.1.0/materials/"^^xsd:anyURI ;
-     eudpp:materialTypeValue "m0026"
-   ] .
+```shell
+uv run python -m r9lab_vocabulary.dpp
 ```
 
-The classification supplies the declared material type. A passport producer
-must supply the composition facts and check the target sector's schema.
+Download the two pinned Turtle files from the table above to check the original
+bytes and confirm that the Electronics graph still produces the same class index.
 
-## Candidates from RePlanIT
+```shell
+uv run python -m r9lab_vocabulary.dpp --electronics electronics-v1.ttl --mat mat-v1.1.0.ttl
+```
 
-`rp:` is `http://www.semanticweb.org/RePlanIT/`, `matonto:` is
-`http://matonto.org/ontologies/matonto#`, and `ncit:` is
-`http://purl.obolibrary.org/obo/NCIT_`. All targets below are declared OWL
-classes in Hub Electronics v1. The alignments describe meaning from R9lab to
-RePlanIT for review. A passport record can use an OWL class to type an observed
-item and retain the R9lab concept ID as its classification. Contextual
-candidates need item-level evidence before that typing.
+The [class index](cirpass-2-electronics-v1-classes.txt) contains identifiers
+only. It comes from the subjects declared as `owl:Class` in the Electronics
+export, sorted and written as UTF-8 with one IRI per line.
 
-| R9lab IDs | Candidate target | Proposed alignment and scope |
-| --- | --- | --- |
-| `c0001` battery | `ncit:C49839` | Close. Confirm pack and bare-cell scope in an ICT profile. |
-| `c0002–c0004` | `ncit:C49839` | Broad. Battery chemistry and primary use remain in R9lab. |
-| `c0005–c0008` | — | No direct match proposed. The hardware class is too general and the chip classes cover individual types. |
-| `c0009` capacitor, `c0012` inductor | `rp:Capacitor`, `rp:Inductor` respectively | Close. The functions align within the ICT scope. |
-| `c0010–c0011`, `c0013` | — | No direct match proposed for these devices. |
-| `c0014–c0016` displays | `rp:Display` | Contextual. Use for computer display modules. The R9lab types also cover phones, wearables and other products. |
-| `c0017–c0022`, `c0024–c0025` | — | No direct match proposed. A port covers the host connection rather than the cable, and a battery class is insufficient for a bare cell. |
-| `c0023` loudspeaker driver | `rp:Speakers` | Contextual. RePlanIT covers both integrated and external computer speakers. Restrict this candidate to integrated computer speaker units. |
-| `m0001`, `m0020`, `m0043`, `m0046`, `m0050` | `matonto:Metals`, `matonto:Polymers`, `matonto:Glasses`, `matonto:Ceramics`, `matonto:Composites` respectively | Close. Family-level candidates. |
-| `m0002`, `m0006`, `m0009`, `m0011`, `m0013–m0014`, `m0017–m0018` | `rp:Ferrous`, `rp:NonFerrous`, `rp:Copper`, `rp:Brass`, `rp:Tin`, `rp:Nickel`, `rp:Gold`, `rp:Silver` respectively | Close. Check pure and commercial material grades when applying the links. |
-| `m0003` carbon and low-alloy steel | `rp:CarbonSteel` | Contextual. Check the alloy grade against the RePlanIT carbon steel definition before using this class. |
-| All other material IDs | — | No direct match proposed. Elemental aluminium and magnesium do not identify their alloys. A generic plastic class does not identify polycarbonate or an ABS blend. |
+## Exchange profile
 
-Before publishing, pin the selected exports by checksum and record attribution
-and reuse terms in the source manifest. Check candidate target kind and existence
-against the pins and validate a sample with a material declaration and component
-against the chosen sector's schema. Keep contextual candidates out of automatic
-classification. Product-group obligations depend on the applicable EU acts.
+MAT v1.1.0 and v1.2.0 define neither individual material types nor subclasses of
+`MaterialType`, so every material row records no direct match. Their
+`hasMaterialType` property links a `MaterialOfComposition` declaration to
+its `MaterialType`, which can hold the R9lab versioned materials scheme IRI
+and local concept ID. Use the scheme version to select the release and look up
+the ID there to recover the stable concept IRI.
+
+The [sample exchange](cirpass-2-example.ttl) represents a capacitor with copper
+terminals in an illustrative laptop record. RePlanIT supplies the component
+class and ICT device relationship. MAT supplies the composition declaration,
+scheme and code. The local profile links the component and the MAT declaration
+using `r9lab:materialDeclaration` and records the component concept under
+`schema:additionalType`. The [local SHACL shapes](../../shapes/dpp-exchange.shacl.ttl)
+check these fields on explicit triples, with OWL inference disabled.
+
+```shell
+just py-test tests/test_dpp.py
+```
+
+The Hub’s public Electronics metadata returned no linked message model and its
+public specification search returned no ICTDevice profile on 2026-11-28. The
+pinned RePlanIT repository contains the ontology and competency questions. The
+published OpenEPCIS electronics shapes use OpenEPCIS classes and properties.
+None of their SHACL targets selected nodes in the MAT/RePlanIT sample. The
+local validation checks the exchange example. Sector and regulatory conformance
+need the applicable product-group requirements and profile.
+[Hub Electronics metadata](https://dpp.vocabulary-hub.eu/api/specification/electronics) ·
+[RePlanIT source](https://github.com/RePlanIT/Ontology/tree/4d187264f6727a6f52f096bc4d4745227c443ad6) ·
+[OpenEPCIS electronics shapes](https://github.com/openepcis/openepcis-dpp-ready/blob/74ad8c77307adec73fab1c417d737d6c6593444a/extensions/eu/electronics/validation/electronics-shapes.ttl) ·
 [ESPR](https://eur-lex.europa.eu/eli/reg/2024/1781/oj)

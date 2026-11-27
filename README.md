@@ -218,6 +218,9 @@ A new family, such as an ecoinvent release, also needs a reader in `NAME_LISTS` 
 - [UNU-KEY and BAFU source checks](docs/crosswalks/source-checks.md)
 - [PyST tag mappings](docs/decisions/0009-publish-tag-mappings-to-pyst.md) and [toolkit scope](docs/toolkit-scope.md)
 
+`just crosswalk-check` validates the ORDS and CIRPASS-2 review tables. The
+proposals have their own validation and stay outside the vocabulary release exports.
+
 ## Development
 
 You need [uv](https://docs.astral.sh/uv/) and [just](https://just.systems).

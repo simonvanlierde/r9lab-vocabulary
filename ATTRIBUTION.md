@@ -20,6 +20,8 @@ the identifiers, except where a concept's own label is the common name of the th
 | UNU-KEY v1 codes (codes only) | Forti et al., *E-waste Statistics: Guidelines on Classification, Reporting and Indicators*, 2nd ed., UNU, 2018 | CC BY-NC-SA 3.0 IGO; names not copied | `unu1:` mappings |
 | SKOS SHACL shapes (`skos.shacl.ttl` at commit ce46984), trailing whitespace trimmed | [skohub-io/skohub-shapes](https://github.com/skohub-io/skohub-shapes) | Apache-2.0 | `tests/fixtures/skohub-skos.shacl.ttl` |
 | UNU-KEY v2 codes (codes only), and the v1 code list | Lysaght et al., *E-waste Statistics: Guidelines on Classifications, Reporting and Indicators*, 3rd ed., UNITAR, 2026, [doi:10.5281/zenodo.18328494](https://doi.org/10.5281/zenodo.18328494), Tables 2 and 19 | CC BY-NC-SA 4.0; names not copied | `unu2:` mappings; `FIXED_CODES` in `scheme.py` |
+| ORDS v0.3 electrical product category IDs | Open Repair Alliance, [pinned ORDS codelist](https://media.githubusercontent.com/media/openrepair/data/2af16342c751f56e28e2f62d018f051e7f22aed0/OpenRepairData_v0.3_Product_Categories_eee.csv) | Source CSV is CC BY-SA 4.0 | `mappings/ords-v0.3-eee.csv` uses the IDs |
+| CIRPASS-2 MAT and RePlanIT class and property IRIs | [DPP Vocabulary Hub exports](docs/crosswalks/cirpass-2.md) | MAT declares Apache 2.0 with a CC BY 4.0 fallback. RePlanIT declares CC BY 4.0. | `docs/crosswalks/` and `shapes/dpp-exchange.shacl.ttl` use identifiers and a local example |
 | BAFU activity names, as regular expressions | Life Cycle Inventory database of the Swiss Federal Administration, BAFU:2025 v2 and BAFU:2026 v1 | Patterns only, no data | `names.bafu` fields |
 
 ## Source data

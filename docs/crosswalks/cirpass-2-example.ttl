@@ -1,0 +1,21 @@
+@prefix ex: <https://example.invalid/r9lab/ict/> .
+@prefix eudpp: <https://w3id.org/eudpp#> .
+@prefix profile: <https://w3id.org/r9lab/vocabulary/terms#> .
+@prefix rp: <http://www.semanticweb.org/RePlanIT/> .
+@prefix schema: <https://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:laptop a rp:ICTDevice ;
+    rp:hasComponent ex:capacitor .
+
+ex:capacitor a rp:HardwareComponent, rp:Capacitor ;
+    schema:additionalType <https://w3id.org/r9lab/vocabulary/components/c0009> ;
+    profile:materialDeclaration ex:copper-terminals .
+
+ex:copper-terminals a eudpp:MaterialOfComposition ;
+    eudpp:materialComponentLabel "capacitor terminals" ;
+    eudpp:hasMaterialType [
+        a eudpp:MaterialType ;
+        eudpp:materialTypeScheme "https://w3id.org/r9lab/vocabulary/0.1.0/materials/"^^xsd:anyURI ;
+        eudpp:materialTypeValue "m0009"
+    ] .
