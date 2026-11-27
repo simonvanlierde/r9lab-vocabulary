@@ -243,3 +243,74 @@ concepts:
     editorial_note: Wikidata has no item for the module; wd:Q321098 is the laser diode inside it. No BAFU dataset.
     broader: [c0007]
     mappings: {related: ['wd:Q321098']}
+  c0046:
+    label: equipment support frame
+    definition: A structural part that carries or locates several working parts inside a device.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a laptop midframe, a chassis that holds appliance parts]
+    note: A frame supports or locates parts. A housing panel closes the outside of the device. A bracket usually has a local mounting point.
+    mappings: {related: ['cpc:45290', 'cpc:42999']}
+  c0047:
+    label: equipment mounting bracket
+    definition: A shaped support that attaches a part at a mounting point inside or on a device.
+    source: https://www.wikidata.org/wiki/Q2465790
+    example: [a drive mounting bracket, an angled bracket supporting an appliance motor]
+    note: Use a support frame for the main structure that carries multiple parts.
+    mappings: {related: ['wd:Q2465790', 'cpc:42999']}
+  c0048:
+    label: keyboard keycap
+    definition: The exposed cover of a keyboard key that a user presses.
+    source: https://www.wikidata.org/wiki/Q6398238
+    example: [a letter keycap, a space bar cap, a laptop function keycap]
+    note: A switch senses the press. A keycap is the removable cover or the top piece recorded on its own.
+    mappings: {exact: ['wd:Q6398238'], broad: ['cpc:45290']}
+  c0049:
+    label: pushbutton actuator cap
+    definition: The exposed part that transmits a finger press to a device's switch or sensor.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a plastic power button cap, a side button plunger, a rubber control button mat]
+    note: Use electrical switch when the record includes the contacts. A computer keycap is recorded as a keyboard part.
+    mappings: {related: ['cpc:46220']}
+  c0050:
+    label: mouse scroll wheel
+    definition: The wheel a user rotates on a computer mouse to generate scrolling input.
+    source: https://www.wikidata.org/wiki/Q1091813
+    example: [a notched mouse scroll wheel, a mouse scroll wheel with its rubber tread attached]
+    note: A detached tread, axle support, or encoder can be recorded separately.
+    mappings: {exact: ['wd:Q1091813'], broad: ['cpc:45290']}
+  c0051:
+    label: electrical switch
+    definition: A discrete part that opens, closes or selects a current path in an electrical circuit.
+    source: https://www.wikidata.org/wiki/Q5320
+    example: [a rocker switch, a microswitch, a tactile pushbutton switch]
+    note: A loose button cap applies force to a switch. The switch itself contains the mechanism that changes the circuit.
+    broader: [c0007]
+    mappings: {exact: ['wd:Q5320'], related: ['cpc:46211', 'cpc:46212']}
+  c0052:
+    label: optical lens
+    definition: A transparent optical element that changes the path of light by refraction.
+    source: https://www.wikidata.org/wiki/Q768575
+    example: [a plastic optical mouse lens, a glass focusing lens, a removable camera lens element]
+    note: A flat protective window can transmit light without focusing it. A camera module combines a lens with an image sensor.
+    mappings: {exact: ['wd:Q768575'], related: ['cpc:48311', 'cpc:48321']}
+  c0053:
+    label: mechanical hinge
+    definition: A joint that connects two parts and lets one pivot relative to the other around an axis.
+    source: https://www.wikidata.org/wiki/Q244330
+    example: [a laptop lid hinge, a small cabinet hinge]
+    note: A pin or hinge cover recorded on its own is a part of the joint.
+    mappings: {exact: ['wd:Q244330'], related: ['cpc:42999']}
+  c0054:
+    label: internal electric fan assembly
+    definition: A motor and a blade assembly fitted together for moving air inside a host device.
+    source: https://www.wikidata.org/wiki/Q6498398
+    example: [a laptop blower module, a power-supply cooling fan]
+    note: A motor alone has no air-moving blades. A fan sold as a standalone appliance has a product type.
+    mappings: {broad: ['wd:Q6498398'], related: ['cpc:43931', 'cpc:44815']}
+  c0055:
+    label: haptic vibration actuator
+    definition: A part that converts an electrical signal into vibration that a user can feel as feedback.
+    source: https://www.precisionmicrodrives.com/ab-020
+    example: [a phone linear resonant actuator, an eccentric-mass motor in a game controller]
+    note: Use this class for a tactile feedback unit. A motor in a fan or drive mechanism has a different function.
+    mappings: {related: ['cpc:46111', 'cpc:46960']}
