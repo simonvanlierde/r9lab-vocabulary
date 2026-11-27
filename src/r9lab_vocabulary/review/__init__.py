@@ -1,11 +1,12 @@
 """A review page for the tag mappings: one card at a time, blind to what proposed it, each verdict timed.
 
-Run with `just review`. The page appends each verdict to `mappings/r9lab-tags/reviews.sssom.tsv`
-as it is given, under the ORCID in `R9LAB_REVIEWER`; `just review` rebuilds the published file when
-the page stops. `docs/review-protocol.md` holds the rules a rater follows.
+Run with `just review`, or `just review-stack` in Docker. The page appends each verdict to
+`mappings/r9lab-tags/reviews.sssom.tsv` as it is given, and both recipes rebuild the published file
+when the page stops. `docs/review-protocol.md` holds the rules a rater follows.
 
-The page has no login: it assumes a host where only the rater has an account, since anyone on the
-machine who can reach 127.0.0.1 can load it and post verdicts under that ORCID.
+Each rater signs in by opening their own link, `/r/<token>`, which sets a cookie. The token is an
+HMAC of their ORCID under a secret that never leaves the server, so whoever holds the link reviews
+as that rater: send it to them alone.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import datetime as dt
 import hashlib
+import hmac
 import math
 import secrets
 import threading
@@ -23,7 +25,6 @@ from typing import TYPE_CHECKING, Annotated
 import jinja2
 import markupsafe
 from fastapi import FastAPI, Form, Header, HTTPException, Request
-from fastapi.exception_handlers import http_exception_handler
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -53,22 +54,33 @@ SECURITY_HEADERS = [
     (b"content-security-policy", b"default-src 'self'; frame-ancestors 'none'"),
     (b"x-content-type-options", b"nosniff"),
 ]
+LOCAL_HOSTS = ("127.0.0.1", "localhost")
+COOKIE = "r9lab_rater"
+CARD_ERROR = markupsafe.Markup('<p id="card" role="alert">{} <a href="/">Reload</a></p>')
+SIGNED_IN = markupsafe.Markup(
+    '<!doctype html><html lang="en"><meta http-equiv="refresh" content="0; url=/"><title>Tag mapping review</title>'
+    '<p>Signed in. <a href="/">Open the review page</a></p>'
+)
+PAGE_ERROR = markupsafe.Markup('<!doctype html><html lang="en"><title>Tag mapping review</title><p role="alert">{}</p>')
 TEMPLATES = Jinja2Templates(env=jinja2.Environment(loader=jinja2.FileSystemLoader(HERE / "templates"), autoescape=True))
 
 
 class Session:
     """One rater's queue over the log: proposals they have not judged, in an order seeded by their ORCID."""
 
-    def __init__(self, root: Path, reviewer: str) -> None:
+    def __init__(self, root: Path, reviewer: str, lock: threading.Lock | None = None, csrf: str = "") -> None:
         self.root, self.reviewer = root, reviewer
-        self.csrf = secrets.token_urlsafe(24)
+        # The form token; `create_app` derives it from the link secret, so an open page still posts after a restart.
+        self.csrf = csrf or secrets.token_urlsafe(24)
         self.shown_at: dict[tuple[str, str, str], float] = {}
         _, _, self.predictions = curate.read(root / curate.PREDICTIONS)
         self.concepts = {
             f"{slug}:{cid}": c for slug, s in scheme.load(root / "vocabulary").items() for cid, c in s.concepts.items()
         }
         self.proposed = {curate.key(p): p for p in self.predictions}
-        self.lock = threading.Lock()  # one verdict per card, even from a double click or two tabs
+        # One verdict per card, even from a double click or two tabs; the app shares one lock
+        # between its raters, so two appends to the log never interleave.
+        self.lock = lock or threading.Lock()
         # Sorting on a hash of ORCID and key gives each rater their own order, the same after a
         # restart, and a new proposal slots in without moving the others.
         self.order = sorted(self.proposed, key=self.card_id)
@@ -102,6 +114,7 @@ class Session:
         concept = self.concepts.get(row["object_id"], {})
         return {
             "card": self.card_id(key),
+            "field": tag_field(row["subject_id"]),
             "tag": row["subject_label"],
             "relation": RELATION_WORDS.get(row["predicate_id"], row["predicate_id"]),
             "no_term": row["object_id"] == checks.NO_TERM,
@@ -110,6 +123,12 @@ class Session:
             "definition": concept.get("definition", ""),
             "note": concept.get("note", ""),
         }
+
+    def tag_text(self, key: tuple[str, str, str]) -> str:
+        """The tag of the proposal under `key` with its field, as in "Material: pc"."""
+        row = self.proposed[key]
+        field = tag_field(row["subject_id"])
+        return f"{field}: {row['subject_label']}" if field else row["subject_label"]
 
     def progress(self) -> dict[str, int]:
         """Cards judged per rater, plus the total under `of`. Verdicts on withdrawn proposals do not count."""
@@ -154,6 +173,30 @@ class Session:
             self.again, self.last = self.last[0], None
 
 
+def tag_field(subject_id: str) -> str:
+    """The R9lab field a tag was typed in, from its id (`r9lab-tag:material/pc`), capitalised; empty without one."""
+    field, slash, _ = subject_id.partition(":")[2].partition("/")
+    return field.capitalize() if slash else ""
+
+
+def rater_token(secret: bytes, reviewer: str) -> str:
+    """The token in a rater's link: the same for one secret and ORCID, so a link outlives a restart."""
+    return hmac.new(secret, reviewer.encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def session_of(sessions: dict[str, Session], token: str) -> Session | None:
+    """The session whose link token this is, compared in constant time; None for an unknown token."""
+    # Bytes: `compare_digest` raises on a str with characters outside ASCII.
+    return next((s for t, s in sessions.items() if secrets.compare_digest(t.encode(), token.encode())), None)
+
+
+def signed_in(sessions: dict[str, Session], request: Request) -> Session:
+    """The session of the rater whose cookie this is; 401 without one."""
+    if (session := session_of(sessions, request.cookies.get(COOKIE, ""))) is None:
+        raise HTTPException(401, "Open the review link you were given to sign in.")
+    return session
+
+
 def not_cross_site(request: Request) -> None:
     """Refuse a request another site's page made: browsers mark it in Sec-Fetch-Site.
 
@@ -188,11 +231,10 @@ class SecurityHeaders:
 
 
 async def error_in_place_of_card(request: Request, exc: HTTPException) -> Response:
-    """For htmx, an error takes the card's place as a message, so the page says what to do next."""
-    if not request.headers.get("hx-request"):
-        return await http_exception_handler(request, exc)
-    html = markupsafe.Markup('<p id="card" role="alert">{} <a href="/">Reload</a></p>').format(exc.detail)
-    return HTMLResponse(html, status_code=exc.status_code)
+    """An error as a message: in the card's place for htmx, else as a page, so a rater reads what to do next."""
+    page = CARD_ERROR if request.headers.get("hx-request") else PAGE_ERROR
+    html = page.format(exc.detail)
+    return HTMLResponse(html, status_code=exc.status_code, headers=exc.headers)
 
 
 def next_card(request: Request, session: Session, hx_request: str | None) -> Response:
@@ -222,20 +264,50 @@ async def progress_stream(request: Request, session: Session) -> AsyncIterator[s
         return  # the server is stopping; nothing to report
 
 
-def create_app(root: Path, reviewer: str) -> FastAPI:
-    """The review page for the log under `root`, recording verdicts as `reviewer` (an ORCID CURIE)."""
-    session = Session(root, reviewer)
+def create_app(
+    root: Path, reviewers: list[str], secret: bytes, allowed_hosts: tuple[str, ...] = LOCAL_HOSTS
+) -> FastAPI:
+    """The review page for the log under `root`, for `reviewers` (ORCID CURIEs) who sign in with their links.
+
+    `allowed_hosts` are the names the page answers to: a site that points its own name at the
+    server gets a 400, so add only the names the page is served under.
+    """
+    lock = threading.Lock()
+    sessions = {rater_token(secret, r): Session(root, r, lock, rater_token(secret, f"csrf:{r}")) for r in reviewers}
+
     app = FastAPI(title="R9lab tag mapping review", docs_url=None, redoc_url=None, openapi_url=None)
+    app.state.sessions = sessions
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
-    # Only this machine's names: a site that points its own name at 127.0.0.1 gets a 400.
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost"])
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(allowed_hosts))
     app.add_middleware(SecurityHeaders)
     # Starlette types handlers as taking any Exception; this one is registered for HTTPException only.
     app.add_exception_handler(HTTPException, error_in_place_of_card)  # ty: ignore[invalid-argument-type]
 
+    @app.get("/r/{token}")
+    def sign_in(request: Request, token: str) -> Response:
+        """Set the rater's cookie and link to the page. Open to other sites: the link arrives by mail or chat.
+
+        A page, not a redirect: a redirect keeps the mail's cross-site mark, and the page refuses that.
+        """
+        if (session := session_of(sessions, token)) is None:
+            raise HTTPException(404, "This review link is not known; ask for a new one.")
+        response = HTMLResponse(SIGNED_IN)
+        # The server's own copy of the token, never the URL's text. Lax, not Strict: a Strict
+        # cookie is held back from a page opened from a mail.
+        response.set_cookie(
+            COOKIE,
+            rater_token(secret, session.reviewer),
+            max_age=90 * 86400,
+            httponly=True,
+            samesite="lax",
+            secure=request.url.is_secure,
+        )
+        return response
+
     @app.get("/", response_class=HTMLResponse)
     def page(request: Request) -> HTMLResponse:
         not_cross_site(request)
+        session = signed_in(sessions, request)
         context = {"s": session, "card": session.card(), "progress": session.progress()}
         return TEMPLATES.TemplateResponse(request, "page.jinja", context)
 
@@ -248,6 +320,7 @@ def create_app(root: Path, reviewer: str) -> FastAPI:
         away: Annotated[float, Form()] = 0.0,
         hx_request: Annotated[str | None, Header()] = None,
     ) -> Response:
+        session = signed_in(sessions, request)
         same_origin(request, session, token)
         if verdict not in VERDICTS:
             raise HTTPException(422, f"verdict must be one of {', '.join(VERDICTS)}")
@@ -260,6 +333,7 @@ def create_app(root: Path, reviewer: str) -> FastAPI:
     def undo(
         request: Request, token: Annotated[str, Form()], hx_request: Annotated[str | None, Header()] = None
     ) -> Response:
+        session = signed_in(sessions, request)
         same_origin(request, session, token)
         session.undo()
         return next_card(request, session, hx_request)
@@ -268,6 +342,6 @@ def create_app(root: Path, reviewer: str) -> FastAPI:
     async def progress(request: Request) -> StreamingResponse:
         """Every rater's count, sent again whenever the review log changes (another rater's page included)."""
         not_cross_site(request)
-        return StreamingResponse(progress_stream(request, session), media_type="text/event-stream")
+        return StreamingResponse(progress_stream(request, signed_in(sessions, request)), media_type="text/event-stream")
 
     return app

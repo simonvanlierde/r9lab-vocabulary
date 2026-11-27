@@ -11,7 +11,7 @@ web
   study that links a material class to its BAFU activity names, a tool that reads the SSSOM
   crosswalks. They read the built files (`dist/`), never a UI.
 - **Raters.** Two domain experts who judge the machine-proposed mappings from R9lab tags to
-  concepts, one card at a time. Each runs `just review` on their own laptop and rates alone.
+  concepts, one card at a time. Each opens their own link to the review page, served from one machine, and rates alone.
 
 ## Product Purpose
 
