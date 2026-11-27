@@ -362,6 +362,9 @@ def check_codes(schemes: dict[str, Scheme], known: dict[str, set[str]]) -> list[
 
 NO_TERM = "sssom:NoTermFound"
 TAG_PREFIX = "r9lab-tag"
+# The R9lab field a tag was typed in, which is part of its id: "PC" in a `Material:` line is
+# a polymer, and the same letters as a product keyword would be a computer.
+TAG_FIELDS = ("material", "keyword")
 TAG_COLUMNS = ("subject_id", "subject_label", "predicate_id", "object_id", "object_label", "mapping_justification")
 
 
@@ -375,11 +378,11 @@ def read_sssom(path: Path) -> tuple[dict[str, Any], csv.DictReader[str]]:
 def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     """Rows of the SSSOM file that maps R9lab tags to concepts that break a rule.
 
-    A tag (`subject_label`) is lower case, as tags are matched, and appears once; its
-    `subject_id` is `r9lab-tag:` plus the URL-encoded tag. Its predicate is one of the five SKOS
-    match properties, its justification a semapv term, and its object a live concept here,
-    under its current label, or `sssom:NoTermFound`. Every CURIE's prefix is in the file's
-    `curie_map`. A missing file is one error.
+    A tag (`subject_label`) is lower case, as tags are matched. Its `subject_id` is `r9lab-tag:`,
+    the field it was typed in (`material/` or `keyword/`) and the URL-encoded tag, and appears
+    once. Its predicate is one of the five SKOS match properties, its justification a semapv
+    term, and its object a live concept here, under its current label, or `sssom:NoTermFound`.
+    Every CURIE's prefix is in the file's `curie_map`. A missing file is one error.
     """
     try:
         meta, reader = read_sssom(path)
@@ -393,11 +396,11 @@ def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     for row in reader:
         label, obj = row["subject_label"], row["object_id"]
         where = f"{path.name}: {label!r}"
-        if label != label.strip().lower() or label in seen:
-            errors.append(f"{where} is not lower case or appears twice")
-        seen.add(label)
-        if row["subject_id"] != f"{TAG_PREFIX}:{quote(label, safe='')}":
-            errors.append(f"{where}: subject_id {row['subject_id']} is not {TAG_PREFIX}: plus the encoded tag")
+        if not label or label != label.strip().lower() or row["subject_id"] in seen:
+            errors.append(f"{where} is empty, not lower case, or appears twice")
+        seen.add(row["subject_id"])
+        if row["subject_id"] not in {f"{TAG_PREFIX}:{f}/{quote(label, safe='')}" for f in TAG_FIELDS}:
+            errors.append(f"{where}: subject_id {row['subject_id']} is not {TAG_PREFIX}: plus a field and the tag")
         if row["predicate_id"] not in predicates:
             errors.append(f"{where}: unknown predicate {row['predicate_id']}")
         if not row["mapping_justification"].startswith("semapv:"):

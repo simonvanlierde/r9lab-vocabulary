@@ -301,7 +301,7 @@ def _pilot_keys(schemes: dict[str, Scheme]) -> tuple[dict[tuple[str, str], set[s
 def labels(schemes: dict[str, Scheme]) -> list[dict[str, Any]]:
     """Per scheme, each live concept by id: IRI, label, path, definition, scope note, examples, pilot keys.
 
-    The editorial note stays out: it is for curators, not prompts.
+    The editorial note and the hidden labels stay out: one is for curators, the other holds misspellings.
 
     The path follows the first `broader` only. `pilot` holds the key of each pilot class that
     maps onto the concept, or as `exact` or `narrow` onto any of its ancestors through every

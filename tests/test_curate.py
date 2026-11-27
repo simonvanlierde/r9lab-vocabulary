@@ -18,7 +18,7 @@ A, B, X = "orcid:0000-0002-1825-0097", "orcid:0000-0001-5109-3700", "orcid:0000-
 
 
 def proposal(tag: str, obj: str) -> dict[str, str]:
-    return {"subject_id": f"r9lab-tag:{tag}", "subject_label": tag, "predicate_id": "skos:exactMatch",
+    return {"subject_id": f"r9lab-tag:material/{tag}", "subject_label": tag, "predicate_id": "skos:exactMatch",
             "object_id": obj, "object_label": obj, "mapping_justification": "semapv:AgentBasedMatching"}  # fmt: skip
 
 
@@ -37,7 +37,7 @@ def write_log(root: Path, predictions: list[dict[str, str]], reviews: list[dict[
 
 def published_rows(text: str) -> list[tuple[str, str]]:
     rows = [line.split("\t") for line in text.splitlines() if not line.startswith("#")][1:]
-    return [(r[0].removeprefix("r9lab-tag:"), r[5]) for r in rows]
+    return [(r[0].removeprefix("r9lab-tag:material/"), r[5]) for r in rows]
 
 
 def test_the_review_log_breaks_no_rule_and_the_published_file_is_current():
@@ -124,7 +124,7 @@ def test_a_tag_every_rater_rejected_fails_check_until_it_gets_a_new_proposal(
     capsys.readouterr()
     assert curate.main(["check"]) == 0
     assert capsys.readouterr().err == (
-        "warning: reviews.sssom.tsv row 1: r9lab-tag:brass skos:exactMatch m:1 is no longer proposed;"
+        "warning: reviews.sssom.tsv row 1: r9lab-tag:material/brass skos:exactMatch m:1 is no longer proposed;"
         " its verdict is kept but unused\n"
     )
 
@@ -163,7 +163,7 @@ def test_check_fails_when_the_published_file_is_stale_and_build_fixes_it(
     assert curate.main(["check"]) == 0
     assert published_rows((tmp_path / curate.PUBLISHED).read_text()) == [("steel", A)]
     with (tmp_path / curate.PUBLISHED).open("a") as f:
-        f.write("r9lab-tag:copper\tcopper\n")  # a hand edit
+        f.write("r9lab-tag:material/copper\tcopper\n")  # a hand edit
     assert curate.main([]) == 1  # no command means check
 
 

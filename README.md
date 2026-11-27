@@ -22,8 +22,8 @@ graph:
 
 | Scheme | Concepts | Top level |
 | --- | --- | --- |
-| [Material classes](vocabulary/materials.yaml) | 58 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
-| [Component classes](vocabulary/components.yaml) | 24 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
+| [Material classes](vocabulary/materials.yaml) | 59 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
+| [Component classes](vocabulary/components.yaml) | 25 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
 | [Pilot classes](vocabulary/pilot-classes.yaml) | 11 | The eleven coarse material classes a pilot study sorts photographed parts into, kept as a `skos:Collection` |
 
@@ -45,9 +45,11 @@ in the name (`re.search`).
 `Material:` or `Keyword:` tag, in lower case and typos included, to a concept, as
 [SSSOM](https://mapping-commons.github.io/sssom/): `skos:exactMatch`, `closeMatch`, or
 `broadMatch` when the tag is narrower than the concept. A tag with no concept maps to
-`sssom:NoTermFound`. Each tag's `subject_id` is `r9lab-tag:` plus the URL-encoded tag
-(`r9lab-tag:pc%2Babs`, under `https://w3id.org/r9lab/vocabulary/tags/`), so SSSOM tools that
-need an id can load the file. Joined on `concept` with `dist/name-matches.csv`, it gives each
+`sssom:NoTermFound`. Each tag's `subject_id` is `r9lab-tag:`, the field it was typed in, and the
+URL-encoded tag (`r9lab-tag:material/pc%2Babs`, under `https://w3id.org/r9lab/vocabulary/tags/`), so
+"pc" as a material and as a product keyword are two tags ([ADR 0008](docs/decisions/0008-tag-ids-carry-their-field.md)).
+A tag that could be one of several concepts, such as "rubber", maps with `broadMatch` to the concept
+over all of them. Joined on `concept` with `dist/name-matches.csv`, it gives each
 tag its BAFU activity names.
 
 `just curate` builds that file from a review log in [`mappings/r9lab-tags/`](mappings/r9lab-tags/):
@@ -161,6 +163,8 @@ Each concept in `vocabulary/*.yaml` carries:
 - `editorial_note`: remarks for maintainers, such as a missing BAFU dataset
   (`skos:editorialNote`). It ships in the published graph, so write it for outside readers
   too; `labels.json` leaves it out.
+- `hidden`: misspellings a record uses, as a list (`skos:hiddenLabel`), so search finds
+  "trasformer" without showing it.
 
 The vocabulary is CC0, so a definition is written in our own words: Ashby and IEC 60050
 are cited, not quoted. Wikidata descriptions are CC0 and may be reused as they are.

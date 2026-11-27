@@ -81,8 +81,9 @@ TEXT_FIELDS = {
     "example": SKOS.example,
     "note": SKOS.scopeNote,
     "editorial_note": SKOS.editorialNote,
+    "hidden": SKOS.hiddenLabel,
 }
-MANY_TEXTS = {"example"}
+MANY_TEXTS = {"example", "hidden"}
 # Where the definition comes from: a URL, written as an IRI, or a citation.
 SOURCE = "source"
 # A match: (scheme slug, concept id, family, version, pattern, matched names).
@@ -164,7 +165,7 @@ def iri(schemes: dict[str, Scheme], prefix: str, local: str) -> URIRef:
 
 
 def texts(c: dict[str, Any], field: str) -> list[Any]:
-    """A text field's values: `example` may be one string or a list, every other field is one string."""
+    """A text field's values: a field in `MANY_TEXTS` may be one string or a list, every other field is one string."""
     value = c.get(field)
     if value is None:
         return []
