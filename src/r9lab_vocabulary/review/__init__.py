@@ -57,6 +57,10 @@ SECURITY_HEADERS = [
 LOCAL_HOSTS = ("127.0.0.1", "localhost")
 COOKIE = "r9lab_rater"
 CARD_ERROR = markupsafe.Markup('<p id="card" role="alert">{} <a href="/">Reload</a></p>')
+SIGNED_IN = markupsafe.Markup(
+    '<!doctype html><html lang="en"><meta http-equiv="refresh" content="0; url=/"><title>Tag mapping review</title>'
+    '<p>Signed in. <a href="/">Open the review page</a></p>'
+)
 PAGE_ERROR = markupsafe.Markup('<!doctype html><html lang="en"><title>Tag mapping review</title><p role="alert">{}</p>')
 TEMPLATES = Jinja2Templates(env=jinja2.Environment(loader=jinja2.FileSystemLoader(HERE / "templates"), autoescape=True))
 
@@ -64,9 +68,10 @@ TEMPLATES = Jinja2Templates(env=jinja2.Environment(loader=jinja2.FileSystemLoade
 class Session:
     """One rater's queue over the log: proposals they have not judged, in an order seeded by their ORCID."""
 
-    def __init__(self, root: Path, reviewer: str, lock: threading.Lock | None = None) -> None:
+    def __init__(self, root: Path, reviewer: str, lock: threading.Lock | None = None, csrf: str = "") -> None:
         self.root, self.reviewer = root, reviewer
-        self.csrf = secrets.token_urlsafe(24)
+        # The form token; `create_app` derives it from the link secret, so an open page still posts after a restart.
+        self.csrf = csrf or secrets.token_urlsafe(24)
         self.shown_at: dict[tuple[str, str, str], float] = {}
         _, _, self.predictions = curate.read(root / curate.PREDICTIONS)
         self.concepts = {
@@ -109,6 +114,7 @@ class Session:
         concept = self.concepts.get(row["object_id"], {})
         return {
             "card": self.card_id(key),
+            "field": tag_field(row["subject_id"]),
             "tag": row["subject_label"],
             "relation": RELATION_WORDS.get(row["predicate_id"], row["predicate_id"]),
             "no_term": row["object_id"] == checks.NO_TERM,
@@ -117,6 +123,12 @@ class Session:
             "definition": concept.get("definition", ""),
             "note": concept.get("note", ""),
         }
+
+    def tag_text(self, key: tuple[str, str, str]) -> str:
+        """The tag of the proposal under `key` with its field, as in "Material: pc"."""
+        row = self.proposed[key]
+        field = tag_field(row["subject_id"])
+        return f"{field}: {row['subject_label']}" if field else row["subject_label"]
 
     def progress(self) -> dict[str, int]:
         """Cards judged per rater, plus the total under `of`. Verdicts on withdrawn proposals do not count."""
@@ -161,6 +173,12 @@ class Session:
             self.again, self.last = self.last[0], None
 
 
+def tag_field(subject_id: str) -> str:
+    """The R9lab field a tag was typed in, from its id (`r9lab-tag:material/pc`), capitalised; empty without one."""
+    field, slash, _ = subject_id.partition(":")[2].partition("/")
+    return field.capitalize() if slash else ""
+
+
 def rater_token(secret: bytes, reviewer: str) -> str:
     """The token in a rater's link: the same for one secret and ORCID, so a link outlives a restart."""
     return hmac.new(secret, reviewer.encode(), hashlib.sha256).hexdigest()[:32]
@@ -168,7 +186,8 @@ def rater_token(secret: bytes, reviewer: str) -> str:
 
 def session_of(sessions: dict[str, Session], token: str) -> Session | None:
     """The session whose link token this is, compared in constant time; None for an unknown token."""
-    return next((s for t, s in sessions.items() if secrets.compare_digest(t, token)), None)
+    # Bytes: `compare_digest` raises on a str with characters outside ASCII.
+    return next((s for t, s in sessions.items() if secrets.compare_digest(t.encode(), token.encode())), None)
 
 
 def signed_in(sessions: dict[str, Session], request: Request) -> Session:
@@ -254,9 +273,10 @@ def create_app(
     server gets a 400, so add only the names the page is served under.
     """
     lock = threading.Lock()
-    sessions = {rater_token(secret, r): Session(root, r, lock) for r in reviewers}
+    sessions = {rater_token(secret, r): Session(root, r, lock, rater_token(secret, f"csrf:{r}")) for r in reviewers}
 
     app = FastAPI(title="R9lab tag mapping review", docs_url=None, redoc_url=None, openapi_url=None)
+    app.state.sessions = sessions
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(allowed_hosts))
     app.add_middleware(SecurityHeaders)
@@ -265,15 +285,22 @@ def create_app(
 
     @app.get("/r/{token}")
     def sign_in(request: Request, token: str) -> Response:
-        """Set the rater's cookie and go to the page. Open to other sites: the link arrives by mail or chat."""
-        known = next((t for t in sessions if secrets.compare_digest(t, token)), None)
-        if known is None:
+        """Set the rater's cookie and link to the page. Open to other sites: the link arrives by mail or chat.
+
+        A page, not a redirect: a redirect keeps the mail's cross-site mark, and the page refuses that.
+        """
+        if (session := session_of(sessions, token)) is None:
             raise HTTPException(404, "This review link is not known; ask for a new one.")
-        response = RedirectResponse("/", status_code=303)
+        response = HTMLResponse(SIGNED_IN)
         # The server's own copy of the token, never the URL's text. Lax, not Strict: a Strict
-        # cookie is held back from the redirect after a click in a mail.
+        # cookie is held back from a page opened from a mail.
         response.set_cookie(
-            COOKIE, known, max_age=90 * 86400, httponly=True, samesite="lax", secure=request.url.is_secure
+            COOKIE,
+            rater_token(secret, session.reviewer),
+            max_age=90 * 86400,
+            httponly=True,
+            samesite="lax",
+            secure=request.url.is_secure,
         )
         return response
 

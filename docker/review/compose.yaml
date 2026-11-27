@@ -1,5 +1,5 @@
 # The review page in Docker: `just review-stack`. It publishes on 127.0.0.1 only; put a proxy of
-# your choice in front (tailscale serve, cloudflared, Caddy on the LAN) and add its name to
+# your choice in front on this host (tailscale serve, cloudflared, Caddy) and add its name to
 # R9LAB_ALLOWED_HOSTS. The README's "Review the tag mappings" has the variables.
 name: r9lab-review
 services:
@@ -14,7 +14,14 @@ services:
       R9LAB_ALLOWED_HOSTS: ${R9LAB_ALLOWED_HOSTS:-127.0.0.1,localhost}
       # Trust the proxy's X-Forwarded-Proto, so the cookie is Secure behind HTTPS.
       FORWARDED_ALLOW_IPS: "*"
+    # The checkout read-only, the mappings writable: the page appends verdicts there and nothing else.
+    # The recipe makes .review-secret first, as the page cannot write it here.
     volumes:
-      - ../..:/repo
+      - ../..:/repo:ro
+      - ../../mappings:/repo/mappings
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
     ports:
       - "${R9LAB_PUBLISH:-127.0.0.1:8740}:8740"

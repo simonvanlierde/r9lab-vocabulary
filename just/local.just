@@ -24,7 +24,7 @@ curate:
 review port="8740":
     #!/usr/bin/env bash
     set -u
-    trap true INT  # let Ctrl-C stop the page, then still rebuild
+    trap true INT TERM HUP  # let Ctrl-C or a closed terminal stop the page, then still rebuild
     uv run --extra review python -m r9lab_vocabulary.review --port {{ port }}
     status=$?
     uv run python -m r9lab_vocabulary.curate build || exit
@@ -34,7 +34,8 @@ review port="8740":
 review-stack:
     #!/usr/bin/env bash
     set -u
-    trap true INT  # let Ctrl-C stop the stack, then still rebuild
+    trap true INT TERM HUP  # let Ctrl-C or a closed terminal stop the stack, then still rebuild
+    uv run python -c 'from r9lab_vocabulary.review.__main__ import read_secret; read_secret()' || exit
     R9LAB_UID="$(id -u)" R9LAB_GID="$(id -g)" docker compose -f docker/review/compose.yaml up --build
     status=$?
     docker compose -f docker/review/compose.yaml down

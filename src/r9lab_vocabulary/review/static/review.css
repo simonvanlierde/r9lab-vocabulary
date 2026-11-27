@@ -16,6 +16,7 @@ header > div { flex: 1 1 auto; }
 kbd { font: .85em ui-monospace, monospace; padding: 0 .3em; border: 1px solid var(--line); border-radius: .25rem; }
 #card > form:first-child, .done { border: 1px solid var(--line); border-radius: .75rem; padding: 1rem; margin: 1rem 0 0; }
 .tag { font-size: 1.6rem; font-weight: 600; margin: 0; }
+.tag .field { font-weight: 400; color: var(--muted); } /* the R9lab field the tag was typed in */
 .tag:focus, .done:focus { outline: none; } /* focused by script to start the card, not operated */
 .relation { font-weight: 600; margin: .25rem 0; }
 .concept { font-size: 1.25rem; margin: 0; }

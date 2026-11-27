@@ -49,7 +49,9 @@ even after a hand edit. A rater who opens their review link agrees to their ORCI
 times being published this way.
 
 Each rater gets their own link, which signs them in as their ORCID. Do not share it: whoever
-opens it reviews in that rater's name.
+opens it reviews in that rater's name. The sign-in lasts 90 days in that browser; open the link
+again after that or in another browser. A link that answers "not known" was revoked: ask the
+maintainer for a new one.
 
 The page shows each card once. Undo (`z`) brings back the last card judged on this page, once; its
 new verdict is a new row. For an older verdict, a rater who changes their mind adds a row to the

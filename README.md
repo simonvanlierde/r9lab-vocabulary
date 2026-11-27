@@ -131,20 +131,22 @@ R9LAB_RATERS=orcid:0000-0002-1825-0097,orcid:0000-0001-5109-3700 just review
 ```
 
 It serves the page on 127.0.0.1:8740 and prints one link per rater. Each rater opens their own
-link, which signs them in. A link stays the same across restarts. To give every rater a new link,
-delete `.review-secret` (gitignored). Ctrl-C stops the page and rebuilds the published file.
+link, which signs them in. A link stays the same across restarts. To revoke one rater, remove
+their ORCID from `R9LAB_RATERS` and restart; to give every rater a new link, delete
+`.review-secret` (gitignored). Ctrl-C stops the page and rebuilds the published file.
 
 `just review-stack` runs the same page in Docker (`docker/review/compose.yaml`) with the checkout
-mounted, so verdicts land in the log as before. It publishes on 127.0.0.1:8740 only. To let raters
-on other machines in, put a proxy in front, such as `tailscale serve 8740`, a Cloudflare Tunnel or
-Caddy on the LAN, and set:
+mounted read-only except `mappings/`, so verdicts land in the log as before. It publishes on
+127.0.0.1:8740 only. To let raters on other machines in, run a proxy on this host in front of
+127.0.0.1:8740, such as `tailscale serve 8740`, a Cloudflare Tunnel or Caddy, and set:
 
-- `R9LAB_ALLOWED_HOSTS`: the names the page is served under, comma-separated, such as
+- `R9LAB_ALLOWED_HOSTS`: the names the page is served under, separated by commas, such as
   `127.0.0.1,review.example.org`. Other names get a 400.
 - `R9LAB_PUBLISH`: where Docker publishes the port, `127.0.0.1:8740` by default.
 
-The printed links start with `http://127.0.0.1:8740`; behind a proxy, send the proxy's address
-followed by the `/r/...` part. [`docs/review-protocol.md`](docs/review-protocol.md) has the rules
+Each rater's link is the page's address followed by the `/r/...` path printed for them
+(`docker compose` shows it in the stack's output): `http://127.0.0.1:8740` here, the proxy's
+address for raters elsewhere. [`docs/review-protocol.md`](docs/review-protocol.md) has the rules
 a rater follows.
 
 ### Write a concept's text

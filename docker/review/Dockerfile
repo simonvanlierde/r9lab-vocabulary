@@ -11,4 +11,5 @@ RUN uv sync --frozen --no-dev --no-editable --extra review
 ENV PATH=/venv/bin:$PATH
 WORKDIR /repo
 EXPOSE 8740
+USER 1000:1000
 CMD ["python", "-m", "r9lab_vocabulary.review", "--host", "0.0.0.0"]
