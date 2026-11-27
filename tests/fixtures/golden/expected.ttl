@@ -2,6 +2,7 @@
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix r9-parts: <https://w3id.org/r9lab/vocabulary/parts/> .
 @prefix r9-tools: <https://w3id.org/r9lab/vocabulary/tools/> .
 @prefix r9lab: <https://w3id.org/r9lab/vocabulary/terms#> .
@@ -124,9 +125,9 @@ r9-tools: a skos:ConceptScheme,
     owl:versionInfo "1.0.0" ;
     skos:definition "Hand tools, to pin what the build writes."@en ;
     skos:hasTopConcept r9-tools:t01 ;
-    skos:historyNote "The scheme is compiled from the curated YAML in its source repository."@en ;
     skos:prefLabel "Workshop tools"@en ;
     dcat:landingPage <https://example.org/r9lab-vocabulary> ;
+    prov:wasDerivedFrom <https://example.org/r9lab-vocabulary> ;
     schema:codeRepository "https://example.org/r9lab-vocabulary"^^xsd:anyURI ;
     schema:name "Workshop tools"@en .
 
@@ -146,9 +147,9 @@ r9-parts: a skos:ConceptScheme,
     skos:definition "Fasteners, to pin what the build writes."@en ;
     skos:hasTopConcept r9-parts:p01,
         r9-parts:p02 ;
-    skos:historyNote "The scheme is compiled from the curated YAML in its source repository."@en ;
     skos:prefLabel "Fasteners"@en ;
     dcat:landingPage <https://example.org/r9lab-vocabulary> ;
+    prov:wasDerivedFrom <https://example.org/r9lab-vocabulary> ;
     schema:codeRepository "https://example.org/r9lab-vocabulary"^^xsd:anyURI ;
     schema:name "Fasteners"@en .
 

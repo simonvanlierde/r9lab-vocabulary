@@ -28,8 +28,9 @@ sets the persistent and versioned IRI patterns.
 
 Build one RDF file per scheme from the same YAML and keep the combined download
 as the dataset distribution. Keep all existing scheme and concept IRIs. Put the
-membership, collection and agent metadata for each scheme into its file. Keep
-cross-scheme mapping targets as links. Validate each file against a pinned
+membership, collection and agent metadata for each scheme into its file. Include
+the definitions of any local properties and datatypes the file uses, including
+the UNU-KEY datatypes in the product scheme. Keep cross-scheme mapping targets as links. Validate each file against a pinned
 VocPub validator before publishing and run the existing checks on the bundle.
 
 Use immutable assets for every version and route version IRIs to those assets.

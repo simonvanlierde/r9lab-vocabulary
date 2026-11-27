@@ -52,7 +52,8 @@ concepts:
     source: https://www.wikidata.org/wiki/Q173350
     example: [an unpopulated FR-4 board, a flexible printed circuit without parts, a board with every part desoldered]
     note: 'Not populated printed circuit board: a board that still carries components is populated. Not FR-4 laminate, which is the board''s material.'
-    mappings: {exact: ['wd:Q173350'], close: ['cpc:47130']}
+    broader: [c0034]
+    mappings: {close: ['cpc:47130']}
     names:
       bafu: ['^printed wiring board, (surface mount|through-hole), .*surface']
   c0006:
@@ -62,6 +63,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q3951866
     example: [a motherboard, a phone logic board, a power-supply board, a hard-drive controller board]
     note: 'Not bare printed circuit board, which has no components. Not electronic component: a part still soldered on stays part of the board.'
+    broader: [c0034]
     related: [c0005]
     mappings: {exact: ['wd:Q3951866']}
     names:
@@ -172,7 +174,7 @@ concepts:
     editorial_note: Wikidata's cable does not ask for insulation; this scheme does.
     mappings: {exact: ['wd:Q188447'], close: ['cpc:463']}
     names:
-      bafu: ['^cable, ', '^plugs, inlet and outlet']
+      bafu: ['^cable, ']
   c0018:
     label: magnet
     example: [an electromagnet from a door lock, a solenoid coil from a washing-machine valve, an electromagnetic door holder]
@@ -244,3 +246,219 @@ concepts:
     editorial_note: Wikidata has no item for the module; wd:Q321098 is the laser diode inside it. No BAFU dataset.
     broader: [c0007]
     mappings: {related: ['wd:Q321098']}
+  c0026:
+    label: electric motor part
+    definition: A part designed to operate inside an electric motor, such as its rotor or stator.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a wound stator, an armature, a permanent-magnet rotor assembly]
+    note: Use electric motor for the complete machine. A loose magnet or unwound wire can be classified on its own.
+    related: [c0022]
+    mappings: {broad: ['cpc:46131']}
+  c0027:
+    label: electric motor stator
+    definition: The stationary assembly of a rotary electric motor that interacts magnetically with the rotor.
+    source: https://www.wikidata.org/wiki/Q190312
+    example: [a brushless fan motor stator, a wound induction motor stator]
+    note: The rotor turns. Use electric motor for a complete motor with both assemblies.
+    broader: [c0026]
+    mappings: {broad: ['wd:Q190312', 'cpc:46131']}
+  c0028:
+    label: camera module
+    definition: An image sensor and its lens assembled for installation inside a host device.
+    source: https://patents.google.com/patent/US7699547B2/en
+    example: [a phone rear camera module, a laptop webcam module]
+    note: An image sensor chip or a loose lens is only one part of the assembly.
+    mappings: {related: ['cpc:47401', 'cpc:45290']}
+  c0029:
+    label: flexible printed circuit
+    definition: A circuit whose conductive tracks are formed on an insulating substrate designed to bend.
+    source: https://www.wikidata.org/wiki/Q4137937
+    example: [a printed keyboard membrane, a flexible circuit with contacts for a phone display]
+    note: A plain shielding foil or a ribbon of parallel insulated wires has no printed circuit tracks.
+    broader: [c0034]
+    mappings: {exact: ['wd:Q4137937'], broad: ['cpc:47130']}
+  c0030:
+    label: fan blade assembly
+    definition: A fan's blades and their hub, which move air as they turn.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a moulded axial fan impeller, a centrifugal blower wheel]
+    note: A fan recorded with its motor and housing is a whole fan. A grille only guards the blades.
+    mappings: {broad: ['cpc:43253']}
+  c0031:
+    label: keyboard module
+    definition: An assembly of keys and their sensing mechanism installed in a computer to provide key input.
+    source: https://www.wikidata.org/wiki/Q250
+    example: [a laptop keyboard assembly, a membrane keyboard on a mounting plate]
+    note: A loose keycap or bare membrane is a part of the module. Use a product type for a standalone keyboard.
+    mappings: {broad: ['wd:Q250', 'cpc:45290']}
+  c0032:
+    label: electric light bulb
+    definition: A self-contained source of electric light with a bulb or tube envelope and electrical terminals.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a screw-base filament bulb, a glass indicator bulb, a replacement LED bulb]
+    note: A light fitting holds the bulb. A loose board-mounted LED or a plastic light guide has its own classification.
+    mappings: {related: ['cpc:46510']}
+  c0033:
+    label: microphone module
+    definition: A microphone and any attached mounting or interface hardware assembled for installation in a host device.
+    source: https://www.wikidata.org/wiki/Q46384
+    example: [a laptop microphone board, a phone microphone on a flex circuit]
+    note: A loudspeaker driver produces sound. A standalone microphone is a finished device.
+    mappings: {broad: ['wd:Q46384', 'cpc:47330']}
+  c0034:
+    label: printed circuit board
+    definition: A board with conductive tracks on an insulating substrate, with or without mounted components.
+    source: https://www.wikidata.org/wiki/Q173350
+    example: [an unidentified circuit board removed from a device, a recorded board whose population state is unknown]
+    note: Use the bare or populated class when the population state can be established.
+    mappings: {exact: ['wd:Q173350'], related: ['cpc:47130']}
+  c0035:
+    label: touchpad module
+    definition: A touch-sensitive pointing surface and its electronics assembled for installation in a host device.
+    source: https://www.wikidata.org/wiki/Q20137
+    example: [a laptop trackpad module, a removable clickpad assembly]
+    note: A touchscreen combines input with a display. A touchpad senses finger position without showing an image.
+    mappings: {broad: ['wd:Q20137'], related: ['cpc:45290']}
+  c0036:
+    label: screw or bolt
+    definition: An externally threaded fastener driven into a part or tightened against a nut.
+    source: https://www.wikidata.org/wiki/Q7797167
+    example: [a case screw, a machine bolt, a self-tapping screw]
+    note: A nut has internal threads. A threaded rod used to move a carriage is a drive element.
+    mappings: {broad: ['wd:Q7797167'], related: ['cpc:42944']}
+  c0037:
+    label: fastener nut
+    definition: An internally threaded fastener that mates with an externally threaded part to hold an assembly together.
+    source: https://www.wikidata.org/wiki/Q7797167
+    example: [a hex nut, a wing nut, a retaining locknut]
+    note: A tapped hole in a structural part is not a separate nut. A nut used to transmit motion needs its drive context.
+    mappings: {broad: ['wd:Q7797167'], related: ['cpc:42944']}
+  c0038:
+    label: hardware washer
+    definition: A flat or shaped plate with a hole, fitted around a fastener to spread load, set clearance or resist loosening.
+    source: https://www.wikidata.org/wiki/Q637321
+    example: [a flat washer under a screw head, a split lock washer]
+    note: A washer intended primarily to stop fluid leaking can be recorded as a seal.
+    mappings: {exact: ['wd:Q637321'], related: ['cpc:42944']}
+  c0039:
+    label: mechanical spring
+    definition: A part that stores mechanical energy as it bends, twists or compresses and returns it as the load is released.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a compression coil spring, a torsion spring, a leaf spring]
+    note: Use the whole mechanism's class if the spring is not separately recorded.
+    mappings: {related: ['cpc:42945']}
+  c0040:
+    label: gear wheel
+    definition: A toothed wheel that transfers motion or torque by meshing with a mating toothed part.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a plastic spur gear, a steel pinion, a compound gear wheel]
+    note: A gearbox contains gears. A smooth belt pulley transfers motion without meshing teeth.
+    mappings: {broad: ['cpc:43320']}
+  c0041:
+    label: mechanical bearing
+    definition: A part that supports and guides relative motion between surfaces while limiting friction.
+    source: https://www.wikidata.org/wiki/Q190100
+    example: [a ball bearing, a roller bearing, a plain shaft bushing]
+    note: A housing that holds a separate bearing is a supporting part. Use this class for the bearing itself.
+    mappings: {exact: ['wd:Q190100'], narrow: ['cpc:43310'], related: ['cpc:43320']}
+  c0042:
+    label: equipment housing or housing panel
+    definition: A rigid shell or outer panel designed to enclose and protect the working parts of equipment.
+    source: https://www.wikidata.org/wiki/Q442709
+    example: [a moulded appliance shell, a laptop bottom cover, a sheet-metal power-supply housing]
+    note: Use the housing class for the shell or panel alone. A complete device and an internal support frame have different functions.
+    mappings: {related: ['wd:Q442709', 'cpc:36990', 'cpc:45290']}
+  c0043:
+    label: heat sink
+    definition: A part that conducts heat away from another part and dissipates it across a larger surface.
+    source: https://www.wikidata.org/wiki/Q1796959
+    example: [a finned aluminium heat sink, a copper heat sink from a processor]
+    note: A fan moves air. A cooler may include both a fan and a heat sink.
+    mappings: {exact: ['wd:Q1796959'], related: ['cpc:45290']}
+  c0044:
+    label: electrical connector
+    definition: A plug, socket or terminal assembly designed to make an electrical connection through mating contacts or clamped conductors.
+    source: https://www.wikidata.org/wiki/Q2119531
+    example: [a board-mounted USB socket, a battery connector, a screw terminal block]
+    note: Use cable for a lead recorded with its attached plug. Use the connector class for the plug or socket recorded on its own.
+    mappings: {exact: ['wd:Q2119531'], related: ['cpc:46211', 'cpc:46212']}
+    names:
+      bafu: ['^plugs, inlet and outlet']
+  c0045:
+    label: mechanical seal
+    definition: A part fitted at a joint or moving interface to limit fluid or gas leakage.
+    source: https://www.wikidata.org/wiki/Q17004810
+    example: [a rubber O-ring, a lid gasket, a shaft lip seal]
+    note: A rubber foot supports equipment. A gasket belongs here when it closes a leakage path.
+    mappings: {exact: ['wd:Q17004810'], narrow: ['cpc:43924'], related: ['cpc:36270']}
+  c0046:
+    label: equipment support frame
+    definition: A structural part that carries or locates several working parts inside a device.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a laptop midframe, a chassis that holds appliance parts]
+    note: A frame supports or locates parts. A housing panel closes the outside of the device. A bracket usually has a local mounting point.
+    mappings: {related: ['cpc:45290', 'cpc:42999']}
+  c0047:
+    label: equipment mounting bracket
+    definition: A shaped support that attaches a part at a mounting point inside or on a device.
+    source: https://www.wikidata.org/wiki/Q2465790
+    example: [a drive mounting bracket, an angled bracket supporting an appliance motor]
+    note: Use a support frame for the main structure that carries multiple parts.
+    mappings: {related: ['wd:Q2465790', 'cpc:42999']}
+  c0048:
+    label: keyboard keycap
+    definition: The exposed cover of a keyboard key that a user presses.
+    source: https://www.wikidata.org/wiki/Q6398238
+    example: [a letter keycap, a space bar cap, a laptop function keycap]
+    note: A switch senses the press. A keycap is the removable cover or the top piece recorded on its own.
+    mappings: {exact: ['wd:Q6398238'], broad: ['cpc:45290']}
+  c0049:
+    label: pushbutton actuator cap
+    definition: The exposed part that transmits a finger press to a device's switch or sensor.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a plastic power button cap, a side button plunger, a rubber control button mat]
+    note: Use electrical switch when the record includes the contacts. A computer keycap is recorded as a keyboard part.
+    mappings: {related: ['cpc:46220']}
+  c0050:
+    label: mouse scroll wheel
+    definition: The wheel a user rotates on a computer mouse to generate scrolling input.
+    source: https://www.wikidata.org/wiki/Q1091813
+    example: [a notched mouse scroll wheel, a mouse scroll wheel with its rubber tread attached]
+    note: A detached tread, axle support, or encoder can be recorded separately.
+    mappings: {exact: ['wd:Q1091813'], broad: ['cpc:45290']}
+  c0051:
+    label: electrical switch
+    definition: A discrete part that opens, closes or selects a current path in an electrical circuit.
+    source: https://www.wikidata.org/wiki/Q5320
+    example: [a rocker switch, a microswitch, a tactile pushbutton switch]
+    note: A loose button cap applies force to a switch. The switch itself contains the mechanism that changes the circuit.
+    broader: [c0007]
+    mappings: {exact: ['wd:Q5320'], related: ['cpc:46211', 'cpc:46212']}
+  c0052:
+    label: optical lens
+    definition: A transparent optical element that changes the path of light by refraction.
+    source: https://www.wikidata.org/wiki/Q768575
+    example: [a plastic optical mouse lens, a glass focusing lens, a removable camera lens element]
+    note: A flat protective window can transmit light without focusing it. A camera module combines a lens with an image sensor.
+    mappings: {exact: ['wd:Q768575'], related: ['cpc:48311', 'cpc:48321']}
+  c0053:
+    label: mechanical hinge
+    definition: A joint that connects two parts and lets one pivot relative to the other around an axis.
+    source: https://www.wikidata.org/wiki/Q244330
+    example: [a laptop lid hinge, a small cabinet hinge]
+    note: A pin or hinge cover recorded on its own is a part of the joint.
+    mappings: {exact: ['wd:Q244330'], related: ['cpc:42999']}
+  c0054:
+    label: internal electric fan assembly
+    definition: A motor and a blade assembly fitted together for moving air inside a host device.
+    source: https://www.wikidata.org/wiki/Q6498398
+    example: [a laptop blower module, a power-supply cooling fan]
+    note: A motor alone has no air-moving blades. A fan sold as a standalone appliance has a product type.
+    mappings: {broad: ['wd:Q6498398'], related: ['cpc:43931', 'cpc:44815']}
+  c0055:
+    label: haptic vibration actuator
+    definition: A part that converts an electrical signal into vibration that a user can feel as feedback.
+    source: https://www.precisionmicrodrives.com/ab-020
+    example: [a phone linear resonant actuator, an eccentric-mass motor in a game controller]
+    note: Use this class for a tactile feedback unit. A motor in a fan or drive mechanism has a different function.
+    mappings: {related: ['cpc:46111', 'cpc:46960']}

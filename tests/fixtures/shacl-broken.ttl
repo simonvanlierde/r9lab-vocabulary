@@ -29,3 +29,6 @@ t:t04 a skos:Concept ;
     skos:inScheme t: ;
     skos:prefLabel "older screwdriver"@en ;
     owl:deprecated true .
+
+# The collection has two disjoint types.
+t:bad-collection a skos:Collection, skos:ConceptScheme .

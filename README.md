@@ -20,10 +20,10 @@ Questions and bugs: see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 Four SKOS concept schemes, written by hand in [`vocabulary/`](vocabulary/) and built into one
 graph:
 
-| Scheme | Concepts | Top level |
+| Scheme | Concepts | Scope |
 | --- | --- | --- |
 | [Material classes](vocabulary/materials.yaml) | 59 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
-| [Component classes](vocabulary/components.yaml) | 25 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
+| [Component classes](vocabulary/components.yaml) | 55 | Batteries, circuit boards, electronic modules, display, cable, magnet, motor, teardown hardware and internal assemblies |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
 | [Pilot classes](vocabulary/pilot-classes.yaml) | 11 | The eleven coarse material classes a pilot study sorts photographed parts into, kept as a `skos:Collection` |
 
@@ -151,6 +151,9 @@ Each rater's link is the page's address followed by the `/r/...` path printed fo
 (`docker compose` shows it in the stack's output): `http://127.0.0.1:8740` here, the proxy's
 address for raters elsewhere. [`docs/review-protocol.md`](docs/review-protocol.md) has the rules
 a rater follows.
+
+The [export tag proposals](docs/tag-concept-proposals.md) describe which gaps
+can be mapped by tag and which require a decision for each record.
 
 ### Write a concept's text
 

@@ -1,12 +1,13 @@
 """The SHACL shapes: skohub-shapes' SKOS rules and this vocabulary's own, on the real build and a broken graph."""
 
+import os
 from datetime import date
 from typing import TYPE_CHECKING
 
 import pytest
 from conftest import ROOT
 from pyshacl import validate
-from rdflib import DCTERMS, RDF, RDFS, SDO, SH, SKOS, Graph, URIRef
+from rdflib import DCTERMS, PROV, RDF, RDFS, SDO, SH, SKOS, Graph, URIRef
 
 from r9lab_vocabulary import export, pipeline, scheme
 
@@ -79,18 +80,20 @@ def test_each_own_rule_catches_its_break(shapes: Graph):
         "A concept scheme has one bibo:status PyST accepts.",
         "A concept scheme has a skos:definition.",
         "A concept scheme has exactly one owl:versionInfo.",
+        "A collection is disjoint with concepts and concept schemes.",
     ):
         assert expected in messages, messages
 
 
 def test_the_build_describes_vocabulary_resources():
     authors, landing = pipeline.citation(ROOT / "CITATION.cff")
+    assert landing
     g = export.to_graph(
         scheme.load(ROOT / "vocabulary"), export.About("test", list(authors), landing, author_names=authors)
     )
     for s in g.subjects(RDF.type, SKOS.ConceptScheme):
         assert g.value(s, SDO.codeRepository)
-        assert g.value(s, SKOS.historyNote)
+        assert g.value(s, PROV.wasDerivedFrom) == URIRef(landing)
         for creator in g.objects(s, DCTERMS.creator):
             assert (creator, RDF.type, SDO.Person) in g
             assert g.value(creator, SDO.name)
@@ -102,3 +105,30 @@ def test_the_build_describes_vocabulary_resources():
             parent = g.value(node, SKOS.inScheme)
             assert (node, RDFS.isDefinedBy, parent) in g
             assert g.value(node, SKOS.definition)
+
+
+def test_vocpub_catches_publication_errors_in_the_bundle_and_each_scheme():
+    path = os.environ.get("R9LAB_VOCPUB_SHAPES")
+    if not path:
+        pytest.skip("Set R9LAB_VOCPUB_SHAPES to the pinned VocPub validator")
+    shapes = Graph().parse(path, format="turtle")
+    authors, landing = pipeline.citation(ROOT / "CITATION.cff")
+    data = export.to_graph(
+        scheme.load(ROOT / "vocabulary"), export.About("test", list(authors), landing, date(2026, 2, 1), authors)
+    )
+    bundle_limit = URIRef("https://linked.data.gov.au/def/vocpub/validator/ConceptSchemeType")
+    assert _vocpub_error_shapes(data, shapes) == [bundle_limit]
+
+    for root in data.subjects(RDF.type, SKOS.ConceptScheme):
+        subjects = {root, *data.subjects(SKOS.inScheme, root), *data.objects(root, DCTERMS.creator)}
+        projection = Graph()
+        for subject in subjects:
+            for triple in data.triples((subject, None, None)):
+                projection.add(triple)
+        assert not _vocpub_error_shapes(projection, shapes), root
+
+
+def _vocpub_error_shapes(data: Graph, shapes: Graph) -> list:
+    _, report, _ = validate(data, shacl_graph=shapes, advanced=True)
+    assert isinstance(report, Graph)
+    return [report.value(result, SH.sourceShape) for result in report.subjects(SH.resultSeverity, SH.Violation)]

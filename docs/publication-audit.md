@@ -2,9 +2,9 @@
 
 ## Graph and validation
 
-The 2026-11-27 audit ran on the Turtle built by `just rdf` from commit
-`45be82a` and again after the metadata changes below. The build had four
-schemes and 128 concepts. No export records were sent to a validator.
+The 2026-11-27 audit used Turtle built by `just rdf` from commit `45be82a`.
+The baseline had four schemes and 128 concepts. The consolidated rerun on
+2026-11-28 kept four schemes and had 158 concepts.
 
 | Check | Before | After |
 | --- | --- | --- |
@@ -17,7 +17,8 @@ features enabled.
 
 ```sh
 just rdf
-pyshacl -a -s validator.ttl -f turtle dist/r9lab-vocabulary.ttl
+uv run --locked pyshacl -a -s validator.ttl -f turtle dist/r9lab-vocabulary.ttl
+R9LAB_VOCPUB_SHAPES=validator.ttl uv run --locked pytest -q tests/test_shacl.py -k vocpub
 ```
 
 The validator SHA-256 is
@@ -26,11 +27,12 @@ The remaining violation is the limit of one concept scheme per file, reported
 as 2.1.02 and 2.1.03. The two warnings concern the origin of the pilot collection and its
 locally defined other-material class. Both get their meaning from the
 containing scheme. The validator asks for separate provenance even when
-it does not differ from the scheme.
+it does not differ from the scheme. Validating one scheme at a time produced
+zero violations in all four graphs. Both warnings came from the pilot scheme.
 
 The metadata changes add defining-scheme links, the collection definition
 and membership in its scheme, named and typed creators, scheme provenance,
-a repository link, and machine-readable citations derived from the concept
+a repository link via `prov:wasDerivedFrom`, and machine-readable citations derived from the concept
 sources already present.
 
 The SKOS pass checked S9, S13, S14, S27, S35, S37 and S46 on the merged graph

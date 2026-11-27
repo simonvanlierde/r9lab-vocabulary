@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import yaml
-from rdflib import DCAT, DCTERMS, OWL, RDF, RDFS, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
+from rdflib import DCAT, DCTERMS, OWL, PROV, RDF, RDFS, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
 
 from r9lab_vocabulary.scheme import (
     BASE,
@@ -145,13 +145,7 @@ def _add_scheme(g: Graph, scheme: Scheme, schemes: dict[str, Scheme], about: Abo
     g.add((s, BIBO.status, ACCEPTED))
     g.add((s, DCTERMS.license, CC0))
     if about.landing:
-        g.add(
-            (
-                s,
-                SKOS.historyNote,
-                Literal("The scheme is compiled from the curated YAML in its source repository.", lang=LANG),
-            )
-        )
+        g.add((s, PROV.wasDerivedFrom, URIRef(about.landing)))
     if desc := scheme.meta.get("description"):
         g.add((s, DCTERMS.description, Literal(desc.strip(), lang=LANG)))
         g.add((s, SKOS.definition, Literal(desc.strip(), lang=LANG)))
