@@ -396,8 +396,8 @@ def check_tag_mappings(schemes: dict[str, Scheme], path: Path) -> list[str]:
     for row in reader:
         label, obj = row["subject_label"], row["object_id"]
         where = f"{path.name}: {label!r}"
-        if label != label.strip().lower() or row["subject_id"] in seen:
-            errors.append(f"{where} is not lower case or appears twice")
+        if not label or label != label.strip().lower() or row["subject_id"] in seen:
+            errors.append(f"{where} is empty, not lower case, or appears twice")
         seen.add(row["subject_id"])
         if row["subject_id"] not in {f"{TAG_PREFIX}:{f}/{quote(label, safe='')}" for f in TAG_FIELDS}:
             errors.append(f"{where}: subject_id {row['subject_id']} is not {TAG_PREFIX}: plus a field and the tag")

@@ -34,10 +34,12 @@ def test_check_tag_mappings_catches(schemes: Schemes, tmp_path: Path):
         f"r9lab-tag:material/zinc\tzinc\tskos:exactMatch\tmaterials:m0002\tferrous metal\t{j}\tmyid:simon\n"
         f"r9lab-tag:material/brass\tbrass\tskos:exactMatch\tmaterials:m0011\tbrass\t{j}\n"
         f"r9lab-tag:keyword/brass\tbrass\tskos:exactMatch\tmaterials:m0011\tbrass\t{j}\n"
+        f"r9lab-tag:product/lamp\tlamp\tskos:exactMatch\tsssom:NoTermFound\t\t{j}\n"
+        f"r9lab-tag:material/\t\tskos:exactMatch\tsssom:NoTermFound\t\t{j}\n"
     )
     assert checks.check_tag_mappings(schemes, path) == [
-        "t.sssom.tsv: 'steel' is not lower case or appears twice",
-        "t.sssom.tsv: 'Glass' is not lower case or appears twice",
+        "t.sssom.tsv: 'steel' is empty, not lower case, or appears twice",
+        "t.sssom.tsv: 'Glass' is empty, not lower case, or appears twice",
         "t.sssom.tsv: 'Glass': unknown predicate skos:sameAs",
         "t.sssom.tsv: 'Glass': materials:m9999 is not a live concept",
         "t.sssom.tsv: 'pe': unknown predicate exact",
@@ -50,6 +52,8 @@ def test_check_tag_mappings_catches(schemes: Schemes, tmp_path: Path):
         "t.sssom.tsv: 'tin': t:t01 is not a live concept",
         "t.sssom.tsv: 'wood': object_label 'wood' is not sssom:NoTermFound's label",
         "t.sssom.tsv: 'zinc': prefix of myid:simon is not in the curie_map",
+        "t.sssom.tsv: 'lamp': subject_id r9lab-tag:product/lamp is not r9lab-tag: plus a field and the tag",
+        "t.sssom.tsv: '' is empty, not lower case, or appears twice",
     ]
 
 

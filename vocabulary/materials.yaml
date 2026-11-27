@@ -576,7 +576,7 @@ concepts:
     definition: Solid elemental carbon other than diamond, mostly graphite, which is soft and conducts electricity.
     source: https://www.wikidata.org/wiki/Q5309
     example: [a carbon brush from a motor, a graphite heat-spreader sheet from a phone, a carbon electrode, a pencil lead]
-    note: 'Not composite: carbon fibres set in resin are a composite. Not carbon and low-alloy steel, which is iron with a little carbon. Coated graphite battery anodes stay with the battery.'
+    note: 'Not composite: carbon fibres set in resin are a composite. Not carbon and low-alloy steel: iron with a little carbon. Coated graphite battery anodes stay with the battery.'
     editorial_note: Ashby's six families have no place for elemental carbon; it sits under ceramic as an inorganic, non-metallic solid formed by heat.
     broader: [m0046]
     mappings: {narrow: ['wd:Q5309'], close: ['cpc:3795']}
