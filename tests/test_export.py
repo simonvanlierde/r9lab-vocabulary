@@ -211,8 +211,36 @@ def test_labels_leave_out_a_deprecated_concept(tmp_path: Path):
     assert "t01" not in md_path.read_text(encoding="utf-8")
 
 
-# Concepts that span several pilot classes, so they carry no key of their own; `pilot_any` covers them.
-KEYLESS = {"materials:m0001", "materials:m0049", "components:c0018"}
+# These concepts need the recorded material or assembly scope to determine a pilot key.
+KEYLESS = {
+    "materials:m0001",
+    "materials:m0049",
+    "components:c0018",
+    "components:c0026",
+    "components:c0027",
+    "components:c0030",
+    "components:c0031",
+    "components:c0032",
+    "components:c0036",
+    "components:c0037",
+    "components:c0038",
+    "components:c0039",
+    "components:c0040",
+    "components:c0041",
+    "components:c0042",
+    "components:c0043",
+    "components:c0044",
+    "components:c0045",
+    "components:c0046",
+    "components:c0047",
+    "components:c0048",
+    "components:c0049",
+    "components:c0050",
+    "components:c0052",
+    "components:c0053",
+    "components:c0054",
+    "components:c0055",
+}
 
 
 def test_every_material_and_component_has_a_pilot_key_or_is_known_to_span_several(schemes: Schemes):
@@ -224,6 +252,13 @@ def test_every_material_and_component_has_a_pilot_key_or_is_known_to_span_severa
         if not c["pilot"]
     }
     assert keyless == KEYLESS
+
+
+def test_isolated_modules_and_circuit_boards_keep_the_electronics_key(schemes: Schemes):
+    electronics = {"c0005", "c0006", "c0028", "c0029", "c0033", "c0034", "c0035", "c0051"}
+    component_labels = next(s["concepts"] for s in export.labels(schemes) if s["slug"] == "components")
+    actual = {c["id"]: c["pilot"] for c in component_labels if c["id"] in electronics}
+    assert actual == {key: ["electronics"] for key in electronics}
 
 
 def test_pilot_any_collects_the_keys_below_a_concept():

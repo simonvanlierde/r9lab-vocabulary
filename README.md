@@ -10,8 +10,8 @@ and disassembly records, as SKOS, with crosswalks to CPC 2.1, UNU-KEYs, WEEE cat
 Wikidata and BAFU.
 
 Status: experimental. Concept ids are stable from v0.1.0 on; labels, mappings and the
-product types may still change. The `https://w3id.org/r9lab/vocabulary/` IRIs do not resolve
-yet: the redirect is waiting for review at w3id.org.
+product types may still change. The `https://w3id.org/r9lab/vocabulary/` IRIs currently redirect to this repository.
+[ADR 0010](docs/decisions/0010-resolve-vocabulary-iris.md) proposes how they will resolve to individual resources.
 
 Questions and bugs: see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
@@ -20,10 +20,10 @@ Questions and bugs: see [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 Four SKOS concept schemes, written by hand in [`vocabulary/`](vocabulary/) and built into one
 graph:
 
-| Scheme | Concepts | Top level |
+| Scheme | Concepts | Scope |
 | --- | --- | --- |
 | [Material classes](vocabulary/materials.yaml) | 59 | Ashby's six material families: metal, polymer, elastomer, glass, ceramic, hybrid |
-| [Component classes](vocabulary/components.yaml) | 25 | Battery, lithium-ion cell, circuit boards, electronic components, display, cable, magnet, motor, transformer, loudspeaker driver |
+| [Component classes](vocabulary/components.yaml) | 55 | Batteries, circuit boards, electronic modules, display, cable, magnet, motor, teardown hardware and internal assemblies |
 | [Product types](vocabulary/products.yaml) | 33 | Six product families over 27 types, a first cut from the R9lab lab corpus |
 | [Pilot classes](vocabulary/pilot-classes.yaml) | 11 | The eleven coarse material classes a pilot study sorts photographed parts into, kept as a `skos:Collection` |
 
@@ -71,6 +71,7 @@ Each scheme, and the vocabulary as a whole (`https://w3id.org/r9lab/vocabulary/`
 version IRI such as `https://w3id.org/r9lab/vocabulary/0.1.0/materials/`.
 [ADR 0004](docs/decisions/0004-versioned-iris-and-scheme-dates.md) lists the fields and where
 each comes from.
+The [publication audit](docs/publication-audit.md) records the SKOS, VocPub and FAIR checks.
 
 ## Usage
 
@@ -150,6 +151,9 @@ Each rater's link is the page's address followed by the `/r/...` path printed fo
 (`docker compose` shows it in the stack's output): `http://127.0.0.1:8740` here, the proxy's
 address for raters elsewhere. [`docs/review-protocol.md`](docs/review-protocol.md) has the rules
 a rater follows.
+
+The [export tag proposals](docs/tag-concept-proposals.md) describe which gaps
+can be mapped by tag and which require a decision for each record.
 
 ### Write a concept's text
 

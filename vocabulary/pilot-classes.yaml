@@ -44,7 +44,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q173350
     example: [a motherboard, a phone logic board, a power-supply board, a loose capacitor or chip]
     note: 'Not display or glass: a display keeps its own driver board. Batteries, cables and magnets have their own classes. A flexible printed circuit counts here, but a flat flex cable with no printed tracks is a cable. Not electric motor or transformer: a small choke or transformer on a circuit board stays electronics.'
-    mappings: {narrow: ['components:c0005', 'components:c0006', 'components:c0007']}
+    mappings: {narrow: ['components:c0007', 'components:c0028', 'components:c0033', 'components:c0034', 'components:c0035']}
   s05:
     label: battery or cell
     notation: battery

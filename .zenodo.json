@@ -1,7 +1,7 @@
 {
   "upload_type": "software",
   "title": "r9lab-vocabulary",
-  "description": "A SKOS vocabulary of product types and of component and material classes for repair and disassembly records, with typed crosswalks to CPC 2.1, UNU-KEYs, WEEE categories, PMDco, Wikidata and BAFU activity names, and a reviewed SSSOM mapping of the R9lab lab tags. The vocabulary and mappings are CC0 1.0; the code that builds and checks them is Apache-2.0 (see REUSE.toml).",
+  "description": "A SKOS vocabulary of product types and of component and material classes for repair and disassembly records, with typed crosswalks to CPC 2.1, UNU-KEYs, WEEE categories, PMDco, Wikidata and BAFU activity names, and an SSSOM mapping of the R9lab lab tags with a separate review log. The vocabulary and mappings are CC0 1.0; the code that builds and checks them is Apache-2.0 (see REUSE.toml).",
   "creators": [
     {
       "name": "van Lierde, Simon",

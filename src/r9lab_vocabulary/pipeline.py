@@ -228,17 +228,21 @@ def _commit_time() -> str | None:
     return out.strip() or None
 
 
-def citation(path: Path = CITATION) -> tuple[list[str], str | None]:
-    """The authors' ORCID iDs, in order, and `repository-code` from CITATION.cff; ValueError if no author has an iD."""
+def citation(path: Path = CITATION) -> tuple[dict[str, str], str | None]:
+    """The names keyed by ORCID iD in citation order, and the code repository from CITATION.cff."""
     try:
         cff = yaml.safe_load(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         cff = None
     cff = cff if isinstance(cff, dict) else {}
     authors = cff.get("authors")
-    orcids = [a["orcid"] for a in authors or [] if isinstance(a, dict) and a.get("orcid")]
-    if orcids:
-        return orcids, cff.get("repository-code")
+    names = {
+        a["orcid"]: " ".join(a[key] for key in ("given-names", "family-names") if a.get(key))
+        for a in authors or []
+        if isinstance(a, dict) and a.get("orcid")
+    }
+    if names:
+        return names, cff.get("repository-code")
     msg = f"{path} must list at least one author with an orcid"
     raise ValueError(msg)
 
@@ -271,11 +275,11 @@ def rdf(out: Path) -> int:
         sys.stderr.write(f"error: no commit date for dct:modified: {hint}\n")
         return 1
     try:
-        orcids, repo = citation()
+        authors, repo = citation()
     except ValueError as e:
         sys.stderr.write(f"error: {e}\n")
         return 1
-    about = export.About(version("r9lab-vocabulary"), orcids, repo, modified)
+    about = export.About(version("r9lab-vocabulary"), list(authors), repo, modified, authors)
     paths = [
         *export.write(schemes, about, out, matches),
         Path(shutil.copy(SHAPES, out)),

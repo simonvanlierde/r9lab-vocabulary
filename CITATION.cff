@@ -6,7 +6,7 @@
 cff-version: 1.2.0
 message: If you use this software, please cite it as below.
 title: "r9lab-vocabulary"
-abstract: "A SKOS vocabulary of product types and of component and material classes for repair and disassembly records, with typed crosswalks to CPC 2.1, UNU-KEYs, WEEE categories, PMDco, Wikidata and BAFU activity names, and a reviewed SSSOM mapping of the R9lab lab tags."
+abstract: "A SKOS vocabulary of product types and of component and material classes for repair and disassembly records, with typed crosswalks to CPC 2.1, UNU-KEYs, WEEE categories, PMDco, Wikidata and BAFU activity names, and an SSSOM mapping of the R9lab lab tags with a separate review log."
 authors:
   - given-names: "Simon"
     family-names: "van Lierde"

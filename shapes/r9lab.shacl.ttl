@@ -20,6 +20,11 @@
             sh:minCount 1 ; sh:maxCount 1 ; sh:message "A concept has one bibo:status PyST accepts." ] .
 
 # What PyST needs of a concept scheme beyond :Scheme: https://docs.pyst.dev/data-model/
+# W3C SKOS S37 allows a Collection to belong to a scheme, but forbids either type overlap.
+:Collection a sh:NodeShape ; sh:targetClass skos:Collection ;
+    sh:not [ sh:or ( [ sh:class skos:Concept ] [ sh:class skos:ConceptScheme ] ) ] ;
+    sh:message "A collection is disjoint with concepts and concept schemes." .
+
 :PySTScheme a sh:NodeShape ; sh:targetClass skos:ConceptScheme ;
     sh:property [ sh:path bibo:status ; sh:in ( <http://purl.org/ontology/bibo/status/draft> <http://purl.org/ontology/bibo/status/accepted> <http://purl.org/ontology/bibo/status/rejected> ) ;
             sh:minCount 1 ; sh:maxCount 1 ; sh:message "A concept scheme has one bibo:status PyST accepts." ] ,

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import yaml
-from rdflib import DCAT, DCTERMS, OWL, RDF, RDFS, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
+from rdflib import DCAT, DCTERMS, OWL, PROV, RDF, RDFS, SDO, SKOS, XSD, Graph, Literal, Namespace, URIRef
 
 from r9lab_vocabulary.scheme import (
     BASE,
@@ -35,7 +35,7 @@ from r9lab_vocabulary.scheme import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
     from datetime import date
     from pathlib import Path
 
@@ -77,6 +77,7 @@ class About:
     orcids: Sequence[str] = ()
     landing: str | None = None
     modified: date | None = None
+    author_names: Mapping[str, str] | None = None
 
     def describe(self, g: Graph, node: URIRef, title: str, created: date | None) -> None:
         """Type `node` as a schema.org term set and add its title, version, dates, creators and landing page."""
@@ -90,11 +91,16 @@ class About:
             if value is not None:
                 g.add((node, prop, Literal(value)))
         for orcid in self.orcids:
-            g.add((node, DCTERMS.creator, URIRef(orcid)))
+            agent = URIRef(orcid)
+            g.add((node, DCTERMS.creator, agent))
+            if self.author_names and (name := self.author_names.get(orcid)):
+                g.add((agent, RDF.type, SDO.Person))
+                g.add((agent, SDO.name, Literal(name)))
         if self.orcids:
             g.add((node, DCTERMS.publisher, URIRef(self.orcids[0])))
         if self.landing:
             g.add((node, DCAT.landingPage, URIRef(self.landing)))
+            g.add((node, SDO.codeRepository, Literal(self.landing, datatype=XSD.anyURI)))
 
 
 def to_graph(schemes: dict[str, Scheme], about: About) -> Graph:
@@ -138,6 +144,8 @@ def _add_scheme(g: Graph, scheme: Scheme, schemes: dict[str, Scheme], about: Abo
     g.add((s, SKOS.prefLabel, Literal(scheme.meta["title"], lang=LANG)))
     g.add((s, BIBO.status, ACCEPTED))
     g.add((s, DCTERMS.license, CC0))
+    if about.landing:
+        g.add((s, PROV.wasDerivedFrom, URIRef(about.landing)))
     if desc := scheme.meta.get("description"):
         g.add((s, DCTERMS.description, Literal(desc.strip(), lang=LANG)))
         g.add((s, SKOS.definition, Literal(desc.strip(), lang=LANG)))
@@ -147,6 +155,10 @@ def _add_scheme(g: Graph, scheme: Scheme, schemes: dict[str, Scheme], about: Abo
         coll = URIRef(f"{scheme.iri}collection")
         g.add((coll, RDF.type, SKOS.Collection))
         g.add((coll, SKOS.prefLabel, Literal(collection, lang=LANG)))
+        g.add((coll, SKOS.inScheme, s))
+        g.add((coll, RDFS.isDefinedBy, s))
+        if desc:
+            g.add((coll, SKOS.definition, Literal(desc.strip(), lang=LANG)))
     for cid, c in scheme.concepts.items():
         node = URIRef(scheme.iri + cid)
         _add_concept(g, node, c, scheme)
@@ -169,13 +181,10 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
     g.add((node, RDF.type, SKOS.Concept))
     g.add((node, RDF.type, SDO.DefinedTerm))
     g.add((node, SKOS.inScheme, s))
+    g.add((node, RDFS.isDefinedBy, s))
     g.add((node, BIBO.status, ACCEPTED))
     g.add((node, SKOS.prefLabel, Literal(c["label"], lang=LANG)))
-    for field, prop in TEXT_FIELDS.items():
-        for text in texts(c, field):
-            g.add((node, prop, Literal(text.strip(), lang=LANG)))
-    if source := c.get(SOURCE, "").strip():
-        g.add((node, DCTERMS.source, URIRef(source) if source.startswith(("http://", "https://")) else Literal(source)))
+    _add_concept_text(g, node, c)
     if (notation := c.get("notation")) is not None:
         g.add((node, SKOS.notation, Literal(str(notation))))
     broader = c.get("broader") or []
@@ -191,6 +200,18 @@ def _add_concept(g: Graph, node: URIRef, c: dict[str, Any], scheme: Scheme) -> N
         g.add((node, OWL.deprecated, Literal("true", datatype=XSD.boolean)))
         for ref in c.get("replaced_by") or []:
             g.add((node, DCTERMS.isReplacedBy, URIRef(scheme.iri + ref)))
+
+
+def _add_concept_text(g: Graph, node: URIRef, c: dict[str, Any]) -> None:
+    for field, prop in TEXT_FIELDS.items():
+        for text in texts(c, field):
+            g.add((node, prop, Literal(text.strip(), lang=LANG)))
+    if source := c.get(SOURCE, "").strip():
+        if source.startswith(("http://", "https://")):
+            g.add((node, DCTERMS.source, URIRef(source)))
+            g.add((node, SDO.citation, Literal(source, datatype=XSD.anyURI)))
+        else:
+            g.add((node, DCTERMS.source, Literal(source)))
 
 
 def write(schemes: dict[str, Scheme], about: About, out: Path, matches: list[Match]) -> list[Path]:

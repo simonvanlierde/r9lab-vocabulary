@@ -2,6 +2,7 @@
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix r9-parts: <https://w3id.org/r9lab/vocabulary/parts/> .
 @prefix r9-tools: <https://w3id.org/r9lab/vocabulary/tools/> .
 @prefix r9lab: <https://w3id.org/r9lab/vocabulary/terms#> .
@@ -24,9 +25,13 @@
     owl:versionIRI <https://w3id.org/r9lab/vocabulary/1.0.0/> ;
     owl:versionInfo "1.0.0" ;
     dcat:landingPage <https://example.org/r9lab-vocabulary> ;
+    schema:codeRepository "https://example.org/r9lab-vocabulary"^^xsd:anyURI ;
     schema:name "R9lab reference vocabulary"@en .
 
 r9-parts:collection a skos:Collection ;
+    rdfs:isDefinedBy r9-parts: ;
+    skos:definition "Fasteners, to pin what the build writes."@en ;
+    skos:inScheme r9-parts: ;
     skos:member r9-parts:p01,
         r9-parts:p02 ;
     skos:prefLabel "Fasteners a pilot counts"@en .
@@ -47,6 +52,7 @@ r9-tools:t03 a skos:Concept,
         schema:DefinedTerm ;
     dcterms:isReplacedBy r9-tools:t02 ;
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    rdfs:isDefinedBy r9-tools: ;
     owl:deprecated true ;
     skos:inScheme r9-tools: ;
     skos:prefLabel "old screwdriver"@en .
@@ -54,6 +60,7 @@ r9-tools:t03 a skos:Concept,
 r9-tools:t01 a skos:Concept,
         schema:DefinedTerm ;
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    rdfs:isDefinedBy r9-tools: ;
     skos:definition "A tool worked by hand."@en ;
     skos:exactMatch <http://www.wikidata.org/entity/Q1> ;
     skos:example "a hammer"@en ;
@@ -67,6 +74,7 @@ r9-tools:t01 a skos:Concept,
 r9-tools:t02 a skos:Concept,
         schema:DefinedTerm ;
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    rdfs:isDefinedBy r9-tools: ;
     skos:broader r9-tools:t01 ;
     skos:closeMatch r9-parts:p01 ;
     skos:definition "Hand tool that turns screws."@en ;
@@ -79,6 +87,7 @@ r9-tools:t02 a skos:Concept,
 r9-parts:p01 a skos:Concept,
         schema:DefinedTerm ;
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    rdfs:isDefinedBy r9-parts: ;
     skos:definition "Threaded fastener turned into a hole or a nut."@en ;
     skos:example "a wood screw"@en ;
     skos:inScheme r9-parts: ;
@@ -90,12 +99,37 @@ r9-parts:p01 a skos:Concept,
 r9-parts:p02 a skos:Concept,
         schema:DefinedTerm ;
     bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    rdfs:isDefinedBy r9-parts: ;
     skos:definition "Block with a threaded hole that a screw or bolt turns into."@en ;
     skos:example "a hex nut"@en ;
     skos:inScheme r9-parts: ;
     skos:prefLabel "nut"@en ;
     skos:scopeNote "Not screw: a nut has no shaft."@en ;
     skos:topConceptOf r9-parts: .
+
+<https://orcid.org/0000-0002-1825-0097> a schema:Person ;
+    schema:name "Josiah Carberry" .
+
+r9-tools: a skos:ConceptScheme,
+        schema:DefinedTermSet ;
+    dcterms:created "2026-01-01"^^xsd:date ;
+    dcterms:creator <https://orcid.org/0000-0002-1825-0097> ;
+    dcterms:description "Hand tools, to pin what the build writes."@en ;
+    dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
+    dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
+    dcterms:modified "2026-02-01"^^xsd:date ;
+    dcterms:publisher <https://orcid.org/0000-0002-1825-0097> ;
+    dcterms:title "Workshop tools"@en ;
+    bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
+    owl:versionIRI <https://w3id.org/r9lab/vocabulary/1.0.0/tools/> ;
+    owl:versionInfo "1.0.0" ;
+    skos:definition "Hand tools, to pin what the build writes."@en ;
+    skos:hasTopConcept r9-tools:t01 ;
+    skos:prefLabel "Workshop tools"@en ;
+    dcat:landingPage <https://example.org/r9lab-vocabulary> ;
+    prov:wasDerivedFrom <https://example.org/r9lab-vocabulary> ;
+    schema:codeRepository "https://example.org/r9lab-vocabulary"^^xsd:anyURI ;
+    schema:name "Workshop tools"@en .
 
 r9-parts: a skos:ConceptScheme,
         schema:DefinedTermSet ;
@@ -115,24 +149,7 @@ r9-parts: a skos:ConceptScheme,
         r9-parts:p02 ;
     skos:prefLabel "Fasteners"@en ;
     dcat:landingPage <https://example.org/r9lab-vocabulary> ;
+    prov:wasDerivedFrom <https://example.org/r9lab-vocabulary> ;
+    schema:codeRepository "https://example.org/r9lab-vocabulary"^^xsd:anyURI ;
     schema:name "Fasteners"@en .
-
-r9-tools: a skos:ConceptScheme,
-        schema:DefinedTermSet ;
-    dcterms:created "2026-01-01"^^xsd:date ;
-    dcterms:creator <https://orcid.org/0000-0002-1825-0097> ;
-    dcterms:description "Hand tools, to pin what the build writes."@en ;
-    dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;
-    dcterms:license <https://creativecommons.org/publicdomain/zero/1.0/> ;
-    dcterms:modified "2026-02-01"^^xsd:date ;
-    dcterms:publisher <https://orcid.org/0000-0002-1825-0097> ;
-    dcterms:title "Workshop tools"@en ;
-    bibo:status <http://purl.org/ontology/bibo/status/accepted> ;
-    owl:versionIRI <https://w3id.org/r9lab/vocabulary/1.0.0/tools/> ;
-    owl:versionInfo "1.0.0" ;
-    skos:definition "Hand tools, to pin what the build writes."@en ;
-    skos:hasTopConcept r9-tools:t01 ;
-    skos:prefLabel "Workshop tools"@en ;
-    dcat:landingPage <https://example.org/r9lab-vocabulary> ;
-    schema:name "Workshop tools"@en .
 

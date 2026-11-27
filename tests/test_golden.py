@@ -31,9 +31,9 @@ def _same(a: Graph, b: Graph) -> None:
 
 
 def test_the_build_matches_the_golden_turtle():
-    orcids, landing = pipeline.citation(GOLDEN / "CITATION.cff")
+    authors, landing = pipeline.citation(GOLDEN / "CITATION.cff")
     schemes = scheme.load(GOLDEN / "vocabulary")
-    g = export.to_graph(schemes, export.About("1.0.0", orcids, landing, date(2026, 2, 1)))
+    g = export.to_graph(schemes, export.About("1.0.0", list(authors), landing, date(2026, 2, 1), authors))
     if os.environ.get("UPDATE_GOLDEN") == "1":
         g.serialize(EXPECTED, format="turtle")
     _same(g, Graph().parse(EXPECTED))
@@ -42,8 +42,8 @@ def test_the_build_matches_the_golden_turtle():
 # rdflib's JSON-LD parser builds a ConjunctiveGraph internally whatever the caller passes.
 @pytest.mark.filterwarnings("ignore:ConjunctiveGraph is deprecated:DeprecationWarning")
 def test_the_real_build_round_trips_through_turtle_and_json_ld(tmp_path: Path):
-    orcids, landing = pipeline.citation(ROOT / "CITATION.cff")
-    about = export.About("test", orcids, landing, date(2026, 2, 1))
+    authors, landing = pipeline.citation(ROOT / "CITATION.cff")
+    about = export.About("test", list(authors), landing, date(2026, 2, 1), authors)
     schemes = scheme.load(ROOT / "vocabulary")
     export.write(schemes, about, tmp_path, [])
     ttl = Graph().parse(tmp_path / "r9lab-vocabulary.ttl")
