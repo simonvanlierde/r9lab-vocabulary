@@ -65,7 +65,7 @@ sssom-validate:
 local-check:
     uv run --locked python -m r9lab_vocabulary.curate check
 
-# Load dist/r9lab-vocabulary.ttl into a throwaway PyST (tests/pyst/compose.yaml, Docker) and check every scheme and concept statement comes back. Needs `just rdf` first.
+# Check the vocabulary and two conditional tag associations in a throwaway PyST (tests/pyst/compose.yaml, Docker). Needs `just rdf` first.
 pyst-round-trip port="8741":
     #!/usr/bin/env bash
     set -euo pipefail

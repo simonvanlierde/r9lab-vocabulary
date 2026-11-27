@@ -7,7 +7,7 @@ date: 2026-11-26
 
 ## Context and Problem Statement
 
-Product types link to UNU-KEY v1 and v2 codes and to the CPV code R9lab stores for them. Before
+Product types link to applicable UNU-KEY v1 and v2 codes and to the CPV code R9lab stores for them. Before
 v0.1.0 the build minted a concept for each code used, under `https://w3id.org/r9lab/vocabulary/external/`.
 Those IRIs would name someone else's codes from our domain, be permanent once released, and
 duplicate the CPV IRIs the EU already publishes.

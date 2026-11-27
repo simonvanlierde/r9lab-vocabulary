@@ -12,8 +12,8 @@ and pinned at SHA-256
 [Reuse terms](https://github.com/openrepair/data/tree/2af16342c751f56e28e2f62d018f051e7f22aed0)
 
 Read the relation **from R9lab to ORDS**. A broad match lets a specific R9lab type
-roll up to an ORDS category. Going the other way, an ORDS repair may have several
-candidate types and requires more detail before assigning one. `No match` means
+roll up to an ORDS category. To classify a repair from an ORDS ID, use item evidence for every broad or close
+match, even when the table lists a single candidate. `No match` means
 the draft proposes no link to a current R9lab product type. Product IDs refer to
 [the product scheme](../../vocabulary/products.yaml).
 
@@ -28,7 +28,7 @@ the draft proposes no link to a current R9lab product type. Product IDs refer to
 | 8 | — | No match | No standalone TV or monitor type. |
 | 9 | `p0031` electric shaver, `p0033` electric foot file | Broad | General powered grooming category. Confirm foot files with a repair data curator. |
 | 10 | — | No match | No portable entertainment player type. |
-| 11 | `p0019` headphones | Close | Confirm partner handling of earbuds and headsets. |
+| 11 | `p0019` headphones | Close | ORDS includes earbuds. Confirm provider handling of headsets with a microphone. |
 | 12 | — | No match | No integrated stereo type. |
 | 13 | `p0020` speaker | Close | Overlap covers separate hi-fi speakers. Portable speakers may be grouped elsewhere. |
 | 14 | `p0025` electric kettle | Exact | Same powered water-boiling appliance. |
@@ -52,9 +52,15 @@ the draft proposes no link to a current R9lab product type. Product IDs refer to
 
 Before release, review the close matches and the routing of hair dryers between
 9 and 39. Check that forward rollups use exact and broad links only, and keep
-the source ID on each repair record. Use the pinned CSV to reject unknown IDs
-and require an explicit disposition for all 40 codes. Use identifiers only in
-the crosswalk and keep the upstream codelist under its own terms. If no
-publisher IRIs are available, propose a versioned ORDS code datatype under
-[ADR 0007](../decisions/0007-outside-codes-without-iris.md) before wiring the
-crosswalk into the export.
+the source ID in downstream joins. Store reviewed rows in a versioned table with
+the R9lab concept ID, ORDS code and relation. Validate endpoint membership against
+the vocabulary and pinned CSV. Require an explicit disposition for all 40 codes
+and keep no-match dispositions alongside the links. The codelist keeps its own
+reuse terms.
+
+If the publisher provides no category IRIs, use a versioned ORDS code for the
+literal target, following [ADR 0007](../decisions/0007-outside-codes-without-iris.md).
+A separate SSSOM artifact can preserve exact, close and broad relations. Check
+its literal-only round trip before publishing. The current YAML literal export
+uses the UNU property and accepts only broad mappings. An RDF export needs a
+separate ORDS representation that preserves the relation.

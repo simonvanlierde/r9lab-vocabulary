@@ -1,32 +1,33 @@
 # UNU-KEY and BAFU source checks
 
-Checked 2026-11-27 against the vocabulary at `45be82a`.
+Checked 2026-11-27 against the vocabulary at `45be82a`. The review on 2026-11-28
+removed three UNU-KEY links after checking the product scope.
 
 ## UNU-KEY
 
 Compared the 54 v1 and 57 v2 entries in `FIXED_CODES` with 2018 Table 1 and
-2026 Table 2. Both sets agree with their sources. All 27 leaf product types
-have one valid four-digit code per edition. The six navigation families have
-no code. Compared the pairs with 2026 Annex 2, Table 19, and used Annexes 3 and
+2026 Table 2. Both sets agree with their sources. The original 27 leaf product types had
+one valid code per edition. The reviewed mappings have 26 v1 and 25 v2 links.
+The six navigation families have no code. Compared the original pairs with 2026 Annex 2, Table 19, and used Annexes 3 and
 4 for product-specific exceptions. The following groups account for all 27
 types. Source labels and descriptions stay in the publishers' files.
 [2018 guidelines](https://digitallibrary.un.org/record/4099628) ·
 [2026 guidelines and annexes](https://doi.org/10.5281/zenodo.18328494)
 
-| R9lab product IDs | v1 | v2 | Scope check |
+| R9lab product IDs | Reviewed v1 | Reviewed v2 | Scope check |
 | --- | --- | --- | --- |
 | `p0007–p0008` | 0303 | 0303 | Table descriptions cover both. |
-| `p0009`, `p0012–p0013`, `p0017` | 0301 | 0301 | The descriptions cover mice, keyboards and routers. Docking stations fit the accessory scope. CPC 47223 also covers equipment under 0305, so keep the more specific evidence for routers. |
-| `p0010–p0011` | 0301 | 0301 | Review use as reporting codes for internal parts. Annex 4 places CPC 45281 under 0301, which supports the graphics-card link as a candidate. The internal power supply has weaker support. |
-| `p0014`, `p0028–p0030` | 0201 | 0201 | Descriptions support adapters, clothes irons and small ventilators. Generic trade headings can be wider than the R9lab type. Review passive power strips and the limits of the fan type before using the codes for reporting. |
+| `p0009`, `p0012–p0013`, `p0017` | 0301 | 0301 | The descriptions cover mice, keyboards and routers. Docking stations fit the accessory scope. The 2018 table also lists professional routers under 0307. The 0301 link follows the named examples for consumer routers and home gateways. |
+| `p0010–p0011` | 0301 | 0301 | Review use as reporting codes for internal parts. Annex 4 places CPC 45281 under both 0301 and 0305. The curatorial choice of 0301 for graphics cards stands. The internal power supply has weaker support. |
+| `p0014`, `p0028–p0030` | 0201 | 0201 | Descriptions support adapters, clothes irons and small ventilators. Review passive power strips before reporting. For fans, 2026 Annex 3 places HS 841451 under 0201 and HS 841459 under 0601. Verify the item is a small domestic fan before rollup. |
 | `p0015` | 0306 | 0306 | Cellular phones. |
 | `p0016` | 0305 | 0305 | Fixed and IP telephones. |
 | `p0018` | 0402 | 0402 | Navigation equipment is in the description and 2026 Annex 3. |
 | `p0019`, `p0022` | 0401 | 0401 | The descriptions cover headphones and remotes. The CPC heading for remotes also covers navigation equipment, so prefer the product description. |
 | `p0020` | 0405 | 0405 | The speaker description and enclosed loudspeaker trade rows support the link. |
-| `p0021` | 0402 | 0403 | Review. Annex 2 retains 0402 as 0402. The 2026 HS table sends clock radios (852792) to 0403 and keeps some portable receivers (852719) in 0402. One v2 code cannot cover the mixed R9lab type reliably. |
+| `p0021` | 0402 | — | The 2018 HS table groups the relevant standalone examples under 0402. In 2026, clock radios (852792) go to 0403 and portable receivers such as HS 852719 stay in 0402. |
 | `p0023` | 0505 | 0505 | Replaceable LED lamps. |
-| `p0024` | 0506 | 0506 | Review. Both editions distinguish household (0506) and professional (0507) fittings. R9lab's definition includes both. |
+| `p0024` | — | — | Both editions distinguish household (0506) and professional (0507) fittings. R9lab's definition includes both. |
 | `p0025` | 0203 | 0203 | Kettles fit the water-heating scope. |
 | `p0026–p0027` | 0202 | 0202 | Toasters and powered grinders fit the food preparation scope. |
 | `p0031–p0033` | 0205 | 0205 | The description names shavers and hair dryers. A powered foot file fits by intended use. |
@@ -34,9 +35,9 @@ types. Source labels and descriptions stay in the publishers' files.
 The 2018 PDF checked was the UN Digital Library English copy, SHA-256
 `450d12c34a70672f397624280c315c0fc64bed515c627657b28c6681f861434e`.
 The 2026 PDF matched the checksum in [sources.toml](../../sources.toml).
-Keep the radio and luminaire codes out of automatic reporting until their
-scope is settled. Review subtype links or remove the overbroad rollup rather
-than asserting both target keys for the whole type.
+A dash means no concept-level key is exported for that edition. The radio v2
+and luminaire links need item detail, such as a clock or the setting where a
+fitting is used. The relevant keys agree on WEEE category 5 in the concordance.
 
 ## BAFU
 
