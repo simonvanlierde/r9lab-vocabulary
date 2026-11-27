@@ -227,6 +227,7 @@ concepts:
   c0024:
     label: lithium-ion cell
     definition: Single lithium-ion electrochemical cell, the unit a lithium-ion battery is built from.
+    source: https://webstore.iec.ch/en/publication/29603
     example: [an 18650 cell from a laptop pack, a pouch cell cut from a phone battery, a prismatic cell, a 21700 cell]
     note: 'Not lithium-ion battery: a cell still fitted with the pack''s case, wiring or protection board is the battery.'
     editorial_note: Part of a battery, not a kind of battery, so it has no broader concept.

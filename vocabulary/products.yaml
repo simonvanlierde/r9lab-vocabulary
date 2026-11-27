@@ -312,6 +312,7 @@ concepts:
   p0033:
     label: electric foot file
     definition: Hand-held electric device that removes hard skin from the feet with a rotating abrasive roller.
+    source: https://www.medisana.com/en/Personal-Care/Manicure-Pedicure/CR-870-Electric-callus-remover.html
     example: [a battery foot file with a roller head, a rechargeable callus remover, a foot file with spare rollers]
     note: Not electric shaver, which cuts hair.
     editorial_note: Shavers and foot files share UNU-KEY 0205. Wikidata's foot file covers manual files too, so it maps as broader.

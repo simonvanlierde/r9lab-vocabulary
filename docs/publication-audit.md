@@ -8,7 +8,7 @@ schemes and 128 concepts. No export records were sent to a validator.
 
 | Check | Before | After |
 | --- | --- | --- |
-| VocPub 5.4 | 144 violations, 121 warnings | 1 violation, 4 warnings |
+| VocPub 5.4 | 144 violations, 121 warnings | 1 violation, 2 warnings |
 | Published SKOS integrity conditions | No inconsistencies found | No inconsistencies found |
 | HTML and Turtle requests to a concept IRI | Repository HTML for both | [ADR 0009](decisions/0009-resolve-vocabulary-iris.md) proposes the serving change |
 
@@ -23,10 +23,10 @@ pyshacl -a -s validator.ttl -f turtle dist/r9lab-vocabulary.ttl
 The validator SHA-256 is
 `98d61d950c43786444fdd5453221ce02fdc4378bd86eedfe5731c2282f226820`.
 The remaining violation is the limit of one concept scheme per file, reported
-as 2.1.02 and 2.1.03. The four warnings concern the origin of the pilot
-collection and three concepts without a source citation. The collection gets
-its content from the containing scheme. Concept citations need a credible
-reference for the particular definition.
+as 2.1.02 and 2.1.03. The two warnings concern the origin of the pilot collection and its
+locally defined other-material class. Both get their meaning from the
+containing scheme. The validator asks for separate provenance even when
+it does not differ from the scheme.
 
 The metadata changes add defining-scheme links, the collection definition
 and membership in its scheme, named and typed creators, scheme provenance,
