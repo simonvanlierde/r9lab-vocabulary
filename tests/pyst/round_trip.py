@@ -2,7 +2,7 @@
 
 Usage: `python tests/pyst/round_trip.py dist/r9lab-vocabulary.ttl [--url http://127.0.0.1:8741]`.
 `just pyst-round-trip` starts the PyST in `compose.yaml`, runs this and stops it. Exits 1 on a
-statement lost or added, 2 when PyST refuses a write.
+round-trip mismatch, 2 when PyST refuses a write.
 
 PyST takes no file: a scheme, each concept and the relationships are separate API calls,
 in that order. Two PyST rules need a reshape on the way in, which the read back undoes:
@@ -14,7 +14,8 @@ in that order. Two PyST rules need a reshape on the way in, which the read back 
 
 `skos:narrower` goes in as the `skos:broader` it mirrors, which PyST requires, and comes back
 from the `skos:broader` read back. Only the schemes and concepts are compared: PyST has no
-place for the `dcat:Dataset` node or the `skos:Collection`.
+place for the `dcat:Dataset` node or the `skos:Collection`. A separate probe checks
+conditional XKOS associations and their correspondence links.
 """
 
 import argparse
@@ -25,7 +26,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from rdflib import RDF, SKOS, BNode, Graph, Literal
+from rdflib import RDF, SKOS, BNode, Graph, Literal, Namespace
 from rdflib.namespace import DCTERMS
 
 TOKEN = "round-trip"  # noqa: S105 -- PyST_auth_token of the throwaway PyST in compose.yaml
@@ -41,7 +42,7 @@ def call(base: str, method: str, path: str, body: object = None) -> object:
     headers = {"Content-Type": "application/json", "X-PyST-Auth-Token": TOKEN}
     req = urllib.request.Request(base + path, data, headers, method=method)  # noqa: S310 -- base is --url
     try:
-        with urllib.request.urlopen(req) as resp:  # noqa: S310
+        with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
             return json.load(resp)
     except urllib.error.HTTPError as err:
         msg = f"{method} {path}: {err.code} {err.read().decode()[:2000]}"
@@ -85,7 +86,8 @@ def load(g: Graph, base: str) -> None:
     rels = {(s, p, o) for p in RELATIONS for s, o in g.subject_objects(p)}
     rels |= {(o, SKOS.broader, s) for s, o in g.subject_objects(SKOS.narrower)}
     body = [{"@id": str(s), str(p): [{"@id": str(o)}]} for s, p, o in sorted(rels)]
-    call(base, "POST", "/api/v1/relationships/", body)
+    if body:
+        call(base, "POST", "/api/v1/relationships/", body)
 
 
 def read_back(base: str) -> Graph:
@@ -114,6 +116,84 @@ def read_back(base: str) -> Graph:
     for s, o in list(back.subject_objects(SKOS.topConceptOf)):
         back.add((o, SKOS.hasTopConcept, s))
     return back
+
+
+def check_conditional_associations(base: str) -> bool:
+    xkos = Namespace("http://rdf-vocabulary.ddialliance.org/xkos#")
+    fixture = Graph().parse(
+        format="turtle",
+        data="""
+        @prefix : <https://example.org/r9lab-pyst-test/> .
+        @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+        @prefix xkos: <http://rdf-vocabulary.ddialliance.org/xkos#> .
+        @prefix dct: <http://purl.org/dc/terms/> .
+        @prefix owl: <http://www.w3.org/2002/07/owl#> .
+        @prefix bibo: <http://purl.org/ontology/bibo/> .
+        @prefix status: <http://purl.org/ontology/bibo/status/> .
+        @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+        :tags a skos:ConceptScheme ; skos:prefLabel "Tags"@en ; skos:definition "Tag strings"@en ;
+            bibo:status status:accepted ; dct:creator :creator ;
+            dct:created "2026-11-28T00:00:00Z"^^xsd:dateTime ; owl:versionInfo "0.1.0" .
+        :fields a skos:ConceptScheme ; skos:prefLabel "Fields"@en ; skos:definition "Tag fields"@en ;
+            bibo:status status:accepted ; dct:creator :creator ;
+            dct:created "2026-11-28T00:00:00Z"^^xsd:dateTime ; owl:versionInfo "0.1.0" .
+        :targets a skos:ConceptScheme ; skos:prefLabel "Targets"@en ; skos:definition "Tag targets"@en ;
+            bibo:status status:accepted ; dct:creator :creator ;
+            dct:created "2026-11-28T00:00:00Z"^^xsd:dateTime ; owl:versionInfo "0.1.0" .
+        :pc a skos:Concept ; skos:inScheme :tags ; skos:prefLabel "pc"@en ;
+            bibo:status status:accepted .
+        :material a skos:Concept ; skos:inScheme :fields ; skos:prefLabel "material"@en ;
+            bibo:status status:accepted .
+        :keyword a skos:Concept ; skos:inScheme :fields ; skos:prefLabel "keyword"@en ;
+            bibo:status status:accepted .
+        :polycarbonate a skos:Concept ; skos:inScheme :targets ; skos:prefLabel "polycarbonate"@en ;
+            bibo:status status:accepted .
+        :computer a skos:Concept ; skos:inScheme :targets ; skos:prefLabel "personal computer"@en ;
+            bibo:status status:accepted .
+
+        :correspondence a xkos:Correspondence ; skos:prefLabel "Tag mappings"@en ;
+            xkos:compares :tags, :fields, :targets ; dct:references :r9lab-tags.sssom.tsv ;
+            bibo:status status:accepted ; dct:creator :creator ;
+            dct:created "2026-11-28T00:00:00Z"^^xsd:dateTime ; owl:versionInfo "0.1.0" .
+        :material-pc a xkos:ConceptAssociation ; xkos:sourceConcept :pc, :material ;
+            xkos:targetConcept :polycarbonate .
+        :keyword-pc a xkos:ConceptAssociation ; xkos:sourceConcept :pc, :keyword ;
+            xkos:targetConcept :computer .
+        """,
+    )
+    load(fixture, base)
+    docs = node_docs(fixture)
+    correspondence = next(fixture.subjects(RDF.type, xkos.Correspondence))
+    call(base, "POST", "/api/v1/correspondences/", docs[str(correspondence)])
+    associations = list(fixture.subjects(RDF.type, xkos.ConceptAssociation))
+    for association in associations:
+        call(base, "POST", "/api/v1/associations/", docs[str(association)])
+
+    members = [{"@id": str(association)} for association in associations]
+    call(base, "POST", "/api/v1/made_ofs/", {"@id": str(correspondence), str(xkos.madeOf): members})
+    query = urllib.parse.urlencode(
+        {
+            "correspondence_iri": str(correspondence),
+            "source_concept_iri": "https://example.org/r9lab-pyst-test/pc",
+            "kind": "conditional",
+        }
+    )
+    results = call(base, "GET", f"/api/v1/associations/?{query}")
+    assert isinstance(results, list)
+    linked = call(base, "GET", f"/api/v1/correspondences/{correspondence}")
+    back = Graph().parse(format="json-ld", data=json.dumps([linked, *results]))
+    predicates = (xkos.compares, xkos.madeOf, xkos.sourceConcept, xkos.targetConcept, DCTERMS.references)
+    wanted = {row for row in fixture if row[1] in predicates}
+    wanted.update((correspondence, xkos.madeOf, association) for association in associations)
+    received = {row for row in back if row[1] in predicates}
+    if wanted != received or len(results) != len(associations):
+        for label, rows in (("lost", wanted - received), ("added", received - wanted)):
+            for subject, predicate, target in sorted(rows):
+                sys.stderr.write(f"{label}: <{subject}> <{predicate}> {target}\n")
+        sys.stderr.write("Conditional tag associations did not round-trip\n")
+        return False
+    return True
 
 
 def compare(g: Graph, back: Graph) -> tuple[set, set]:
@@ -164,7 +244,16 @@ def main() -> int:
     sys.stdout.write(
         f"{schemes} schemes, {concepts} concepts, {kept} statements back; {len(lost)} lost, {len(added)} added\n"
     )
-    return 1 if lost or added else 0
+    if lost or added:
+        return 1
+    try:
+        if not check_conditional_associations(args.url):
+            return 1
+    except PySTRefusedError as err:
+        sys.stderr.write(f"PyST refused: {err}\n")
+        return 2
+    sys.stdout.write("2 conditional tag associations and their correspondence back\n")
+    return 0
 
 
 if __name__ == "__main__":

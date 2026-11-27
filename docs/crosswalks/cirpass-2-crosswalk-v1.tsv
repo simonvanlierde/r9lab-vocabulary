@@ -1,0 +1,144 @@
+module	scheme	concept_id	disposition	target_iri	reason
+electronics-v1	components	c0001	close	http://purl.obolibrary.org/obo/NCIT_C49839	Confirm pack and bare-cell scope in an ICT profile.
+electronics-v1	components	c0002	broad	http://purl.obolibrary.org/obo/NCIT_C49839	Target leaves lithium-ion chemistry unspecified.
+electronics-v1	components	c0003	broad	http://purl.obolibrary.org/obo/NCIT_C49839	Target leaves nickel-metal hydride chemistry unspecified.
+electronics-v1	components	c0004	broad	http://purl.obolibrary.org/obo/NCIT_C49839	Target leaves primary use unspecified.
+electronics-v1	components	c0005	no-match		The hardware class is too general for a bare printed circuit board.
+electronics-v1	components	c0006	no-match		The hardware class is too general for a populated printed circuit board.
+electronics-v1	components	c0007	no-match		The ontology has no class of comparable scope for electronic components.
+electronics-v1	components	c0008	no-match		The chip classes cover individual types only.
+electronics-v1	components	c0009	close	http://www.semanticweb.org/RePlanIT/Capacitor	Capacitor functions align within the ICT scope.
+electronics-v1	components	c0010	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0011	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0012	close	http://www.semanticweb.org/RePlanIT/Inductor	Inductor functions align within the ICT scope.
+electronics-v1	components	c0013	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0014	contextual	http://www.semanticweb.org/RePlanIT/Display	Use for a computer display module.
+electronics-v1	components	c0015	contextual	http://www.semanticweb.org/RePlanIT/Display	Use for a computer LCD module.
+electronics-v1	components	c0016	contextual	http://www.semanticweb.org/RePlanIT/Display	Use for a computer LED or OLED display module.
+electronics-v1	components	c0017	no-match		A port covers the host connection rather than the cable.
+electronics-v1	components	c0018	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0019	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0020	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0021	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0022	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	components	c0023	contextual	http://www.semanticweb.org/RePlanIT/Speakers	Use for the unit of an integrated computer speaker.
+electronics-v1	components	c0024	no-match		A battery class is insufficient for a bare cell.
+electronics-v1	components	c0025	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0001	close	http://matonto.org/ontologies/matonto#Metals	The material families align at this level.
+electronics-v1	materials	m0002	close	http://www.semanticweb.org/RePlanIT/Ferrous	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0003	contextual	http://www.semanticweb.org/RePlanIT/CarbonSteel	Check the alloy grade against the RePlanIT carbon steel definition.
+electronics-v1	materials	m0004	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0005	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0006	close	http://www.semanticweb.org/RePlanIT/NonFerrous	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0007	no-match		The elemental aluminium class does not identify aluminium alloys.
+electronics-v1	materials	m0008	no-match		The elemental magnesium class does not identify magnesium alloys.
+electronics-v1	materials	m0009	close	http://www.semanticweb.org/RePlanIT/Copper	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0010	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0011	close	http://www.semanticweb.org/RePlanIT/Brass	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0012	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0013	close	http://www.semanticweb.org/RePlanIT/Tin	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0014	close	http://www.semanticweb.org/RePlanIT/Nickel	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0015	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0016	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0017	close	http://www.semanticweb.org/RePlanIT/Gold	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0018	close	http://www.semanticweb.org/RePlanIT/Silver	Check pure and commercial material grades where applicable.
+electronics-v1	materials	m0019	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0020	close	http://matonto.org/ontologies/matonto#Polymers	The material families align at this level.
+electronics-v1	materials	m0021	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0022	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0023	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0024	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0025	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0026	no-match		The generic plastic class does not identify polycarbonate.
+electronics-v1	materials	m0027	no-match		The generic plastic class does not identify a polycarbonate and ABS blend.
+electronics-v1	materials	m0028	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0029	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0030	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0031	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0032	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0033	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0034	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0035	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0036	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0037	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0038	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0039	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0040	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0041	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0042	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0043	close	http://matonto.org/ontologies/matonto#Glasses	The material families align at this level.
+electronics-v1	materials	m0044	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0045	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0046	close	http://matonto.org/ontologies/matonto#Ceramics	The material families align at this level.
+electronics-v1	materials	m0047	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0048	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0049	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0050	close	http://matonto.org/ontologies/matonto#Composites	The material families align at this level.
+electronics-v1	materials	m0051	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0052	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0053	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0054	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0055	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0056	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0057	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0058	no-match		No class of comparable scope in Electronics v1.
+electronics-v1	materials	m0059	no-match		No class of comparable scope in Electronics v1.
+mat-v1.1.0	materials	m0001	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0002	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0003	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0004	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0005	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0006	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0007	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0008	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0009	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0010	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0011	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0012	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0013	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0014	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0015	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0016	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0017	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0018	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0019	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0020	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0021	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0022	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0023	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0024	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0025	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0026	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0027	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0028	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0029	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0030	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0031	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0032	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0033	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0034	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0035	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0036	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0037	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0038	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0039	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0040	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0041	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0042	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0043	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0044	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0045	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0046	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0047	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0048	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0049	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0050	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0051	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0052	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0053	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0054	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0055	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0056	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0057	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0058	no-match		MAT declares no named material types.
+mat-v1.1.0	materials	m0059	no-match		MAT declares no named material types.

@@ -6,14 +6,13 @@
 # cpc: CPC 2.1 subclass, broad unless the subclass is the type itself. unu1 and unu2:
 # UNU-KEY v1 and v2 codes, checked against the key descriptions and the HS and CPC tables
 # of the E-waste Statistics Guidelines (2nd ed. 2018, 3rd ed. 2026). v2 follows the v1 code
-# by Annex 2 of the 3rd edition, except where its HS table moved the product. Where a key's
+# by Annex 2 of the 3rd edition where the key covers the product type. Where a key's
 # description names the product, that key wins over the HS and CPC tables, which map whole
-# trade classes coarser than these types.
+# trade classes coarser than these types. Leave out a mapping where the type spans keys.
 # cpv: the EU CPV code R9lab stores for the type today. The app cuts its trailing zeros, so
 # its 302131 is cpv:30213100 here.
-# weee6: category 1-6 of Annex III to Directive 2012/19/EU (WEEE), derived from the
-# unu1 code by the UNU-KEY to EU-6 table of the Global E-waste Monitor 2017 annexes, which
-# Table 2 of the 2026 guidelines confirms for every code used here.
+# weee6: category 1-6 of Annex III to Directive 2012/19/EU (WEEE), using the
+# UNU-KEY to EU-6 concordance. A category can cover several keys for the same type.
 # Families get none: they cut across categories.
 scheme:
   slug: products
@@ -54,7 +53,7 @@ concepts:
     source: https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32012L0019#anx_IV
     example: [an LED bulb, a fluorescent tube, a desk lamp, a ceiling luminaire]
     note: Not a display backlight, which belongs to a display.
-    editorial_note: Lamps (UNU-KEY 0505) are WEEE category 3, and luminaires (0506) are category 5.
+    editorial_note: LED lamps (0505) are WEEE category 3. Luminaires (0506 and 0507) are category 5 in the key concordance.
     mappings: {close: ['cpc:4653']}
   p0005:
     label: small household appliance
@@ -203,11 +202,9 @@ concepts:
     source: https://unstats.un.org/unsd/classifications/Econ/Detail/EN/1074/47311
     example: [a portable FM radio, a DAB radio, a clock radio, a kitchen radio]
     note: 'Includes clock radios. Not speaker: a radio tunes broadcasts itself, a speaker only plays what it is sent.'
-    editorial_note: UNU-KEY v1 files mains and clock radios under 0402, v2 under 0403.
+    editorial_note: The 2026 HS table splits portable and clock radio examples between 0402 and 0403.
     broader: [p0003]
-    # Mains and clock radios (HS 852713, 852791, 852792) are 0402 in the 2018 HS table and
-    # 0403 in the 2026 one, though Annex 2 maps v1 0402 to v2 0402.
-    mappings: {broad: ['cpc:47311', 'unu1:0402', 'unu2:0403', 'weee6:5'], close: ['cpv:32344200']}
+    mappings: {broad: ['cpc:47311', 'unu1:0402', 'weee6:5'], close: ['cpv:32344200']}
   p0022:
     label: remote control
     definition: Hand-held device that operates another device from a distance, usually by infrared or radio.
@@ -223,7 +220,7 @@ concepts:
     source: https://www.wikidata.org/wiki/Q1553201
     example: [an E27 LED bulb, a GU10 LED spot, an LED filament bulb, an LED retrofit tube]
     note: 'Not luminaire: a light fitting with built-in LEDs that cannot be swapped out is a luminaire.'
-    editorial_note: Luminaires sit in UNU-KEY 0506 and WEEE category 5, LED lamps in 0505 and category 3.
+    editorial_note: LED lamps sit in UNU-KEY 0505 and WEEE category 3.
     broader: [p0004]
     mappings: {exact: ['wd:Q1553201'], broad: ['cpc:46510', 'unu1:0505', 'unu2:0505', 'weee6:3'], close: ['cpv:31531000']}
   p0024:
@@ -232,9 +229,9 @@ concepts:
     source: https://www.wikidata.org/wiki/Q815738
     example: [a desk lamp, a ceiling light, a floor lamp, an LED panel light]
     note: 'Not LED lamp: a replaceable lamp taken out of the fitting is a lamp of its own.'
-    editorial_note: Lamps are UNU-KEY 0505 and WEEE category 3. Wikidata labels this item light fixture.
+    editorial_note: Both UNU-KEY editions distinguish household (0506) and professional (0507) luminaires.
     broader: [p0004]
-    mappings: {exact: ['wd:Q815738'], broad: ['cpc:4653', 'unu1:0506', 'unu2:0506', 'weee6:5'], related: ['cpv:31521000']}
+    mappings: {exact: ['wd:Q815738'], broad: ['cpc:4653', 'weee6:5'], related: ['cpv:31521000']}
   p0025:
     label: electric kettle
     definition: Electric appliance that boils water in a jug with a built-in heating element.

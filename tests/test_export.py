@@ -32,6 +32,16 @@ def test_unu_keys_are_typed_codes_not_iris(schemes: Schemes, prefix: str):
     assert not [n for n in g.all_nodes() if str(n).startswith(f"{scheme.BASE}external/")]
 
 
+@pytest.mark.parametrize(("cid", "v1_code"), [("p0021", "0402"), ("p0024", None)])
+def test_mixed_product_types_publish_only_supported_unu_keys(schemes: Schemes, cid: str, v1_code: str | None):
+    g = export.to_graph(schemes, export.About("test"))
+    concept = URIRef(schemes["products"].iri + cid)
+    datatype = URIRef(scheme.TERMS + "UNUKEYv1")
+    expected = {Literal(v1_code, datatype=datatype)} if v1_code is not None else set()
+    assert set(g.objects(concept, URIRef(scheme.TERMS + "unuKey"))) == expected
+    assert (concept, SKOS.broadMatch, URIRef(scheme.PREFIXES["weee6"] + "5")) in g
+
+
 def test_cc0_covers_the_vocabulary_and_its_own_schemes_only(schemes: Schemes):
     g = export.to_graph(schemes, export.About("test"))
     licensed = {str(s) for s in g.subjects(DCTERMS.license, scheme.CC0)}

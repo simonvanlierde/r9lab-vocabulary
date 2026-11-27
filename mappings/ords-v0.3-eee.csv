@@ -1,0 +1,45 @@
+product_category_id,r9lab_product_id,relation,review_note
+1,,no_match,No climate-control type.
+2,p0014,broad,Adapters include laptop chargers alongside other chargers and batteries.
+3,,no_match,Product use determines this group. The luminaire type spans other uses.
+4,,no_match,A desktop is a whole product. Its parts have their own types.
+5,,no_match,No camera type.
+6,,no_match,No camera type.
+7,p0029,broad,The ORDS scope includes fan heaters.
+8,,no_match,No standalone TV or monitor type.
+9,p0031,broad,ORDS lists shavers in the powered grooming category.
+9,p0033,broad,Confirm powered foot files with a repair data curator.
+10,,no_match,No portable entertainment player type.
+11,p0019,close,ORDS includes earbuds. Confirm provider handling of headsets with a microphone.
+12,,no_match,No integrated stereo type.
+13,p0020,close,Overlap covers separate hi-fi speakers. Portable speakers may be grouped elsewhere.
+14,p0025,exact,Same powered water-boiling appliance.
+15,p0024,close,Desk and floor fittings overlap. Check fixed and professional fittings.
+16,p0007,close,Confirm that ORDS separates tablets and detachables consistently.
+17,,no_match,No type for larger household equipment such as lawnmowers.
+18,,no_match,This catch-all category needs item-level evidence.
+19,p0015,broad,ORDS includes other handheld telecommunications devices.
+20,,no_match,No powered instrument type.
+21,,no_match,No paper shredder type.
+22,p0009,broad,Confirm docking stations across providers.
+22,p0012,broad,ORDS explicitly includes computer mice.
+22,p0013,broad,ORDS explicitly includes computer keyboards.
+23,p0021,close,Portable receivers overlap. R9lab also includes mains-powered receivers.
+24,,no_match,No powered tool type.
+25,,no_match,No printer or scanner type.
+26,,no_match,No projector type.
+27,,no_match,No sewing machine type.
+28,,no_match,Residual groups need item-level evidence.
+29,,no_match,Residual groups need item-level evidence.
+30,p0008,broad,The ORDS category also includes e-readers and portable navigation devices.
+30,p0018,broad,ORDS lists satellite navigation devices as an example.
+31,p0026,exact,Same powered bread toaster.
+32,,no_match,No toy type.
+33,,no_match,R9lab remote controls span more products than TV and gaming accessories.
+34,,no_match,No vacuum type.
+35,,no_match,No watch or clock type.
+36,,no_match,Brewing and grinding have different scopes.
+37,p0027,broad,The ORDS scope explicitly includes coffee grinders.
+38,,no_match,No game console type.
+39,p0032,close,Confirm handling of non-handheld dryers.
+40,p0028,close,Confirm handling of steam-generator irons.

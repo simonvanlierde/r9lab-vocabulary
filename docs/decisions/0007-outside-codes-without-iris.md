@@ -7,7 +7,7 @@ date: 2026-11-26
 
 ## Context and Problem Statement
 
-Product types link to UNU-KEY v1 and v2 codes and to the CPV code R9lab stores for them. Before
+Product types link to applicable UNU-KEY v1 and v2 codes and to the CPV code R9lab stores for them. Before
 v0.1.0 the build minted a concept for each code used, under `https://w3id.org/r9lab/vocabulary/external/`.
 Those IRIs would name someone else's codes from our domain, be permanent once released, and
 duplicate the CPV IRIs the EU already publishes.
@@ -40,8 +40,10 @@ nor maintain.
 * Good: no IRIs under our base for codes we do not own; CPV links resolve to the EU's data.
 * Good: the UNU-KEY names, under a non-commercial licence, stay out of the CC0 files by design.
 * Bad: SKOS tools see the UNU-KEY link as a data property, not a mapping.
-* Bad: tools older than SSSOM 1.0's literal mappings drop those rows. sssom-py 0.4.22 reads them,
-  but drops every row of a set in which all rows are literal mappings.
+* Bad: readers without SSSOM 1.0 literal support can drop those rows. In the ORDS trial,
+  sssom-py 0.4.22 preserved literal rows through TSV conversion with a pinned codelist
+  source. Its default RDF conversion lost the literal type and source. Check each
+  target format and tool before publishing.
 * Bad: a CPV relation keeps the coarser meaning of R9lab's cut code; it is the padded EU code
   only because CPV pads with zeros.
 

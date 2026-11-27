@@ -1,7 +1,7 @@
 # This repo's own recipes; copier updates never touch this file.
 
 # Check vocabulary/*.yaml against itself and the pinned sources, then write dist/ (Turtle, JSON-LD, SHACL shapes, name matches). Needs `just pipeline` first.
-rdf:
+rdf: crosswalk-check
     uv run r9lab-vocabulary rdf
 
 # Print every name each `names` pattern matches, as scheme/id, source, pattern, name. `--source bafu-2026-v1` for one source, `--summary` for counts.
@@ -61,11 +61,16 @@ test-full: pipeline rdf sssom-validate
 sssom-validate:
     uvx --exclude-newer "1 week" --from sssom==0.4.22 sssom validate dist/r9lab-vocabulary.sssom.tsv
 
-# Check the tag-mapping review log and warn about each verdict on a withdrawn proposal. `just check` runs this last.
-local-check:
+# Validate the ORDS and CIRPASS-2 proposal tables against the vocabulary and pinned code lists.
+crosswalk-check:
+    uv run --locked python -m r9lab_vocabulary.ords
+    uv run --locked python -m r9lab_vocabulary.dpp
+
+# Check the draft crosswalks and the tag-mapping review log. `just check` runs this last.
+local-check: crosswalk-check
     uv run --locked python -m r9lab_vocabulary.curate check
 
-# Load dist/r9lab-vocabulary.ttl into a throwaway PyST (tests/pyst/compose.yaml, Docker) and check every scheme and concept statement comes back. Needs `just rdf` first.
+# Check the vocabulary and two conditional tag associations in a throwaway PyST (tests/pyst/compose.yaml, Docker). Needs `just rdf` first.
 pyst-round-trip port="8741":
     #!/usr/bin/env bash
     set -euo pipefail

@@ -30,9 +30,9 @@ graph:
 Each concept maps (`skos:exactMatch`, `closeMatch`, `broadMatch`, `narrowMatch`,
 `relatedMatch`) to the CPC 2.1 subclasses on [vocab.sentier.dev](https://vocab.sentier.dev),
 PMDco v3.1.2, Wikidata and EU CPV codes. The CPV code is the one R9lab stores, padded to its 8
-digits (R9lab's 302131 is `cpv:30213100`). Each product type also carries its UNU-KEY v1 and v2
-codes as typed literals, `r9lab:unuKey "0303"^^r9lab:UNUKEYv1`, since the keys have no IRIs
-([ADR 0007](docs/decisions/0007-outside-codes-without-iris.md)). Each product type also has a
+digits (R9lab's 302131 is `cpv:30213100`). Where a UNU-KEY covers a whole product type, the graph
+records the edition and code as a typed literal such as `r9lab:unuKey "0303"^^r9lab:UNUKEYv1`
+([ADR 0007](docs/decisions/0007-outside-codes-without-iris.md)). Each leaf product type has a
 `broadMatch` to its category in Annex III to the WEEE Directive 2012/19/EU (`weee6:1` to
 `weee6:6`), a fragment on the directive's ELI. Materials and components also
 carry candidate patterns for names in outside lists that have no ids, such as BAFU activity
@@ -210,6 +210,16 @@ A source whose id is `<family>-<version>` is one version of a name list, such as
 
 A new family, such as an ecoinvent release, also needs a reader in `NAME_LISTS` in
 `src/r9lab_vocabulary/pipeline.py`.
+
+## Proposals for review
+
+- [Open Repair Data Standard crosswalk](docs/crosswalks/ords.md)
+- [CIRPASS-2 Digital Product Passport crosswalk](docs/crosswalks/cirpass-2.md)
+- [UNU-KEY and BAFU source checks](docs/crosswalks/source-checks.md)
+- [PyST tag mappings](docs/decisions/0009-publish-tag-mappings-to-pyst.md) and [toolkit scope](docs/toolkit-scope.md)
+
+`just crosswalk-check` validates the ORDS and CIRPASS-2 review tables. The
+proposals have their own validation and stay outside the vocabulary release exports.
 
 ## Development
 
