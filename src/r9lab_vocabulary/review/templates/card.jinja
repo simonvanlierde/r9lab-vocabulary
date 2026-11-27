@@ -2,7 +2,7 @@
 {% if card %}
 <form method="post" action="/verdict" hx-post="/verdict" hx-target="#card" hx-swap="outerHTML" hx-disable="find button" aria-labelledby="card-tag">
   {#- Focus goes to the tag after each card, never to a button: a focused button would look preselected. #}
-  <h1 class="tag" id="card-tag" tabindex="-1">{{ card.tag }}</h1>
+  <h1 class="tag" id="card-tag" tabindex="-1">{% if card.field %}<span class="field">{{ card.field }}:</span> {% endif %}{{ card.tag }}</h1>
   {% if card.no_term %}
   <p class="relation">has no concept in the vocabulary</p>
   <p class="hint">Agree: no concept fits this tag. Disagree: some concept does.</p>
@@ -22,12 +22,12 @@
   </div>
 </form>
 {% else %}
-<p class="done" id="card-tag" tabindex="-1">You have judged every card ({{ s.progress()[s.reviewer] }}). Stop the page with Ctrl-C in its terminal to rebuild the published file.</p>
+<p class="done" id="card-tag" tabindex="-1">You have judged every card ({{ s.progress()[s.reviewer] }}). The maintainer rebuilds the published file when the page stops.</p>
 {% endif %}
 {% if s.last %}
 <form class="last" method="post" action="/undo" hx-post="/undo" hx-target="#card" hx-swap="outerHTML">
   <input type="hidden" name="token" value="{{ s.csrf }}">
-  <p role="status">Recorded: {{ s.proposed[s.last[0]].subject_label }}, {{ s.last[1] }}.
+  <p role="status">Recorded: {{ s.tag_text(s.last[0]) }}, {{ s.last[1] }}.
     <button data-key="z" aria-keyshortcuts="z">Undo</button></p>
 </form>
 {% endif %}
