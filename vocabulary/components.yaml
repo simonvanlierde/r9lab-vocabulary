@@ -243,3 +243,73 @@ concepts:
     editorial_note: Wikidata has no item for the module; wd:Q321098 is the laser diode inside it. No BAFU dataset.
     broader: [c0007]
     mappings: {related: ['wd:Q321098']}
+  c0036:
+    label: screw or bolt
+    definition: An externally threaded fastener driven into a part or tightened against a nut.
+    source: https://www.wikidata.org/wiki/Q7797167
+    example: [a case screw, a machine bolt, a self-tapping screw]
+    note: A nut has internal threads. A threaded rod used to move a carriage is a drive element.
+    mappings: {broad: ['wd:Q7797167'], related: ['cpc:42944']}
+  c0037:
+    label: fastener nut
+    definition: An internally threaded fastener that mates with an externally threaded part to hold an assembly together.
+    source: https://www.wikidata.org/wiki/Q7797167
+    example: [a hex nut, a wing nut, a retaining locknut]
+    note: A tapped hole in a structural part is not a separate nut. A nut used to transmit motion needs its drive context.
+    mappings: {broad: ['wd:Q7797167'], related: ['cpc:42944']}
+  c0038:
+    label: hardware washer
+    definition: A flat or shaped plate with a hole, fitted around a fastener to spread load, set clearance or resist loosening.
+    source: https://www.wikidata.org/wiki/Q637321
+    example: [a flat washer under a screw head, a split lock washer]
+    note: A washer intended primarily to stop fluid leaking can be recorded as a seal.
+    mappings: {exact: ['wd:Q637321'], related: ['cpc:42944']}
+  c0039:
+    label: mechanical spring
+    definition: A part that stores mechanical energy as it bends, twists or compresses and returns it as the load is released.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a compression coil spring, a torsion spring, a leaf spring]
+    note: Use the whole mechanism's class if the spring is not separately recorded.
+    mappings: {related: ['cpc:42945']}
+  c0040:
+    label: gear wheel
+    definition: A toothed wheel that transfers motion or torque by meshing with a mating toothed part.
+    source: https://unstats.un.org/unsd/classifications/unsdclassifications/cpcv21.pdf
+    example: [a plastic spur gear, a steel pinion, a compound gear wheel]
+    note: A gearbox contains gears. A smooth belt pulley transfers motion without meshing teeth.
+    mappings: {broad: ['cpc:43320']}
+  c0041:
+    label: mechanical bearing
+    definition: A part that supports and guides relative motion between surfaces while limiting friction.
+    source: https://www.wikidata.org/wiki/Q190100
+    example: [a ball bearing, a roller bearing, a plain shaft bushing]
+    note: A housing that holds a separate bearing is a supporting part. Use this class for the bearing itself.
+    mappings: {exact: ['wd:Q190100'], narrow: ['cpc:43310'], related: ['cpc:43320']}
+  c0042:
+    label: equipment housing or housing panel
+    definition: A rigid shell or outer panel designed to enclose and protect the working parts of equipment.
+    source: https://www.wikidata.org/wiki/Q442709
+    example: [a moulded appliance shell, a laptop bottom cover, a sheet-metal power-supply housing]
+    note: Use the housing class for the shell or panel alone. A complete device and an internal support frame have different functions.
+    mappings: {related: ['wd:Q442709', 'cpc:36990', 'cpc:45290']}
+  c0043:
+    label: heat sink
+    definition: A part that conducts heat away from another part and dissipates it across a larger surface.
+    source: https://www.wikidata.org/wiki/Q1796959
+    example: [a finned aluminium heat sink, a copper heat sink from a processor]
+    note: A fan moves air. A cooler may include both a fan and a heat sink.
+    mappings: {exact: ['wd:Q1796959'], related: ['cpc:45290']}
+  c0044:
+    label: electrical connector
+    definition: A plug, socket or terminal assembly designed to make an electrical connection through mating contacts or clamped conductors.
+    source: https://www.wikidata.org/wiki/Q2119531
+    example: [a board-mounted USB socket, a battery connector, a screw terminal block]
+    note: Use cable for a lead recorded with its attached plug. Use the connector class for the plug or socket recorded on its own.
+    mappings: {exact: ['wd:Q2119531'], related: ['cpc:46211', 'cpc:46212']}
+  c0045:
+    label: mechanical seal
+    definition: A part fitted at a joint or moving interface to limit fluid or gas leakage.
+    source: https://www.wikidata.org/wiki/Q17004810
+    example: [a rubber O-ring, a lid gasket, a shaft lip seal]
+    note: A rubber foot supports equipment. A gasket belongs here when it closes a leakage path.
+    mappings: {exact: ['wd:Q17004810'], narrow: ['cpc:43924'], related: ['cpc:36270']}
