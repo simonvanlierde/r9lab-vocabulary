@@ -29,3 +29,16 @@ def test_uv_pin_agrees_across_workflows():
     # One pin per setup-uv step, so a step added without one fails here.
     assert len(versions) == text.count("astral-sh/setup-uv@")
     assert len(set(versions)) == 1
+
+
+def test_review_port_agrees_between_image_compose_and_server():
+    expose = pins(r"(?m)^EXPOSE (\d+)$", "docker/review/Dockerfile")
+    compose = pins(r'(?m)^\s+- "\$\{R9LAB_PUBLISH:-[\d.]+:(\d+)\}:\d+"$', "docker/review/compose.yaml")
+    container = pins(r'(?m)^\s+- "\$\{R9LAB_PUBLISH:-[\d.]+:\d+\}:(\d+)"$', "docker/review/compose.yaml")
+    default = pins(r'"--port", type=int, default=(\d+)', "src/r9lab_vocabulary/review/__main__.py")
+    assert expose == compose == container == default
+
+
+def test_review_image_python_agrees_with_python_version():
+    image = pins(r"(?m)^FROM \S+-python([\d.]+)-", "docker/review/Dockerfile")
+    assert image == {(ROOT / ".python-version").read_text().strip()}
